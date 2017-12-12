@@ -1,14 +1,18 @@
 import httplib
 import logging
+import traceback
 from collections import OrderedDict
+from httplib import BAD_REQUEST
+from itertools import chain
 
+import re
 import requests
 import suds_requests
 from suds import client
 
 from algosec.errors import AlgosecLoginError, AlgosecAPIError, UnrecognizedAllowanceState
 from algosec.helpers import mount_algosec_adapter_on_session
-from algosec.models import NetworkObjectSearchTypes, ChangeRequestAction, DeviceAllowanceState
+from algosec.models import NetworkObjectSearchTypes, ChangeRequestAction, DeviceAllowanceState, NetworkObjectType
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +39,20 @@ class AlgosecAPIClient(object):
         """
         try:
             response.raise_for_status()
-        except Exception as e:
-            raise AlgosecAPIError(e)
+        except Exception:
+            try:
+                json = response.json()
+            except ValueError:
+                json = {}
+            raise AlgosecAPIError(
+                "response code: {}, json: {}, exception: {}".format(
+                    response.status_code,
+                    json,
+                    traceback.format_exc(),
+                ),
+                response=response,
+                response_json=json,
+            )
         return response
 
     def _initiate_session(self):
@@ -91,6 +107,32 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         self._check_api_response(response)
         return response.json()
 
+    def create_network_service(self, name, content, custom_fields=None):
+        """
+        Create a network service of ABF
+        :param name: The service object's name
+        :param list[(str,int)] content: List of (port, proto) pairs defining the services
+        :param CustomField custom_fields: The custom fields to include for the object.
+        :return: the created network service object
+        """
+        custom_fields = [] if custom_fields is None else custom_fields
+
+        content = [
+            {"protocol": service[0], "port": service[1]}
+            for service in content
+        ]
+
+        response = self.session.post(
+            "{}/new".format(self.network_services_base_url),
+            json=dict(
+                name=name,
+                content=content,
+                custom_fields=custom_fields,
+            )
+        )
+        self._check_api_response(response)
+        return response.json()
+
     def get_application_id_by_name(self, app_name):
         """
         Query by application name and find the id for it's most recent revision
@@ -102,13 +144,59 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         return response.json()['revisionID']
 
     def find_network_objects(self, ip_or_subnet, search_type):
-        assert isinstance(search_type, NetworkObjectSearchTypes)
+        """
+
+        :param ip_or_subnet: The IP address or hostname of the object
+        :param NetworkObjectSearchTypes search_type:
+        :return: a list of network objects matching the search type and obj
+        :rtype lst[NetworkObject]
+        """
         response = self.session.get(
             "{}/find".format(self.network_objects_base_url),
-            params=dict(address=ip_or_subnet, type=search_type),
+            params=dict(address=ip_or_subnet, type=search_type.value),
+        )
+        self._check_api_response(response)
+
+        # TODO: This check is being performed as currently the ABF api return weird response when no objects found
+        # TODO: Should be removed once the API is fixed to return an empty list when no object are found
+        if not isinstance(response.json(), list):
+            logger.warning("find_network_objects: unsupported api response. Return empty result. (reponse: {})".format(
+                response.json()
+            ))
+            return []
+        return response.json()
+
+    def create_network_object(self, type, content, name):
+        """
+        Create a network object on ABF
+
+        :param NetworkObjectType type: The network object type
+        :param content: The IP address, Range or CIDR of the object
+        :param name: Name for the new network object
+        :return: NetworkObject api json
+        """
+
+        response = self.session.post(
+            "{}/new".format(self.network_objects_base_url),
+            json=dict(type=type.value, name=name, content=content),
         )
         self._check_api_response(response)
         return response.json()
+
+    def create_missing_network_objects(self, all_network_objects):
+        """
+        Create object per object on ABF if the objects are not present on ABF
+
+        :param collections.Iterable[str] all_network_objects: A list of network objects to create separately if missing from server
+        :return: Nada
+        """
+        # Calculate which network objects we need to create before creating the flow
+        objects_missing_for_algosec = [
+            obj for obj in all_network_objects
+            if not self.find_network_objects(obj, NetworkObjectSearchTypes.EXACT)
+        ]
+        for obj in objects_missing_for_algosec:
+            self.create_network_object(NetworkObjectType.HOST, obj, obj)
 
     def get_flow_id_by_name(self, app_id, flow_name):
         for flow in self.get_application_flows(app_id):
@@ -137,23 +225,72 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
             for flow in self.get_application_flows(app_id)
         )
 
-    def create_application_flow(self, app_id, requested_flow):
+    def create_application_flow(self, app_id, requested_flow, retry_for_missing_services=True):
         """
-        :param str app_id:
-        :param algosec.models.RequestedFlow requested_flow:
+        :param str app_id: The application id as defined on ABF to create this flow on
+        :param algosec.models.RequestedFlow requested_flow: The flow to be created
+        :param boolean retry_for_missing_services:
         :return:
         """
         # TODO: Make this function more robust.
         # TODO: For each object type we are about to use (sources, destinations, services, network_applications, network_users, network_services we wil have to make sure that:
         # TODO: The object is exists on Algosec exactly as is was requested from the user
         # TODO: If it is not, we will need to create it.
+        all_network_objects = chain(requested_flow.destinations, requested_flow.sources)
+        self.create_missing_network_objects(all_network_objects)
+
         response = self.session.post(
             "{}/{}/flows/new".format(self.applications_base_url, app_id),
             # We send a list since the API is looking for a list on NewFlows
             json=[requested_flow.new_flow_json_for_api],
         )
-        self._check_api_response(response)
+        try:
+            self._check_api_response(response)
+        except AlgosecAPIError as api_error:
+            # Handling the case when the failure is due to missing network_services from ABF
+            # This code will try to create them and re-call this function again with retry=False
+            # to make sure we are not getting into an inifinte look
+            if not retry_for_missing_services:
+                raise
+
+            # Filter all of the cases where we are unable to recognize the readon for the failure
+            if any([
+                        api_error.response is None,
+                        api_error.response_json is None,
+                        type(api_error.response_json) != list,
+                        api_error.response.status_code != BAD_REQUEST,
+            ]):
+                raise
+
+            # Identify the missing services by parsing manually the service names from the json errors
+            service_does_not_exist_pattern = "Service object named (UDP|TCP)/(\d+) does not exist"
+            for error_line in api_error.response_json:
+                match = re.match(service_does_not_exist_pattern, error_line, re.IGNORECASE)
+                if match:
+                    proto, port = match.groups()
+                    self.create_network_service(
+                        name="{}/{}".format(proto.upper(), port),
+                        content=[(proto, port)]
+                    )
+            return self.create_application_flow(
+                app_id=app_id,
+                requested_flow=requested_flow,
+                retry_for_missing_services=False
+            )
+
         return response.json()
+
+    def apply_application_draft(self, app_id):
+        """
+        Applies an application's draft revision
+        :param app_id:
+        :return:
+        """
+        return self._check_api_response(
+            self.session.post(
+                "{}/{}/apply".format(self.applications_base_url, app_id)
+            )
+        )
 
 
 class AlgosecFireFlowAPIClient(AlgosecAPIClient):
