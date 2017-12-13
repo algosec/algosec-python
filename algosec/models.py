@@ -145,7 +145,6 @@ class RequestedFlow(object):
 
     @staticmethod
     def _are_network_services_included_in_flow(current_network_services, network_flow):
-        # TODO: Support TCP/* UDP/* service definitions on both sides of checking containment
         # Mark all of the services that are allowed for all ports with an asterisk
         allowed_protocols = set()
 
