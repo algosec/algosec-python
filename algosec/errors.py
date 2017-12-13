@@ -20,3 +20,7 @@ class AlgosecBusinessFlowAPIError(AlgosecAPIError):
 
 class UnrecognizedAllowanceState(AlgosecAPIError):
     pass
+
+
+class UnrecognizedServiceString(Exception):
+    pass
