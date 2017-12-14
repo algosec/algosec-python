@@ -1,7 +1,13 @@
 
 
 class AlgosecAPIError(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        """Initialize RequestException with `request` and `response` objects."""
+        response = kwargs.pop('response', None)
+        self.response = response
+        response_json = kwargs.pop('response_json', None)
+        self.response_json = response_json
+        super(AlgosecAPIError, self).__init__(*args, **kwargs)
 
 
 class AlgosecLoginError(AlgosecAPIError):
@@ -13,4 +19,8 @@ class AlgosecBusinessFlowAPIError(AlgosecAPIError):
 
 
 class UnrecognizedAllowanceState(AlgosecAPIError):
+    pass
+
+
+class UnrecognizedServiceString(Exception):
     pass

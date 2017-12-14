@@ -3,7 +3,9 @@ from collections import namedtuple
 
 from enum import Enum
 
-from algosec.errors import AlgosecAPIError, UnrecognizedAllowanceState
+from algosec.errors import AlgosecAPIError, UnrecognizedAllowanceState, UnrecognizedServiceString
+
+ALL_PORTS = "*"
 
 
 class AlgosecProducts(Enum):
@@ -21,13 +23,13 @@ class NetworkObjectSearchTypes(Enum):
 # An object defined by the API to denote that every object will match here
 ANY_OBJECT = {u'id': 0, u'name': u'Any'}
 
+PROTO_PORT_PATTERN = "(?P<protocol>(?:UDP|TCP))/(?P<port>\d+|\*)"
+
 
 class RequestedFlow(object):
     """
     Represents the attributes of a flow that is being requested by the user
     """
-
-    PROTO_PORT_PATTERN = "(?P<proto>(?:UDP|TCP))/(?P<port>\d+)"
 
     def __init__(
             self,
@@ -41,11 +43,11 @@ class RequestedFlow(object):
             custom_fields=None,
     ):
         self.name = name
-        self.sources = set(sources)
-        self.destinations = set(destinations)
-        self.network_users = set(network_users)
-        self.network_applications = set(network_applications)
-        self.network_services = set(network_services)
+        self.sources = sources
+        self.destinations = destinations
+        self.network_users = network_users
+        self.network_applications = network_applications
+        self.network_services = network_services
         self.comment = comment
         self.custom_fields = custom_fields or []
 
@@ -59,16 +61,16 @@ class RequestedFlow(object):
         return dict(
             type="APPLICATION",
             name=self.name,
-            sources=self._network_application_objects(self.sources),
-            destinations=self._network_application_objects(self.destinations),
+            sources=self._api_named_object(self.sources),
+            destinations=self._api_named_object(self.destinations),
             users=self.network_users,
-            network_applications=self._network_application_objects(self.network_applications),
-            services=self._network_application_objects(self.network_services),
+            network_applications=self._api_named_object(self.network_applications),
+            services=self._api_named_object(self.network_services),
             comment=self.comment,
             custom_fields=self.custom_fields,
         )
 
-    def _network_application_objects(self, lst):
+    def _api_named_object(self, lst):
         """
         ABF expect to get most simple objects as a dict pointing to their name
         this is a helper function to achieve that
@@ -95,52 +97,78 @@ class RequestedFlow(object):
         self.destination_to_containing_object_ids = {
             destination: {
                 containing_object["objectID"]
-                for containing_object in abf_client.find_network_objects(destination, NetworkObjectSearchTypes.CONTAINING)
+                for containing_object in
+                abf_client.find_network_objects(destination, NetworkObjectSearchTypes.CONTAINING)
             }
             for destination in self.destinations
         }
 
+        # A new list to store normalized network services names. proto/port definition are made capital case
+        # Currently Algosec servers support only uppercase protocol names across the board
+        # For example: Trying to create a flow with service "tcp/54" will fail if there is only service named "TCP/54"
+        # But then creating the exact same service "tcp/54" will give an exception that the service already exists
+        normalized_network_services = []
         for service in self.network_services:
-            proto_port_match = re.match(self.PROTO_PORT_PATTERN, service)
-            if proto_port_match:
-                # We upper the service since services are represented as
-                self.aggregated_network_services.add(service.upper())
-            else:
+            try:
+                self.aggregated_network_services.add(LiteralService(service))
+                # normalize the service proto/port to upper case
+                service = service.upper()
+            except UnrecognizedServiceString:
+                # We need to resolve the service names so we'll be able to check if their definition is included
+                # within other network services that will be defined on Algosec.
                 try:
                     network_service = abf_client.get_network_services_by_name(service)
-                    self.aggregated_network_services.update(network_service["services"])
-                except:
+                    for service_str in network_service["services"]:
+                        self.aggregated_network_services.add(LiteralService(service_str))
+                except AlgosecAPIError:
                     raise AlgosecAPIError("Unable to resolve definition for requested service: {}".format(service))
 
-    def _sources_are_included_in(self, network_flow):
+            # the service variable might be normalized, and is re-added here
+            normalized_network_services.append(service)
+
+        self.network_services = normalized_network_services
+
+    @staticmethod
+    def _are_sources_included_in_flow(source_to_containing_object_ids, network_flow):
         existing_source_object_ids = {obj['objectID'] for obj in network_flow['sources']}
 
         return all(
             containing_object_ids.intersection(existing_source_object_ids)
-            for containing_object_ids in self.source_to_containing_object_ids.values()
+            for containing_object_ids in source_to_containing_object_ids.values()
         )
 
-    def _destinations_are_included_in(self, network_flow):
+    @staticmethod
+    def _are_destinations_included_in_flow(destination_to_containing_object_ids, network_flow):
         existing_destination_object_ids = {obj['objectID'] for obj in network_flow['destinations']}
 
         return all(
             containing_object_ids.intersection(existing_destination_object_ids)
-            for containing_object_ids in self.destination_to_containing_object_ids.values()
+            for containing_object_ids in destination_to_containing_object_ids.values()
         )
 
-    def _network_services_are_included_in(self, network_flow):
-        # TODO: The service normalization code should be executed way early on the process and not repeated stupidly here
-        # TODO: over and over again.
+    @staticmethod
+    def _are_network_services_included_in_flow(current_network_services, network_flow):
+        # Mark all of the services that are allowed for all ports with an asterisk
+        allowed_protocols = set()
 
-        ### TODO: Support TCP/* UDP/* service definitions on both sides of checking containment
-        aggregated_flow_network_services = {
-            network_service["services"]
-            for network_service in network_flow["services"]
-        }
+        aggregated_flow_network_services = set()
+        for network_service in network_flow["services"]:
+            for service_str in network_service["services"]:
+                service = LiteralService(service_str)
+                aggregated_flow_network_services.add(service)
+                if service.port == ALL_PORTS:
+                    allowed_protocols.add(service.protocol)
 
-        return self.aggregated_network_services.issubset(aggregated_flow_network_services)
+        # Generate a list of the network services which are not part of the 'allowed_protocols'
+        services_to_check = set()
+        for service in current_network_services:
+            if service.protocol not in allowed_protocols:
+                services_to_check.add(service)
 
-    def _network_applications_are_included_in(self, network_flow):
+        return services_to_check.issubset(aggregated_flow_network_services)
+
+    @staticmethod
+    def _are_network_applications_included_in_flow(existing_network_applications, network_flow):
         if network_flow["networkApplications"] == ANY_OBJECT:
             return True
 
@@ -149,9 +177,10 @@ class RequestedFlow(object):
             for network_application in network_flow["networkApplications"]
         ]
 
-        return self.network_applications.issubset(flow_applications)
+        return set(existing_network_applications).issubset(flow_applications)
 
-    def _network_users_are_included_in(self, network_flow):
+    @staticmethod
+    def _are_network_users_included_in_flow(network_users, network_flow):
         if network_flow["networkUsers"] == ANY_OBJECT:
             return True
 
@@ -160,11 +189,11 @@ class RequestedFlow(object):
             for network_user in network_flow["networkUsers"]
         ]
 
-        return self.network_users.issubset(flow_users)
+        return set(network_users).issubset(flow_users)
 
     def is_included_in(self, network_flow):
         """
-        To check if the new flow definition is contained within the existing flow
+        Check if self (RequestedFlow) is contained within a given existing flow
 
         For each source, destination, user, network_application and service check if that it is contained within
         the flow's relevant attribute.
@@ -179,11 +208,11 @@ class RequestedFlow(object):
         :return: True if included, else Flse
         """
         return all([
-            self._sources_are_included_in(network_flow),
-            self._destinations_are_included_in(network_flow),
-            self._network_services_are_included_in(network_flow),
-            self._network_applications_are_included_in(network_flow),
-            self._network_users_are_included_in(network_flow),
+            self._are_sources_included_in_flow(self.source_to_containing_object_ids, network_flow),
+            self._are_destinations_included_in_flow(self.destination_to_containing_object_ids, network_flow),
+            self._are_network_services_included_in_flow(self.aggregated_network_services, network_flow),
+            self._are_network_applications_included_in_flow(self.network_applications, network_flow),
+            self._are_network_users_included_in_flow(self.network_users, network_flow),
         ])
 
 
@@ -214,7 +243,49 @@ class DeviceAllowanceState(Enum):
 ChangeRequestActionInfo = namedtuple("ChangeRequestActionInfo", ["api_value", "text"])
 
 
+class LiteralService(object):
+    """
+    Represent a protocol/proto service originated in a simple string
+
+    e.g: tcp/50
+    """
+    def __init__(self, service):
+        # We upper the service since services are represented with upper when returned from Algosec
+        self.service = service.upper()
+        proto_port_match = re.match(PROTO_PORT_PATTERN, self.service, re.IGNORECASE)
+        if not proto_port_match:
+            raise UnrecognizedServiceString("Unable to parse literal service name: {}".format(service))
+
+        self.port = proto_port_match.groupdict()["port"]
+        self.protocol = proto_port_match.groupdict()["protocol"]
+
+    def __hash__(self):
+        return hash(self.service)
+
+    def __eq__(self, other):
+        return self.service == other.service
+
+    def __ne__(self, other):
+        # Not strictly necessary, but to avoid having both x==y and x!=y
+        # True at the same time
+        return not (self == other)
+
+    def __str__(self):
+        return self.service
+
+    def __repr__(self):
+        return "<LiteralService {}>".format(self.service)
+
+
 class ChangeRequestAction(Enum):
     """This object is representing whether the CR we are creating is ALLOW or DROP"""
     ALLOW = ChangeRequestActionInfo("1", "allow")
     DROP = ChangeRequestActionInfo("0", "drop")
+
+
+class NetworkObjectType(Enum):
+    HOST = "Host"
+    RANGE = "Range"
+    # Currently not supported by "create_network_object" on ABF client
+    GROUP = "Group"
+    ABSTRACT = ""
