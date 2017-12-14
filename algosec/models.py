@@ -97,7 +97,8 @@ class RequestedFlow(object):
         self.destination_to_containing_object_ids = {
             destination: {
                 containing_object["objectID"]
-                for containing_object in abf_client.find_network_objects(destination, NetworkObjectSearchTypes.CONTAINING)
+                for containing_object in
+                abf_client.find_network_objects(destination, NetworkObjectSearchTypes.CONTAINING)
             }
             for destination in self.destinations
         }
@@ -119,7 +120,7 @@ class RequestedFlow(object):
                     network_service = abf_client.get_network_services_by_name(service)
                     for service_str in network_service["services"]:
                         self.aggregated_network_services.add(LiteralService(service_str))
-                except:
+                except AlgosecAPIError:
                     raise AlgosecAPIError("Unable to resolve definition for requested service: {}".format(service))
 
             # the service variable might be normalized, and is re-added here

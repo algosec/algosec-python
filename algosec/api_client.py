@@ -8,11 +8,11 @@ from itertools import chain
 import re
 import requests
 import suds_requests
-from suds import client
+from suds import client, WebFault
 
 from algosec.errors import AlgosecLoginError, AlgosecAPIError, UnrecognizedAllowanceState
 from algosec.helpers import mount_algosec_adapter_on_session
-from algosec.models import NetworkObjectSearchTypes, ChangeRequestAction, DeviceAllowanceState, NetworkObjectType
+from algosec.models import NetworkObjectSearchTypes, DeviceAllowanceState, NetworkObjectType
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,9 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
             session.cookies.update({"JSESSIONID": response.json().get('jsessionid')})
             return session
         else:
-            raise AlgosecLoginError("Unable to login into AlgoSec server at %s. HTTP Code: %s", url, response.status_code)
+            raise AlgosecLoginError(
+                "Unable to login into AlgoSec server at %s. HTTP Code: %s", url, response.status_code
+            )
 
     @property
     def api_base_url(self):
@@ -187,7 +189,8 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         """
         Create object per object on ABF if the objects are not present on ABF
 
-        :param collections.Iterable[str] all_network_objects: A list of network objects to create separately if missing from server
+        :param collections.Iterable[str] all_network_objects: A list of network objects to create separately if missing
+        from server
         :return: Nada
         """
         # Calculate which network objects we need to create before creating the flow
@@ -299,9 +302,9 @@ class AlgosecFireFlowAPIClient(AlgosecAPIClient):
         try:
             authenticate = client.service.authenticate(
                 username=self.user,
-                password=self.password
+                password=self.password,
             )
-        except:
+        except WebFault:
             raise AlgosecLoginError
 
         self.session_id = authenticate.sessionId
@@ -390,7 +393,7 @@ class AlgosecFirewallAnalyzerAPIClient(AlgosecAPIClient):
                 Domain=''
             )
 
-        except:
+        except WebFault:
             raise AlgosecLoginError
         return client
 
