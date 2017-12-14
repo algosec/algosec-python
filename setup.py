@@ -15,7 +15,7 @@ setup(
     packages=["algosec"],
     url="https://github.com/AlmogCohen/algosec",
     license="MIT",
-    author="@AlmogCohen",
+    author="Almog Cohen",
     description="Set of modules working with Algosec services",
     long_description=long_description,
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
