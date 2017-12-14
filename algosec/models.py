@@ -56,9 +56,6 @@ class RequestedFlow(object):
         self.destination_to_containing_object_ids = {}
         self.aggregated_network_services = set()
 
-    def _get_api_service_names(self, lst):
-        """"""
-
     @property
     def new_flow_json_for_api(self):
         return dict(
@@ -106,10 +103,15 @@ class RequestedFlow(object):
         }
 
         # A new list to store normalized network services names. proto/port definition are made capital case
+        # Currently Algosec servers support only uppercase protocol names across the board
+        # For example: Trying to create a flow with service "tcp/54" will fail if there is only service named "TCP/54"
+        # But then creating the exact same service "tcp/54" will give an exception that the service already exists
         normalized_network_services = []
         for service in self.network_services:
             try:
                 self.aggregated_network_services.add(LiteralService(service))
+                # normalize the service proto/port to upper case
+                service = service.upper()
             except UnrecognizedServiceString:
                 # We need to resolve the service names so we'll be able to check if their definition is included
                 # within other network services that will be defined on Algosec.

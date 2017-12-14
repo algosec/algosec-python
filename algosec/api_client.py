@@ -232,10 +232,6 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         :param boolean retry_for_missing_services:
         :return:
         """
-        # TODO: Make this function more robust.
-        # TODO: For each object type we are about to use (sources, destinations, services, network_applications, network_users, network_services we wil have to make sure that:
-        # TODO: The object is exists on Algosec exactly as is was requested from the user
-        # TODO: If it is not, we will need to create it.
         all_network_objects = chain(requested_flow.destinations, requested_flow.sources)
         self.create_missing_network_objects(all_network_objects)
 
@@ -269,7 +265,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
                 if match:
                     proto, port = match.groups()
                     self.create_network_service(
-                        name="{}/{}".format(proto.upper(), port),
+                        name="{}/{}".format(proto, port),
                         content=[(proto, port)]
                     )
             return self.create_application_flow(
