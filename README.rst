@@ -26,3 +26,10 @@ and then to install the package run::
 
 This will install all the dependencies and set the project up for local usage and development .
 
+
+Testing
+_______
+
+To run the unittests run::
+
+    python setup.py nosetests
