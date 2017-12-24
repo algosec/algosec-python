@@ -219,7 +219,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
 
     def does_flow_exist(self, app_id, requested_flow):
         """
-        Check if a certain flow definition is already defined and contained in another defined flow on ABF
+        Check if a certain flow definition is already defined or contained within another defined flow on ABF
         :param algosec.models.RequestedFlow requested_flow:
         :return:
         """
