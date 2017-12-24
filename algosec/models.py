@@ -5,8 +5,6 @@ from enum import Enum
 
 from algosec.errors import AlgosecAPIError, UnrecognizedAllowanceState, UnrecognizedServiceString
 
-ALL_PORTS = "*"
-
 
 class AlgosecProducts(Enum):
     BUSINESS_FLOW = "BusinessFlow"
@@ -156,7 +154,11 @@ class RequestedFlow(object):
             for service_str in network_service["services"]:
                 service = LiteralService(service_str)
                 aggregated_flow_network_services.add(service)
-                if service.port == ALL_PORTS:
+                # In case that all protocols and ports are allowed, return True
+                # Such cases could be when a service with the '*' definition is defined as part of the flow
+                if service.protocol == LiteralService.ALL and service.port == LiteralService.ALL:
+                    return True
+                if service.port == LiteralService.ALL:
                     allowed_protocols.add(service.protocol)
 
         # Generate a list of the network services which are not part of the 'allowed_protocols'
@@ -247,17 +249,32 @@ class LiteralService(object):
     """
     Represent a protocol/proto service originated in a simple string
 
-    e.g: tcp/50
+    e.g: tcp/50, tcp/*, *
     """
+    ALL = "*"
+
     def __init__(self, service):
         # We upper the service since services are represented with upper when returned from Algosec
         self.service = service.upper()
-        proto_port_match = re.match(PROTO_PORT_PATTERN, self.service, re.IGNORECASE)
-        if not proto_port_match:
-            raise UnrecognizedServiceString("Unable to parse literal service name: {}".format(service))
 
-        self.port = proto_port_match.groupdict()["port"]
-        self.protocol = proto_port_match.groupdict()["protocol"]
+        protocol, port = self._parse_string(self.service)
+        self.protocol = protocol
+        self.port = port
+
+    @classmethod
+    def _parse_string(cls, string):
+        # If the string if just *, both the protocol and port are *
+        if string == cls.ALL:
+            return cls.ALL, cls.ALL
+
+        # Now try and match and parse regular "protocol/port" pattern
+        proto_port_match = re.match(PROTO_PORT_PATTERN, string, re.IGNORECASE)
+        if not proto_port_match:
+            raise UnrecognizedServiceString("Unable to parse literal service name: {}".format(string))
+
+        port = proto_port_match.groupdict()["port"]
+        protocol = proto_port_match.groupdict()["protocol"]
+        return protocol, port
 
     def __hash__(self):
         return hash(self.service)

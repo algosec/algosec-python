@@ -130,3 +130,14 @@ class TestRequestedFlow(object):
             ),
             is_(equal_to(True))
         )
+
+        assert_that(
+            RequestedFlow._are_network_services_included_in_flow(
+                [LiteralService("TCP/123"), LiteralService("UDP/456")],
+                {
+                    "services": [
+                        {"services": ["*"]}]
+                }
+            ),
+            is_(equal_to(True))
+        )
