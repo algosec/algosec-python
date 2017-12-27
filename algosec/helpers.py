@@ -1,3 +1,4 @@
+from ipaddress import IPv4Network, AddressValueError
 from requests.adapters import HTTPAdapter
 
 
@@ -22,3 +23,12 @@ class AlgosecServersHTTPAdapter(HTTPAdapter):
 def mount_algosec_adapter_on_session(session):
     session.mount('https://', AlgosecServersHTTPAdapter())
     session.mount('http://', AlgosecServersHTTPAdapter())
+
+
+def is_ip_or_subnet(string):
+    try:
+        # string must be unicode for this package
+        IPv4Network(unicode(string))
+        return True
+    except AddressValueError:
+        return False

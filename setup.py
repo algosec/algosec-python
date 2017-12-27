@@ -44,6 +44,7 @@ setup(
         "requests",
         "enum",
         "suds_requests",
+        "ipaddress",
     ],
     python_requires='~=2.7'
 )

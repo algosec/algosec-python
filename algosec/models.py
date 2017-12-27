@@ -4,6 +4,7 @@ from collections import namedtuple
 from enum import Enum
 
 from algosec.errors import AlgosecAPIError, UnrecognizedAllowanceState, UnrecognizedServiceString
+from algosec.helpers import is_ip_or_subnet
 
 
 class AlgosecProducts(Enum):
@@ -78,28 +79,56 @@ class RequestedFlow(object):
         """
         return [{"name": obj} for obj in lst]
 
+    @classmethod
+    def _build_mapping_from_network_objects_to_containing_object_ids(cls, abf_client, network_objects):
+        """
+        Return a mapping from IPs and Subnets to their containing object IDs
+
+        If the one of the provided network objects in the list is not an IP or a Subnet,
+        the method assumes it is a network object name. Then the method will query ABF
+        for the IP addresses that coprise this network object. Then the function will handle
+        of the comprising IPs as if they were provided as part of the network objects passed to the function.
+        It means you will see them as keys in the returned mapping.
+
+        :param list[str] network_objects: list of IPs, subnets and network object names
+        :return:  mapping from IPs and Subnets to their containing object IDs
+        """
+        network_objects_to_containing_object_ids = {}
+        for network_object in network_objects:
+            if is_ip_or_subnet(network_object):
+                ips_and_subnets = [network_object]
+            else:
+                # translate network object name to the ip addresses it is comprised of
+                try:
+                    ips_and_subnets = abf_client.get_network_object_by_name(network_object)['ipAddresses']
+                except AlgosecAPIError:
+                    raise AlgosecAPIError("Unable to resolve network object by name: {}".format(network_object))
+
+            for ip_or_subnet in ips_and_subnets:
+                network_objects_to_containing_object_ids[ip_or_subnet] = {
+                    containing_object["objectID"] for containing_object in
+                    abf_client.find_network_objects(ip_or_subnet, NetworkObjectSearchTypes.CONTAINED)
+                }
+
+        return network_objects_to_containing_object_ids
+
     def populate(self, abf_client):
         """
         Populate the mappings and normalization objects based on the Algosec APIs
 
         :param AlgosecBusinessFlowAPIClient abf_client:
         """
-        self.source_to_containing_object_ids = {
-            source: {
-                containing_object["objectID"]
-                for containing_object in abf_client.find_network_objects(source, NetworkObjectSearchTypes.CONTAINING)
-            }
-            for source in self.sources
-        }
+        # Build a map from each source to the object ids of the network objects that contain it
+        self.source_to_containing_object_ids = self._build_mapping_from_network_objects_to_containing_object_ids(
+            abf_client,
+            self.sources,
+        )
 
-        self.destination_to_containing_object_ids = {
-            destination: {
-                containing_object["objectID"]
-                for containing_object in
-                abf_client.find_network_objects(destination, NetworkObjectSearchTypes.CONTAINING)
-            }
-            for destination in self.destinations
-        }
+        # Build a map from each destination to the object ids of the network objects that contain it
+        self.destination_to_containing_object_ids = self._build_mapping_from_network_objects_to_containing_object_ids(
+            abf_client,
+            self.destinations,
+        )
 
         # A new list to store normalized network services names. proto/port definition are made capital case
         # Currently Algosec servers support only uppercase protocol names across the board
@@ -127,21 +156,21 @@ class RequestedFlow(object):
         self.network_services = normalized_network_services
 
     @staticmethod
-    def _are_sources_included_in_flow(source_to_containing_object_ids, network_flow):
+    def _are_sources_included_in_flow(sourcs_to_containing_object_ids, network_flow):
         existing_source_object_ids = {obj['objectID'] for obj in network_flow['sources']}
 
         return all(
             containing_object_ids.intersection(existing_source_object_ids)
-            for containing_object_ids in source_to_containing_object_ids.values()
+            for containing_object_ids in sourcs_to_containing_object_ids.values()
         )
 
     @staticmethod
-    def _are_destinations_included_in_flow(destination_to_containing_object_ids, network_flow):
+    def _are_destinations_included_in_flow(destinations_to_containing_object_ids, network_flow):
         existing_destination_object_ids = {obj['objectID'] for obj in network_flow['destinations']}
 
         return all(
             containing_object_ids.intersection(existing_destination_object_ids)
-            for containing_object_ids in destination_to_containing_object_ids.values()
+            for containing_object_ids in destinations_to_containing_object_ids.values()
         )
 
     @staticmethod
