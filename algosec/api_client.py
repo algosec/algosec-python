@@ -11,7 +11,7 @@ import suds_requests
 from suds import client, WebFault
 
 from algosec.errors import AlgosecLoginError, AlgosecAPIError, UnrecognizedAllowanceState
-from algosec.helpers import mount_algosec_adapter_on_session
+from algosec.helpers import mount_algosec_adapter_on_session, is_ip_or_subnet
 from algosec.models import NetworkObjectSearchTypes, DeviceAllowanceState, NetworkObjectType
 
 logger = logging.getLogger(__name__)
@@ -168,6 +168,25 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
             return []
         return response.json()
 
+    def get_network_object_by_name(self, object_name):
+        """
+        :param object_name: The object name
+        :return: a network object matching the object name
+        :rtype NetworkObject
+        """
+        response = self.session.get(
+            "{}/name/{}".format(self.network_objects_base_url, object_name),
+        )
+        self._check_api_response(response)
+        result = response.json()
+        if isinstance(result, dict):
+            return result
+        elif isinstance(result, list) and len(result) == 1:
+            # TODO: Currently there is a bug in the API that returns a list of one object instead of the object itself
+            return result[0]
+        else:
+            raise AlgosecAPIError("Unable to get one network object by name. Server response was: {}".format(result))
+
     def create_network_object(self, type, content, name):
         """
         Create a network object on ABF
@@ -189,6 +208,8 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         """
         Create object per object on ABF if the objects are not present on ABF
 
+        If the one of the objects is not IP address or Subnet, do not try to create the network object
+
         :param collections.Iterable[str] all_network_objects: A list of network objects to create separately if missing
         from server
         :return: Nada
@@ -196,7 +217,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         # Calculate which network objects we need to create before creating the flow
         objects_missing_for_algosec = [
             obj for obj in all_network_objects
-            if not self.find_network_objects(obj, NetworkObjectSearchTypes.EXACT)
+            if is_ip_or_subnet(obj) and not self.find_network_objects(obj, NetworkObjectSearchTypes.EXACT)
         ]
         for obj in objects_missing_for_algosec:
             self.create_network_object(NetworkObjectType.HOST, obj, obj)
@@ -219,7 +240,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
 
     def does_flow_exist(self, app_id, requested_flow):
         """
-        Check if a certain flow definition is already defined and contained in another defined flow on ABF
+        Check if a certain flow definition is already defined or contained within another defined flow on ABF
         :param algosec.models.RequestedFlow requested_flow:
         :return:
         """

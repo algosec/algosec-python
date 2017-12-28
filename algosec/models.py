@@ -4,8 +4,7 @@ from collections import namedtuple
 from enum import Enum
 
 from algosec.errors import AlgosecAPIError, UnrecognizedAllowanceState, UnrecognizedServiceString
-
-ALL_PORTS = "*"
+from algosec.helpers import is_ip_or_subnet
 
 
 class AlgosecProducts(Enum):
@@ -80,28 +79,56 @@ class RequestedFlow(object):
         """
         return [{"name": obj} for obj in lst]
 
+    @classmethod
+    def _build_mapping_from_network_objects_to_containing_object_ids(cls, abf_client, network_objects):
+        """
+        Return a mapping from IPs and Subnets to their containing object IDs
+
+        If the one of the provided network objects in the list is not an IP or a Subnet,
+        the method assumes it is a network object name. Then the method will query ABF
+        for the IP addresses that coprise this network object. Then the function will handle
+        of the comprising IPs as if they were provided as part of the network objects passed to the function.
+        It means you will see them as keys in the returned mapping.
+
+        :param list[str] network_objects: list of IPs, subnets and network object names
+        :return:  mapping from IPs and Subnets to their containing object IDs
+        """
+        network_objects_to_containing_object_ids = {}
+        for network_object in network_objects:
+            if is_ip_or_subnet(network_object):
+                ips_and_subnets = [network_object]
+            else:
+                # translate network object name to the ip addresses it is comprised of
+                try:
+                    ips_and_subnets = abf_client.get_network_object_by_name(network_object)['ipAddresses']
+                except AlgosecAPIError:
+                    raise AlgosecAPIError("Unable to resolve network object by name: {}".format(network_object))
+
+            for ip_or_subnet in ips_and_subnets:
+                network_objects_to_containing_object_ids[ip_or_subnet] = {
+                    containing_object["objectID"] for containing_object in
+                    abf_client.find_network_objects(ip_or_subnet, NetworkObjectSearchTypes.CONTAINED)
+                }
+
+        return network_objects_to_containing_object_ids
+
     def populate(self, abf_client):
         """
         Populate the mappings and normalization objects based on the Algosec APIs
 
         :param AlgosecBusinessFlowAPIClient abf_client:
         """
-        self.source_to_containing_object_ids = {
-            source: {
-                containing_object["objectID"]
-                for containing_object in abf_client.find_network_objects(source, NetworkObjectSearchTypes.CONTAINING)
-            }
-            for source in self.sources
-        }
+        # Build a map from each source to the object ids of the network objects that contain it
+        self.source_to_containing_object_ids = self._build_mapping_from_network_objects_to_containing_object_ids(
+            abf_client,
+            self.sources,
+        )
 
-        self.destination_to_containing_object_ids = {
-            destination: {
-                containing_object["objectID"]
-                for containing_object in
-                abf_client.find_network_objects(destination, NetworkObjectSearchTypes.CONTAINING)
-            }
-            for destination in self.destinations
-        }
+        # Build a map from each destination to the object ids of the network objects that contain it
+        self.destination_to_containing_object_ids = self._build_mapping_from_network_objects_to_containing_object_ids(
+            abf_client,
+            self.destinations,
+        )
 
         # A new list to store normalized network services names. proto/port definition are made capital case
         # Currently Algosec servers support only uppercase protocol names across the board
@@ -129,21 +156,21 @@ class RequestedFlow(object):
         self.network_services = normalized_network_services
 
     @staticmethod
-    def _are_sources_included_in_flow(source_to_containing_object_ids, network_flow):
+    def _are_sources_included_in_flow(sourcs_to_containing_object_ids, network_flow):
         existing_source_object_ids = {obj['objectID'] for obj in network_flow['sources']}
 
         return all(
             containing_object_ids.intersection(existing_source_object_ids)
-            for containing_object_ids in source_to_containing_object_ids.values()
+            for containing_object_ids in sourcs_to_containing_object_ids.values()
         )
 
     @staticmethod
-    def _are_destinations_included_in_flow(destination_to_containing_object_ids, network_flow):
+    def _are_destinations_included_in_flow(destinations_to_containing_object_ids, network_flow):
         existing_destination_object_ids = {obj['objectID'] for obj in network_flow['destinations']}
 
         return all(
             containing_object_ids.intersection(existing_destination_object_ids)
-            for containing_object_ids in destination_to_containing_object_ids.values()
+            for containing_object_ids in destinations_to_containing_object_ids.values()
         )
 
     @staticmethod
@@ -156,7 +183,11 @@ class RequestedFlow(object):
             for service_str in network_service["services"]:
                 service = LiteralService(service_str)
                 aggregated_flow_network_services.add(service)
-                if service.port == ALL_PORTS:
+                # In case that all protocols and ports are allowed, return True
+                # Such cases could be when a service with the '*' definition is defined as part of the flow
+                if service.protocol == LiteralService.ALL and service.port == LiteralService.ALL:
+                    return True
+                if service.port == LiteralService.ALL:
                     allowed_protocols.add(service.protocol)
 
         # Generate a list of the network services which are not part of the 'allowed_protocols'
@@ -247,17 +278,32 @@ class LiteralService(object):
     """
     Represent a protocol/proto service originated in a simple string
 
-    e.g: tcp/50
+    e.g: tcp/50, tcp/*, *
     """
+    ALL = "*"
+
     def __init__(self, service):
         # We upper the service since services are represented with upper when returned from Algosec
         self.service = service.upper()
-        proto_port_match = re.match(PROTO_PORT_PATTERN, self.service, re.IGNORECASE)
-        if not proto_port_match:
-            raise UnrecognizedServiceString("Unable to parse literal service name: {}".format(service))
 
-        self.port = proto_port_match.groupdict()["port"]
-        self.protocol = proto_port_match.groupdict()["protocol"]
+        protocol, port = self._parse_string(self.service)
+        self.protocol = protocol
+        self.port = port
+
+    @classmethod
+    def _parse_string(cls, string):
+        # If the string if just *, both the protocol and port are *
+        if string == cls.ALL:
+            return cls.ALL, cls.ALL
+
+        # Now try and match and parse regular "protocol/port" pattern
+        proto_port_match = re.match(PROTO_PORT_PATTERN, string, re.IGNORECASE)
+        if not proto_port_match:
+            raise UnrecognizedServiceString("Unable to parse literal service name: {}".format(string))
+
+        port = proto_port_match.groupdict()["port"]
+        protocol = proto_port_match.groupdict()["protocol"]
+        return protocol, port
 
     def __hash__(self):
         return hash(self.service)
