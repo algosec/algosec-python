@@ -1,8 +1,8 @@
 algosec
 =======
 
-Framework tools and api clients to work with your on on-premises Algosec services.
-Currently only certain range of API functions are implemented to communicate with:
+Framework tools and api clients to manage your on on-premises Algosec services using Python.
+Clients are implemented for the following AlgoSec services:
 
 * Algosec BusinessFlow
 * Algosec FireFlow
@@ -11,7 +11,7 @@ Currently only certain range of API functions are implemented to communicate wit
 Contribution
 ------------
 
-Currently the sdk is pretty basic, and every contribution will be welcome with a proper PR :)
+Currently the SDK is still pretty basic. Every contribution will be welcome with a proper PR :)
 
 Developing
 ----------

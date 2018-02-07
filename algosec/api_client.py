@@ -10,7 +10,8 @@ import requests
 import suds_requests
 from suds import client, WebFault
 
-from algosec.errors import AlgosecLoginError, AlgosecAPIError, UnrecognizedAllowanceState
+from algosec.errors import AlgosecLoginError, AlgosecAPIError, UnrecognizedAllowanceState, EmptyFlowSearch
+from algosec.flow_comparison_logic import IsIncludedInFlowComparisonLogic, IsEqualToFlowComparisonLogic
 from algosec.helpers import mount_algosec_adapter_on_session, is_ip_or_subnet
 from algosec.models import NetworkObjectSearchTypes, DeviceAllowanceState, NetworkObjectType
 
@@ -222,11 +223,20 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         for obj in objects_missing_for_algosec:
             self.create_network_object(NetworkObjectType.HOST, obj, obj)
 
-    def get_flow_id_by_name(self, app_id, flow_name):
+    def get_flow_by_name(self, app_id, flow_name):
         for flow in self.get_application_flows(app_id):
             if flow["name"] == flow_name:
-                return flow["flowID"]
-        raise Exception("Unable to locate flow ID by name: {}".format(flow_name))
+                return flow
+        raise EmptyFlowSearch("Unable to locate flow ID by name: {}".format(flow_name))
+
+    def delete_flow_by_id(self, app_id, flow_id):
+        response = self.session.delete("{}/{}/flows/{}".format(self.applications_base_url, app_id, flow_id))
+        self._check_api_response(response)
+        return True
+
+    def delete_flow_by_name(self, app_id, flow_name):
+        flow_id = self.get_flow_by_name(app_id, flow_name)['flowID']
+        return self.delete_flow_by_id(app_id, flow_id)
 
     def get_application_flows(self, app_id):
         """
@@ -238,14 +248,14 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         self._check_api_response(response)
         return [app for app in response.json() if app["flowType"] == "APPLICATION_FLOW"]
 
-    def does_flow_exist(self, app_id, requested_flow):
+    def does_flow_logicaly_exist(self, app_id, requested_flow):
         """
         Check if a certain flow definition is already defined or contained within another defined flow on ABF
         :param algosec.models.RequestedFlow requested_flow:
         :return:
         """
         return any(
-            requested_flow.is_included_in(flow)
+            IsIncludedInFlowComparisonLogic.is_included(requested_flow, flow)
             for flow in self.get_application_flows(app_id)
         )
 

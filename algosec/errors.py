@@ -24,3 +24,7 @@ class UnrecognizedAllowanceState(AlgosecAPIError):
 
 class UnrecognizedServiceString(Exception):
     pass
+
+
+class EmptyFlowSearch(AlgosecBusinessFlowAPIError):
+    pass
