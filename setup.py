@@ -11,7 +11,7 @@ with open(path.join(here, "README.rst"), encoding="utf-8") as f:
 
 setup(
     name="algosec",
-    version="0.4.0",
+    version="0.5.0",
     packages=["algosec"],
     url="https://github.com/AlmogCohen/algosec",
     license="MIT",
