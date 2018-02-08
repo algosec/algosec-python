@@ -136,7 +136,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         self._check_api_response(response)
         return response.json()
 
-    def get_application_id_by_name(self, app_name):
+    def get_application_revision_id_by_name(self, app_name):
         """
         Query by application name and find the id for it's most recent revision
         :param string app_name: The application name to query for
@@ -310,17 +310,14 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
 
         return response.json()
 
-    def apply_application_draft(self, app_id):
+    def apply_application_draft(self, revision_id):
         """
         Applies an application's draft revision
-        :param app_id:
+        :param revision_id:
         :return:
         """
-        return self._check_api_response(
-            self.session.post(
-                "{}/{}/apply".format(self.applications_base_url, app_id)
-            )
-        )
+        response = self.session.post("{}/{}/apply".format(self.applications_base_url, revision_id))
+        return self._check_api_response(response)
 
 
 class AlgosecFireFlowAPIClient(AlgosecAPIClient):

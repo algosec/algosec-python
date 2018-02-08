@@ -33,3 +33,13 @@ _______
 To run the unittests run::
 
     python setup.py nosetests
+
+
+Deplying To PyPi
+----------------
+
+Run::
+
+    python setup.py sdist
+    twine upload dist/algosec-*.tar.gz
+
