@@ -347,6 +347,7 @@ class AlgosecFireFlowAPIClient(AlgosecAPIClient):
             sources,
             destinations,
             services,
+            template,
             description="",
     ):
         """
@@ -369,6 +370,8 @@ class AlgosecFireFlowAPIClient(AlgosecAPIClient):
         ticket.description = description
         ticket.requestor = '{} {}'.format(requester_name, email)
         ticket.subject = subject
+        if (template !='Basic'):
+            ticket.template= template
 
         traffic_line = self.session.factory.create('trafficLine')
 
