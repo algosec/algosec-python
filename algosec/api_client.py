@@ -6,6 +6,8 @@ from httplib import BAD_REQUEST
 from itertools import chain
 
 import re
+from urllib import quote_plus
+
 import requests
 import suds_requests
 from suds import client, WebFault
@@ -106,7 +108,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         return "{}/network_services".format(self.api_base_url)
 
     def get_network_services_by_name(self, name):
-        response = self.session.get("{}/name/{}".format(self.network_services_base_url, name))
+        response = self.session.get("{}/name/{}".format(self.network_services_base_url, quote_plus(name)))
         self._check_api_response(response)
         return response.json()
 
@@ -223,32 +225,32 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         for obj in objects_missing_for_algosec:
             self.create_network_object(NetworkObjectType.HOST, obj, obj)
 
-    def get_flow_by_name(self, app_id, flow_name):
-        for flow in self.get_application_flows(app_id):
+    def get_flow_by_name(self, app_revision_id, flow_name):
+        for flow in self.get_application_flows(app_revision_id):
             if flow["name"] == flow_name:
                 return flow
         raise EmptyFlowSearch("Unable to locate flow ID by name: {}".format(flow_name))
 
-    def delete_flow_by_id(self, app_id, flow_id):
-        response = self.session.delete("{}/{}/flows/{}".format(self.applications_base_url, app_id, flow_id))
+    def delete_flow_by_id(self, app_revision_id, flow_id):
+        response = self.session.delete("{}/{}/flows/{}".format(self.applications_base_url, app_revision_id, flow_id))
         self._check_api_response(response)
         return True
 
-    def delete_flow_by_name(self, app_id, flow_name):
-        flow_id = self.get_flow_by_name(app_id, flow_name)['flowID']
-        return self.delete_flow_by_id(app_id, flow_id)
+    def delete_flow_by_name(self, app_revision_id, flow_name):
+        flow_id = self.get_flow_by_name(app_revision_id, flow_name)['flowID']
+        return self.delete_flow_by_id(app_revision_id, flow_id)
 
-    def get_application_flows(self, app_id):
+    def get_application_flows(self, app_revision_id):
         """
-        Get all of the flows tied to a specific application flows with type of "APPLICATION_FLOW"
-        :param app_id:
+        Get all of the flows tied to a specific application with type of "APPLICATION_FLOW"
+        :param str app_revision_id:
         :return:
         """
-        response = self.session.get("{}/{}/flows".format(self.applications_base_url, app_id))
+        response = self.session.get("{}/{}/flows".format(self.applications_base_url, app_revision_id))
         self._check_api_response(response)
         return [app for app in response.json() if app["flowType"] == "APPLICATION_FLOW"]
 
-    def does_flow_logicaly_exist(self, app_id, requested_flow):
+    def does_flow_logicaly_exist(self, app_revision_id, requested_flow):
         """
         Check if a certain flow definition is already defined or contained within another defined flow on ABF
         :param algosec.models.RequestedFlow requested_flow:
@@ -256,12 +258,12 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         """
         return any(
             IsIncludedInFlowComparisonLogic.is_included(requested_flow, flow)
-            for flow in self.get_application_flows(app_id)
+            for flow in self.get_application_flows(app_revision_id)
         )
 
-    def create_application_flow(self, app_id, requested_flow, retry_for_missing_services=True):
+    def create_application_flow(self, app_revision_id, requested_flow, retry_for_missing_services=True):
         """
-        :param str app_id: The application id as defined on ABF to create this flow on
+        :param str app_revision_id: The application revision id as defined on ABF to create this flow on
         :param algosec.models.RequestedFlow requested_flow: The flow to be created
         :param boolean retry_for_missing_services:
         :return:
@@ -270,7 +272,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         self.create_missing_network_objects(all_network_objects)
 
         response = self.session.post(
-            "{}/{}/flows/new".format(self.applications_base_url, app_id),
+            "{}/{}/flows/new".format(self.applications_base_url, app_revision_id),
             # We send a list since the API is looking for a list on NewFlows
             json=[requested_flow.new_flow_json_for_api],
         )
@@ -303,7 +305,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
                         content=[(proto, port)]
                     )
             return self.create_application_flow(
-                app_id=app_id,
+                app_revision_id=app_revision_id,
                 requested_flow=requested_flow,
                 retry_for_missing_services=False
             )
