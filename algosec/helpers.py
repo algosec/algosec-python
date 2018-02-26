@@ -1,3 +1,4 @@
+# TODO: Explain what this file is about, that it is probably not to be used by developers directly.
 import re
 
 from ipaddress import IPv4Network, AddressValueError
@@ -5,13 +6,12 @@ from requests.adapters import HTTPAdapter
 
 from algosec.errors import UnrecognizedServiceString
 
-
 PROTO_PORT_PATTERN = "(?P<protocol>(?:UDP|TCP))/(?P<port>\d+|\*)"
 
 
-class AlgosecServersHTTPAdapter(HTTPAdapter):
+class AlgoSecServersHTTPAdapter(HTTPAdapter):
     """
-    This adapter is used to customize http requests sessions we have with Algosec's servers
+    This adapter is used to customize http requests sessions we have with AlgoSec's servers
 
     Setting the default connect and read timeout. This timeout will prevent the bot from being stuck when the server
     is not responsive
@@ -20,16 +20,16 @@ class AlgosecServersHTTPAdapter(HTTPAdapter):
     ALGOSEC_SERVER_READ_TIMEOUT = None
 
     def __init__(self, *args, **kwargs):
-        super(AlgosecServersHTTPAdapter, self).__init__(*args, **kwargs)
+        super(AlgoSecServersHTTPAdapter, self).__init__(*args, **kwargs)
 
     def send(self, *args, **kwargs):
         kwargs['timeout'] = (self.ALGOSEC_SERVER_CONNECT_TIMEOUT, self.ALGOSEC_SERVER_READ_TIMEOUT)
-        return super(AlgosecServersHTTPAdapter, self).send(*args, **kwargs)
+        return super(AlgoSecServersHTTPAdapter, self).send(*args, **kwargs)
 
 
 def mount_algosec_adapter_on_session(session):
-    session.mount('https://', AlgosecServersHTTPAdapter())
-    session.mount('http://', AlgosecServersHTTPAdapter())
+    session.mount('https://', AlgoSecServersHTTPAdapter())
+    session.mount('http://', AlgoSecServersHTTPAdapter())
 
 
 def is_ip_or_subnet(string):
@@ -50,7 +50,7 @@ class LiteralService(object):
     ALL = "*"
 
     def __init__(self, service):
-        # We upper the service since services are represented with upper when returned from Algosec
+        # We upper the service since services are represented with upper when returned from AlgoSec
         self.service = service.upper()
 
         protocol, port = self._parse_string(self.service)

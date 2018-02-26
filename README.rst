@@ -1,17 +1,22 @@
 algosec
 =======
 
-Framework tools and api clients to manage your on on-premises Algosec services using Python.
-Clients are implemented for the following AlgoSec services:
+A Python SDK providing simple access to AlgoSec APIs, including handy methods
+to implement common network security policy management tasks, such as:
 
-* Algosec BusinessFlow
-* Algosec FireFlow
-* Algosec FirewallAnalyzer
+* Check whether specific traffic is allowed by the firewalls and security devices in the network.
+* Open a network security change request.
+* Check status of existing change requests.
+* Update business application connectivity requirements (and automatically trigger change requests as needed)
+
+Useful for automation and orchestration (e.g. DevOps), building custom portals, or exposing specific functionality to Application Owners, IT, Helpdesk, Information Security, Security Operations, etc.
+
+Included in this package are clients for AlgoSec Firewall Analyzer, FireFlow and BusinessFlow.
 
 Contribution
 ------------
 
-Currently the SDK is still pretty basic. Every contribution will be welcome with a proper PR :)
+Contributions are welcome! Please follow the standard pull request process.
 
 Developing
 ----------
@@ -35,7 +40,7 @@ To run the unittests run::
     python setup.py nosetests
 
 
-Deplying To PyPi
+Deploying To PyPi
 ----------------
 
 Run::

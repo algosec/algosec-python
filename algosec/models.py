@@ -1,12 +1,13 @@
+# TODO: Explain what this file is about, that it is probably not to be used by developers directly.
 from collections import namedtuple
 
 from enum import Enum
 
-from algosec.errors import AlgosecAPIError, UnrecognizedAllowanceState, UnrecognizedServiceString
+from algosec.errors import AlgoSecAPIError, UnrecognizedAllowanceState, UnrecognizedServiceString
 from algosec.helpers import is_ip_or_subnet, LiteralService
 
 
-class AlgosecProducts(Enum):
+class AlgoSecProducts(Enum):
     BUSINESS_FLOW = "BusinessFlow"
     FIRE_FLOW = "FireFlow"
 
@@ -52,7 +53,7 @@ class RequestedFlow(object):
 
     def normalize_network_services(self):
         # A new list to store normalized network services names. proto/port definition are made capital case
-        # Currently Algosec servers support only uppercase protocol names across the board
+        # Currently AlgoSec servers support only uppercase protocol names across the board
         # For example: Trying to create a flow with service "tcp/54" will fail if there is only service named "TCP/54"
         # But then creating the exact same service "tcp/54" will give an exception that the service already exists
         normalized_network_services = []
@@ -108,8 +109,8 @@ class RequestedFlow(object):
                 # translate network object name to the ip addresses it is comprised of
                 try:
                     ips_and_subnets = abf_client.get_network_object_by_name(network_object)['ipAddresses']
-                except AlgosecAPIError:
-                    raise AlgosecAPIError("Unable to resolve network object by name: {}".format(network_object))
+                except AlgoSecAPIError:
+                    raise AlgoSecAPIError("Unable to resolve network object by name: {}".format(network_object))
 
             for ip_or_subnet in ips_and_subnets:
                 network_objects_to_containing_object_ids[ip_or_subnet] = {
@@ -121,9 +122,9 @@ class RequestedFlow(object):
 
     def populate(self, abf_client):
         """
-        Populate the mappings and normalization objects based on the Algosec APIs
+        Populate the mappings and normalization objects based on the AlgoSec APIs
 
-        :param AlgosecBusinessFlowAPIClient abf_client:
+        :param BusinessFlowAPIClient abf_client:
         """
         # Build a map from each source to the object ids of the network objects that contain it
         self.source_to_containing_object_ids = self._build_mapping_from_network_objects_to_containing_object_ids(
@@ -142,13 +143,13 @@ class RequestedFlow(object):
                 self.aggregated_network_services.add(LiteralService(service))
             except UnrecognizedServiceString:
                 # We need to resolve the service names so we'll be able to check if their definition is included
-                # within other network services that will be defined on Algosec.
+                # within other network services that will be defined on AlgoSec.
                 try:
                     network_service = abf_client.get_network_services_by_name(service)
                     for service_str in network_service["services"]:
                         self.aggregated_network_services.add(LiteralService(service_str))
-                except AlgosecAPIError:
-                    raise AlgosecAPIError("Unable to resolve definition for requested service: {}".format(service))
+                except AlgoSecAPIError:
+                    raise AlgoSecAPIError("Unable to resolve definition for requested service: {}".format(service))
 
 
 AllowanceInfo = namedtuple("AllowanceInfo", ["text", "title"])
