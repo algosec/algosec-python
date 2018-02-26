@@ -1,5 +1,5 @@
+# TODO: Explain what this file is about, that it is probably not to be used by developers directly.
 from algosec.helpers import LiteralService
-
 
 # An object defined by the API to denote that every object will match here
 ANY_OBJECT = {u"id": 0, u"name": u"Any"}

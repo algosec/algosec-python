@@ -1,28 +1,37 @@
+"""Implementation of all api clients to interact with the different AlgoSec services.
+
+
+
+"""
 import httplib
 import logging
+import re
 import traceback
 from collections import OrderedDict
 from httplib import BAD_REQUEST
 from itertools import chain
-
-import re
 from urllib import quote_plus
 
 import requests
 import suds_requests
 from suds import client, WebFault
 
-from algosec.errors import AlgosecLoginError, AlgosecAPIError, UnrecognizedAllowanceState, EmptyFlowSearch
-from algosec.flow_comparison_logic import IsIncludedInFlowComparisonLogic, IsEqualToFlowComparisonLogic
+from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, UnrecognizedAllowanceState, EmptyFlowSearch
+from algosec.flow_comparison_logic import IsIncludedInFlowComparisonLogic
 from algosec.helpers import mount_algosec_adapter_on_session, is_ip_or_subnet
 from algosec.models import NetworkObjectSearchTypes, DeviceAllowanceState, NetworkObjectType
 
 logger = logging.getLogger(__name__)
 
 
-class AlgosecAPIClient(object):
+class APIClient(object):
+    """
+    Abstract API Client inherited by all
+    """
+    # TODO: Remove the AlgoSec prefix from all API clients
+    # TODO: Document that this is an abstract class and should not be used directly
     def __init__(self, server_ip, user, password):
-        super(AlgosecAPIClient, self).__init__()
+        super(APIClient, self).__init__()
         self.server_ip = server_ip
         self.user = user
         self.password = password
@@ -36,8 +45,9 @@ class AlgosecAPIClient(object):
         return self._session
 
     def _check_api_response(self, response):
+        # TODO: Check if this code is working/relevant for the SOAP cilents.
         """
-        Check the api response and raise AlgosecAPIError if there is an issue
+        Check the api response and raise AlgoSecAPIError if there is an issue
 
         """
         try:
@@ -47,7 +57,7 @@ class AlgosecAPIClient(object):
                 json = response.json()
             except ValueError:
                 json = {}
-            raise AlgosecAPIError(
+            raise AlgoSecAPIError(
                 "response code: {}, json: {}, exception: {}".format(
                     response.status_code,
                     json,
@@ -63,6 +73,7 @@ class AlgosecAPIClient(object):
 
     @staticmethod
     def get_soap_client(wsdl_path, **kwargs):
+        # TODO: Should not be here, should be relevant only for the APIs that are using SOAP
         """
         Create a soap client based on suds and python requests (to handle the AlgoSec's self-signed certificate properly
 
@@ -73,7 +84,7 @@ class AlgosecAPIClient(object):
         return client.Client(wsdl_path, transport=suds_requests.RequestsTransport(session), **kwargs)
 
 
-class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
+class BusinessFlowAPIClient(APIClient):
     """An extension for the handler to create ABF http session on creation"""
 
     def _initiate_session(self):
@@ -87,7 +98,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
             session.cookies.update({"JSESSIONID": response.json().get('jsessionid')})
             return session
         else:
-            raise AlgosecLoginError(
+            raise AlgoSecLoginError(
                 "Unable to login into AlgoSec server at %s. HTTP Code: %s", url, response.status_code
             )
 
@@ -108,6 +119,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         return "{}/network_services".format(self.api_base_url)
 
     def get_network_services_by_name(self, name):
+        # TODO: Change this function to "get_network_service_by_name"
         response = self.session.get("{}/name/{}".format(self.network_services_base_url, quote_plus(name)))
         self._check_api_response(response)
         return response.json()
@@ -149,6 +161,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         return response.json()['revisionID']
 
     def find_network_objects(self, ip_or_subnet, search_type):
+        # TODO: Change to "search network objects"
         """
 
         :param ip_or_subnet: The IP address or hostname of the object
@@ -188,7 +201,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
             # TODO: Currently there is a bug in the API that returns a list of one object instead of the object itself
             return result[0]
         else:
-            raise AlgosecAPIError("Unable to get one network object by name. Server response was: {}".format(result))
+            raise AlgoSecAPIError("Unable to get one network object by name. Server response was: {}".format(result))
 
     def create_network_object(self, type, content, name):
         """
@@ -208,6 +221,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         return response.json()
 
     def create_missing_network_objects(self, all_network_objects):
+        # TODO: Improve the documentation
         """
         Create object per object on ABF if the objects are not present on ABF
 
@@ -250,11 +264,12 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         self._check_api_response(response)
         return [app for app in response.json() if app["flowType"] == "APPLICATION_FLOW"]
 
-    def does_flow_logicaly_exist(self, app_revision_id, requested_flow):
+    def is_flow_contained_in_app(self, app_revision_id, requested_flow):
         """
-        Check if a certain flow definition is already defined or contained within another defined flow on ABF
+        Check if a certain flow definition is already contained within another defined flow on ABF
         :param algosec.models.RequestedFlow requested_flow:
-        :return:
+        :return: True if it is contained in another flow
+        :rtype: bool
         """
         return any(
             IsIncludedInFlowComparisonLogic.is_included(requested_flow, flow)
@@ -278,7 +293,7 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
         )
         try:
             self._check_api_response(response)
-        except AlgosecAPIError as api_error:
+        except AlgoSecAPIError as api_error:
             # Handling the case when the failure is due to missing network_services from ABF
             # This code will try to create them and re-call this function again with retry=False
             # to make sure we are not getting into an inifinte look
@@ -314,17 +329,19 @@ class AlgosecBusinessFlowAPIClient(AlgosecAPIClient):
 
     def apply_application_draft(self, revision_id):
         """
-        Applies an application's draft revision
-        :param revision_id:
+        Apply an application draft
+
+        Automatically create a FireFlow change request
+        :param revision_id: The application revision id
         :return:
         """
         response = self.session.post("{}/{}/apply".format(self.applications_base_url, revision_id))
         return self._check_api_response(response)
 
 
-class AlgosecFireFlowAPIClient(AlgosecAPIClient):
+class FireFlowAPIClient(APIClient):
     def __init__(self, server_ip, user, password):
-        super(AlgosecFireFlowAPIClient, self).__init__(server_ip, user, password)
+        super(FireFlowAPIClient, self).__init__(server_ip, user, password)
         self.session_id = None
 
     def _initiate_session(self):
@@ -335,7 +352,7 @@ class AlgosecFireFlowAPIClient(AlgosecAPIClient):
                 password=self.password,
             )
         except WebFault:
-            raise AlgosecLoginError
+            raise AlgoSecLoginError
 
         self.session_id = authenticate.sessionId
         return client
@@ -344,7 +361,7 @@ class AlgosecFireFlowAPIClient(AlgosecAPIClient):
             self,
             action,
             subject,
-            requester_name,
+            requestor_name,
             email,
             sources,
             destinations,
@@ -356,20 +373,20 @@ class AlgosecFireFlowAPIClient(AlgosecAPIClient):
 
         :param ChangeRequestAction action: action requested by this Change Request to allow or drop traffic
         :param str subject: The ticket subject, will be shown on FireFlow
-        :param str requester_name: The ticket creator name, will be shown on FireFlow
-        :param str email: The email address of the requester
+        :param str requestor_name: The ticket creator name, will be shown on FireFlow
+        :param str email: The email address of the requestor
         :param list[str] sources: List of IP address representing the source of the traffic
         :param list[str] destinations: List of IP address representing the destination of the traffic
         :param list[str] services: List of services which describe the type of traffic. Each service could be a service
-        name as defined on Algosec servers or just a proto/port pair. (e.g. ssh, http, tcp/50, udp/700)
-        :param str description: description for the ticket, will be shown on Algosec
+        name as defined on AlgoSec servers or just a proto/port pair. (e.g. ssh, http, tcp/50, udp/700)
+        :param str description: description for the ticket, will be shown on AlgoSec
         :return: The created ticket URL
         """
         # Create ticket and traffic lines objects
         ticket = self.session.factory.create('ticket')
 
         ticket.description = description
-        ticket.requestor = '{} {}'.format(requester_name, email)
+        ticket.requestor = '{} {}'.format(requestor_name, email)
         ticket.subject = subject
 
         traffic_line = self.session.factory.create('trafficLine')
@@ -397,18 +414,22 @@ class AlgosecFireFlowAPIClient(AlgosecAPIClient):
         ticket_url = ticket_added.ticketDisplayURL
         return ticket_url
 
+    # TODO: Add the implementation for the next function
+    def get_change_request_by_id(self, change_request_id):
+        pass
+
     @staticmethod
     def get_aff_wsdl_endpoint(server_ip):
         """
-        Algosec FireFlow SOAPAPI endpoint
+        AlgoSec FireFlow SOAPAPI endpoint
         """
         AFF_WSDL = "https://{}/WebServices/FireFlow.wsdl"
         return AFF_WSDL.format(server_ip)
 
 
-class AlgosecFirewallAnalyzerAPIClient(AlgosecAPIClient):
+class FirewallAnalyzerAPIClient(APIClient):
     def __init__(self, server_ip, user, password):
-        super(AlgosecFirewallAnalyzerAPIClient, self).__init__(server_ip, user, password)
+        super(FirewallAnalyzerAPIClient, self).__init__(server_ip, user, password)
         self.session_id = None
 
     def _initiate_session(self):
@@ -424,10 +445,10 @@ class AlgosecFirewallAnalyzerAPIClient(AlgosecAPIClient):
             )
 
         except WebFault:
-            raise AlgosecLoginError
+            raise AlgoSecLoginError
         return client
 
-    def calc_aggregated_query_result(self, query_results):
+    def _calc_aggregated_query_result(self, query_results):
         # Understanding the value of the total result, is the traffic blocked or allowed or partially blocked?
         if query_results[DeviceAllowanceState.PARTIALLY_BLOCKED]:
             aggregated_result = DeviceAllowanceState.PARTIALLY_BLOCKED
@@ -440,9 +461,9 @@ class AlgosecFirewallAnalyzerAPIClient(AlgosecAPIClient):
             aggregated_result = DeviceAllowanceState.ALLOWED
         return aggregated_result
 
-    def check_connectivity_status(self, source, dest, service):
+    def run_traffic_simulation_query(self, source, dest, service):
         """
-
+        Perform a traffic simulation query
         :param str source:
         :param str dest:
         :param str service:
@@ -484,13 +505,13 @@ class AlgosecFirewallAnalyzerAPIClient(AlgosecAPIClient):
                 query_results[allowance_state].append(device)
 
         # Now calculate to the traffic query result.
-        # Since we had the "QueryResult" missing from the API before Algosec version 2017.02 we check here if it is
+        # Since we had the "QueryResult" missing from the API before AlgoSec version 2017.02 we check here if it is
         # part of the result. If not, we try and calculate the traffic query result based on the results we got
         # for the various devices under the query
         if hasattr(query_result, "QueryResult") and query_result.QueryResult:
             aggregated_result = DeviceAllowanceState.from_string(query_result.QueryResult)
         else:
-            aggregated_result = self.calc_aggregated_query_result(query_results)
+            aggregated_result = self._calc_aggregated_query_result(query_results)
 
         return aggregated_result
 
