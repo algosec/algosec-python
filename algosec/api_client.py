@@ -30,11 +30,12 @@ class APIClient(object):
     """
     # TODO: Remove the AlgoSec prefix from all API clients
     # TODO: Document that this is an abstract class and should not be used directly
-    def __init__(self, server_ip, user, password):
+    def __init__(self, server_ip, user, password, verify_ssl=True):
         super(APIClient, self).__init__()
         self.server_ip = server_ip
         self.user = user
         self.password = password
+        self.verify_ssl = verify_ssl
         # Will be initialized once the session is used
         self._session = None
 
@@ -71,8 +72,7 @@ class APIClient(object):
     def _initiate_session(self):
         raise NotImplementedError()
 
-    @staticmethod
-    def get_soap_client(wsdl_path, **kwargs):
+    def get_soap_client(self, wsdl_path, **kwargs):
         # TODO: Should not be here, should be relevant only for the APIs that are using SOAP
         """
         Create a soap client based on suds and python requests (to handle the AlgoSec's self-signed certificate properly
@@ -80,7 +80,7 @@ class APIClient(object):
         :param kwargs: KWArgs that are forwarded to the suds client constructor
         """
         session = requests.Session()
-        session.verify = False
+        session.verify = self.verify_ssl
         return client.Client(wsdl_path, transport=suds_requests.RequestsTransport(session), **kwargs)
 
 
@@ -92,7 +92,7 @@ class BusinessFlowAPIClient(APIClient):
         mount_algosec_adapter_on_session(session)
         url = "https://{}/BusinessFlow/rest/v1/login".format(self.server_ip)
         logger.debug("logging in to AlgoSec servers: {}".format(url))
-        session.verify = False
+        session.verify = self.verify_ssl
         response = session.get(url, auth=(self.user, self.password))
         if response.status_code == httplib.OK:
             session.cookies.update({"JSESSIONID": response.json().get('jsessionid')})
@@ -355,8 +355,8 @@ class BusinessFlowAPIClient(APIClient):
 
 
 class FireFlowAPIClient(APIClient):
-    def __init__(self, server_ip, user, password):
-        super(FireFlowAPIClient, self).__init__(server_ip, user, password)
+    def __init__(self, server_ip, user, password, verify_ssl=True):
+        super(FireFlowAPIClient, self).__init__(server_ip, user, password, verify_ssl)
         self.session_id = None
 
     def _initiate_session(self):
@@ -443,8 +443,8 @@ class FireFlowAPIClient(APIClient):
 
 
 class FirewallAnalyzerAPIClient(APIClient):
-    def __init__(self, server_ip, user, password):
-        super(FirewallAnalyzerAPIClient, self).__init__(server_ip, user, password)
+    def __init__(self, server_ip, user, password, verify_ssl=True):
+        super(FirewallAnalyzerAPIClient, self).__init__(server_ip, user, password, verify_ssl)
         self.session_id = None
 
     def _initiate_session(self):
