@@ -264,6 +264,21 @@ class BusinessFlowAPIClient(APIClient):
         self._check_api_response(response)
         return [app for app in response.json() if app["flowType"] == "APPLICATION_FLOW"]
 
+    def get_flow_connectivity(self, app_revision_id, flow_id):
+        """Get flow connectivity.
+
+        :param app_revision_id: The application revision id
+        :param flow_id: The flow id
+        :return: FlowConnectivity object as defined in the AlgoSec API Guide
+        """
+        response = self.session.post("{}/{}/flows/{}/check_connectivity".format(
+            self.applications_base_url,
+            app_revision_id,
+            flow_id
+        ))
+        self._check_api_response(response)
+        return response.json()
+
     def is_flow_contained_in_app(self, app_revision_id, requested_flow):
         """
         Check if a certain flow definition is already contained within another defined flow on ABF
