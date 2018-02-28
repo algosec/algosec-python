@@ -96,4 +96,3 @@ class LiteralService(object):
 
     def __repr__(self):
         return "<LiteralService {}>".format(self.service)
-

@@ -97,11 +97,21 @@ class IsIncludedInFlowComparisonLogic(FlowComparisonLogic):
         :return: True if included, else False
         """
         return all([
-            cls.are_sources_included_in_flow(requested_flow.source_to_containing_object_ids, existing_network_flow),
-            cls.are_destinations_included_in_flow(requested_flow.destination_to_containing_object_ids, existing_network_flow),
-            cls.are_network_services_included_in_flow(requested_flow.aggregated_network_services, existing_network_flow),
-            cls.are_network_applications_included_in_flow(requested_flow.network_applications, existing_network_flow),
-            cls.are_network_users_included_in_flow(requested_flow.network_users, existing_network_flow),
+            cls.are_sources_included_in_flow(
+                requested_flow.source_to_containing_object_ids, existing_network_flow
+            ),
+            cls.are_destinations_included_in_flow(
+                requested_flow.destination_to_containing_object_ids, existing_network_flow
+            ),
+            cls.are_network_services_included_in_flow(
+                requested_flow.aggregated_network_services, existing_network_flow
+            ),
+            cls.are_network_applications_included_in_flow(
+                requested_flow.network_applications, existing_network_flow
+            ),
+            cls.are_network_users_included_in_flow(
+                requested_flow.network_users, existing_network_flow
+            ),
         ])
 
 

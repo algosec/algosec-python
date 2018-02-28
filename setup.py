@@ -1,12 +1,9 @@
 from codecs import open
-from os import path
 
 from setuptools import setup
 
-here = path.abspath(path.dirname(__file__))
-
 # Get the long description from the README file
-with open(path.join(here, "README.rst"), encoding="utf-8") as f:
+with open("README.rst") as f:
     long_description = f.read()
 
 setup(
@@ -30,8 +27,10 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Programming Language :: Python :: 2.7",
     ],
-    tests_require=[
+    setup_requires=[
         "nose>=1.3.6",
+    ],
+    tests_require=[
         "mock>=2.0.0",
         "PyHamcrest>=1.9.0",
     ],

@@ -13,6 +13,7 @@ class AlgoSecProducts(Enum):
 
 
 class NetworkObjectSearchTypes(Enum):
+    """Constants used in the BusinessFlow ``search_network_objects`` API call."""
     INTERSECT = "INTERSECT"
     CONTAINED = "CONTAINED"
     CONTAINING = "CONTAINING"
@@ -34,6 +35,7 @@ class RequestedFlow(object):
             network_services,
             comment,
             custom_fields=None,
+            type="APPLICATION",
     ):
         self.name = name
         self.sources = sources
@@ -43,6 +45,7 @@ class RequestedFlow(object):
         self.network_services = network_services
         self.comment = comment
         self.custom_fields = custom_fields or []
+        self.type = type
 
         # Mapped and normalized objects to be populated later on
         self.source_to_containing_object_ids = {}
@@ -63,10 +66,9 @@ class RequestedFlow(object):
             normalized_network_services.append(service)
         self.network_services = normalized_network_services
 
-    @property
-    def new_flow_json_for_api(self):
+    def get_json_flow_definition(self):
         return dict(
-            type="APPLICATION",
+            type=self.type,
             name=self.name,
             sources=self._api_named_object(self.sources),
             destinations=self._api_named_object(self.destinations),
@@ -115,7 +117,7 @@ class RequestedFlow(object):
             for ip_or_subnet in ips_and_subnets:
                 network_objects_to_containing_object_ids[ip_or_subnet] = {
                     containing_object["objectID"] for containing_object in
-                    abf_client.find_network_objects(ip_or_subnet, NetworkObjectSearchTypes.CONTAINED)
+                    abf_client.search_network_objects(ip_or_subnet, NetworkObjectSearchTypes.CONTAINED)
                 }
 
         return network_objects_to_containing_object_ids
