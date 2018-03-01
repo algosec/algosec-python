@@ -1,5 +1,15 @@
-algosec
-=======
+==================
+AlgoSec Python SDK
+==================
+.. image:: https://img.shields.io/pypi/v/algosec.svg
+   :target: https://pypi.python.org/pypi/algosec
+   :alt: Package on PyPi
+
+.. image:: https://readthedocs.org/projects/algosec-python/badge/
+   :target: http://algosec-python.readthedocs.io/en/latest/
+   :alt: Documentation Status
+
+
 
 A Python SDK providing simple access to AlgoSec APIs, including handy methods
 to implement common network security policy management tasks, such as:
@@ -12,6 +22,17 @@ to implement common network security policy management tasks, such as:
 Useful for automation and orchestration (e.g. DevOps), building custom portals, or exposing specific functionality to Application Owners, IT, Helpdesk, Information Security, Security Operations, etc.
 
 Included in this package are clients for AlgoSec Firewall Analyzer, FireFlow and BusinessFlow.
+
+Installation
+------------
+
+Install the latest version from PyPi by running::
+
+    pip install algosec --upgrade
+
+or clone this repo and run::
+
+    python setup.py install
 
 Contribution
 ------------
@@ -33,7 +54,7 @@ This will install all the dependencies and set the project up for local usage an
 
 
 Testing
-_______
+^^^^^^^
 
 To run the unittests run::
 
@@ -41,7 +62,7 @@ To run the unittests run::
 
 
 Deploying To PyPi
-----------------
+^^^^^^^^^^^^^^^^^^^
 
 Run::
 
