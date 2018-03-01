@@ -1,4 +1,10 @@
-"""Exception and error classes used and thrown by the API clients."""
+"""Exception and error classes used and thrown by the API clients.
+
+Developers will might use the exceptions and errors in their code while working with the API clients.
+Each of public methods of the API client document which errors may raise by their use.
+Then, developers can ``try``-``except`` in their code using the AlgoSec defined errors
+for better clarity of their code.
+"""
 
 
 class AlgoSecAPIError(Exception):

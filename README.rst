@@ -5,6 +5,10 @@ AlgoSec Python SDK
    :target: https://pypi.python.org/pypi/algosec
    :alt: Package on PyPi
 
+.. image:: https://readthedocs.org/projects/algosec-python/badge/
+   :target: http://algosec-python.readthedocs.io/en/latest/
+   :alt: Documentation Status
+
 
 
 A Python SDK providing simple access to AlgoSec APIs, including handy methods
