@@ -1,4 +1,8 @@
-# TODO: Explain what this file is about, that it is probably not to be used by developers directly.
+"""Define models and enums used by the API clients.
+
+Note:
+    Most developers will not have to use any of the contents of this module directly.
+"""
 from collections import namedtuple
 
 from enum import Enum

@@ -95,7 +95,7 @@ class RESTAPIClient(APIClient):
             response: Response object returned from an API call.
 
         Raises:
-            AlgoSecAPIError: If any error is found in the response object.
+            :class:`~algosec.errors.AlgoSecAPIError`: If any error is found in the response object.
 
         Returns:
             Same response object passed in.
@@ -193,7 +193,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             service_name (str): The name of the service.
 
         Raises:
-            AlgoSecAPIError: If no such network service could be found by name.
+            :class:`~algosec.errors.AlgoSecAPIError`: If no such network service could be found by name.
 
         Returns:
             dict: NetworkObject as defined on the API Guide.
@@ -212,7 +212,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             custom_fields: The custom fields to include for the object.
 
         Raises:
-            AlgoSecAPIError: If network service creation failed.
+            :class:`~algosec.errors.AlgoSecAPIError`: If network service creation failed.
 
         Returns:
             dict: The created NetworkService object as defined in the API Guide.
@@ -242,7 +242,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             app_name (str): The application name to look for.
 
         Raises:
-            AlgoSecAPIError: If no application matching the given name was found.
+            :class:`~algosec.errors.AlgoSecAPIError`: If no application matching the given name was found.
 
         Returns:
             int: The latest application revision ID.
@@ -265,7 +265,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
                 * *EXACT* - Search the object which is defined exactly by (and only by) the given IP or subnet.
 
         Raises:
-            AlgoSecAPIError: If an error occurred during the object search.
+            :class:`~algosec.errors.AlgoSecAPIError`: If an error occurred during the object search.
 
         Returns:
             list[dict]: List of network objects matching the given obj and search type.
@@ -293,7 +293,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             object_name (str): The object name to be searched.
 
         Raises:
-            AlgoSecAPIError: If no network object matching the given name could be found.
+            :class:`~algosec.errors.AlgoSecAPIError`: If no network object matching the given name could be found.
 
         Returns:
             dict: The NetworkObject object matching the name lookup.
@@ -320,7 +320,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             name (str): Name of the new network object
 
         Raises:
-            AlgoSecAPIError: If the network object creation failed.
+            :class:`~algosec.errors.AlgoSecAPIError`: If the network object creation failed.
 
         Returns:
             dict: The newly create NetworkObject object.
@@ -339,7 +339,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             all_network_objects (collections.Iterable[str]): List of the network objects to create if missing from the server.
 
         Raises:
-            AlgoSecAPIError: If the one of the network objects creation failed.
+            :class:`~algosec.errors.AlgoSecAPIError`: If the one of the network objects creation failed.
 
         Returns:
             list[dict]: List of the created network objects.
@@ -367,8 +367,8 @@ class BusinessFlowAPIClient(RESTAPIClient):
             flow_name (str): The name of the flow to fetch.
 
         Raises:
-            AlgoSecAPIError: If fetching the full list of flows for the application revision failed
-            EmptyFlowSearch: If no flow matching that name could be found
+            :class:`~algosec.errors.AlgoSecAPIError`: If fetching the full list of flows for the application revision failed
+            :class:`~algosec.errors.EmptyFlowSearch`: If no flow matching that name could be found
 
         Returns:
             dict: Flow object as defined in the API Guide.
@@ -386,7 +386,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             flow_id (int|str): The ID of the flow to delete.
 
         Raises:
-            AlgoSecAPIError: If the flow deletion failed.
+            :class:`~algosec.errors.AlgoSecAPIError`: If the flow deletion failed.
 
         Returns:
             None
@@ -402,8 +402,8 @@ class BusinessFlowAPIClient(RESTAPIClient):
             flow_name (str): The name of the flow to delete.
 
         Raises:
-            AlgoSecAPIError: If the flow deletion failed.
-            EmptyFlowSearch: If no flow matching that name could be found.
+            :class:`~algosec.errors.AlgoSecAPIError`: If the flow deletion failed.
+            :class:`~algosec.errors.EmptyFlowSearch`: If no flow matching that name could be found.
 
         Returns:
             None
@@ -422,7 +422,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             app_revision_id (str|int): The ID of the application revision to fetch the flows for
 
         Raises:
-            AlgoSecAPIError: If application flows list could not be fetched.
+            :class:`~algosec.errors.AlgoSecAPIError`: If application flows list could not be fetched.
 
         Returns:
             list[dict]: List of Flow objects as defined in the API Guide.
@@ -439,7 +439,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             flow_id (int|str): The ID of the flow to fetch ``FlowConnectivity`` for.
 
         Raises:
-            AlgoSecAPIError: If error occurred while fetching the flow connectivity object.
+            :class:`~algosec.errors.AlgoSecAPIError`: If error occurred while fetching the flow connectivity object.
 
         Returns:
             dict: FlowConnectivity object as defined in the API Guide.
@@ -461,7 +461,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             requested_flow (algosec.models.RequestedFlow): The definition of the flow to check containment for.
 
         Raises:
-            AlgoSecAPIError: If error occurred while fetching the application flows.
+            :class:`~algosec.errors.AlgoSecAPIError`: If error occurred while fetching the application flows.
 
         Returns:
             bool: True if this flow definition is contained within another existing flow in the application.
@@ -480,7 +480,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             retry_for_missing_services (bool):
 
         Raises:
-            AlgoSecAPIError: If application flow creation failed.
+            :class:`~algosec.errors.AlgoSecAPIError`: If application flow creation failed.
 
         Returns:
             dict: An Application object as defined in the API Guide.
@@ -536,7 +536,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             revision_id (int|str): The revision ID of the application to apply the draft for.
 
         Raises:
-            AlgoSecAPIError: If error occurred while trying to apply the application draft.
+            :class:`~algosec.errors.AlgoSecAPIError`: If error occurred while trying to apply the application draft.
 
         Returns:
             requests.models.Response: The API call response.
@@ -658,7 +658,7 @@ class FireFlowAPIClient(SoapAPIClient):
             description (str): description for the ticket, will be shown on FireFlow.
 
         Raises:
-            AlgoSecAPIError: If change request creation failed.
+            :class:`~algosec.errors.AlgoSecAPIError`: If change request creation failed.
 
         Returns:
             str: The URL for the newley create change request on FireFlow
@@ -708,7 +708,7 @@ class FireFlowAPIClient(SoapAPIClient):
             change_request_id: The ID of the change request to fetch.
 
         Raises:
-            AlgoSecAPIError: If the change request was not found on the server or another error occurred while
+            :class:`~algosec.errors.AlgoSecAPIError`: If the change request was not found on the server or another error occurred while
                 fetching the change request.
 
         Returns:
@@ -802,7 +802,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             service (str): Service of the simulated traffic (e.g: tcp/200, http)
 
         Raises:
-            AlgoSecAPIError: If any error occurred while executing the traffic simulation query.
+            :class:`~algosec.errors.AlgoSecAPIError`: If any error occurred while executing the traffic simulation query.
 
         Returns:
             algosec.models.DeviceAllowanceState: Traffic simulation query result.
