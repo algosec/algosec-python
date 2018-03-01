@@ -256,7 +256,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
         Args:
             ip_or_subnet (str): The IP address or hostname of the object, or a subnet. (e.g: 192.1.1.1, 192.168.0.0/16)
-            search_type (algosec.models.NetworkObjectSearchTypes): The search type to perform.
+            search_type (algosec.models.NetworkObjectSearchTypes): The enum for search type to perform.
                 Could be one of :
 
                 * *INTERSECT* - Search objects which their definition intersect with the given IP or subnet.

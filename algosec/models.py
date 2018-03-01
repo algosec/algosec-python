@@ -7,24 +7,27 @@ from algosec.errors import AlgoSecAPIError, UnrecognizedAllowanceState, Unrecogn
 from algosec.helpers import is_ip_or_subnet, LiteralService
 
 
-class AlgoSecProducts(Enum):
-    BUSINESS_FLOW = "BusinessFlow"
-    FIRE_FLOW = "FireFlow"
-
-
-class NetworkObjectSearchTypes(Enum):
-    """Constants used in the BusinessFlow ``search_network_objects`` API call."""
-    INTERSECT = "INTERSECT"
-    CONTAINED = "CONTAINED"
-    CONTAINING = "CONTAINING"
-    EXACT = "EXACT"
-
-
 class RequestedFlow(object):
-    """
-    Represents the attributes of a flow that is being requested by the user
-    """
+    """Represents a NewFlow model from the API Guide.
 
+    This model is used by the :class:`~algosec.api_client.BusinessFlowAPIClient` to
+    create and handle different operations regarding new and existing flows.
+
+    Examples:
+        1. It is used to represent a new flow that is about to be created.
+        2. It is used to check if any flow definition is already contained within other existing flows.
+
+    Args:
+        name (str): The name of the new flow.
+        sources (list[str]): Sources for the flow.
+        destinations (list[str]): Destinations for the flow.
+        network_users (list[str]): Network user names for the flow.
+        network_applications (list[str]): Names of network application for the flow.
+        network_services (list[str]): Names of network services names for the flow.
+        comment (str): Any comment to save alongside the flow.
+        custom_fields: Custom fields for the new flow
+        type (str): Optional. The type of the flow to create. Default to *APPLICATION*.
+    """
     def __init__(
             self,
             name,
@@ -52,9 +55,9 @@ class RequestedFlow(object):
         self.destination_to_containing_object_ids = {}
         self.aggregated_network_services = set()
 
-        self.normalize_network_services()
+        self._normalize_network_services()
 
-    def normalize_network_services(self):
+    def _normalize_network_services(self):
         # A new list to store normalized network services names. proto/port definition are made capital case
         # Currently AlgoSec servers support only uppercase protocol names across the board
         # For example: Trying to create a flow with service "tcp/54" will fail if there is only service named "TCP/54"
@@ -65,19 +68,6 @@ class RequestedFlow(object):
                 service = service.upper()
             normalized_network_services.append(service)
         self.network_services = normalized_network_services
-
-    def get_json_flow_definition(self):
-        return dict(
-            type=self.type,
-            name=self.name,
-            sources=self._api_named_object(self.sources),
-            destinations=self._api_named_object(self.destinations),
-            users=self.network_users,
-            network_applications=self._api_named_object(self.network_applications),
-            services=self._api_named_object(self.network_services),
-            comment=self.comment,
-            custom_fields=self.custom_fields,
-        )
 
     def _api_named_object(self, lst):
         """
@@ -122,6 +112,19 @@ class RequestedFlow(object):
 
         return network_objects_to_containing_object_ids
 
+    def get_json_flow_definition(self):
+        return dict(
+            type=self.type,
+            name=self.name,
+            sources=self._api_named_object(self.sources),
+            destinations=self._api_named_object(self.destinations),
+            users=self.network_users,
+            network_applications=self._api_named_object(self.network_applications),
+            services=self._api_named_object(self.network_services),
+            comment=self.comment,
+            custom_fields=self.custom_fields,
+        )
+
     def populate(self, abf_client):
         """
         Populate the mappings and normalization objects based on the AlgoSec APIs
@@ -157,6 +160,14 @@ class RequestedFlow(object):
 AllowanceInfo = namedtuple("AllowanceInfo", ["text", "title"])
 
 
+class NetworkObjectSearchTypes(Enum):
+    """Enum used for :py:meth:`~algosec.api_clients.BusinessFlowAPIClient.search_network_objects`"""
+    INTERSECT = "INTERSECT"
+    CONTAINED = "CONTAINED"
+    CONTAINING = "CONTAINING"
+    EXACT = "EXACT"
+
+
 class DeviceAllowanceState(Enum):
     """Used for the query in IsTrafficAllowedCheck to identify state of each device"""
     PARTIALLY_BLOCKED = AllowanceInfo("Partially Blocked", "Partially blocking devices")
@@ -182,7 +193,12 @@ ChangeRequestActionInfo = namedtuple("ChangeRequestActionInfo", ["api_value", "t
 
 
 class ChangeRequestAction(Enum):
-    """This object is representing whether the CR we are creating is ALLOW or DROP"""
+    """This object is representing whether the CR we are creating is ALLOW or DROP
+
+    Attributes:
+        ALLOW: This option will mark the change request to allow the requested traffic
+        DROP: This option will mark the change request to block the requested traffic
+    """
     ALLOW = ChangeRequestActionInfo("1", "allow")
     DROP = ChangeRequestActionInfo("0", "drop")
 

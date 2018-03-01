@@ -23,7 +23,21 @@ FirewallAnalyzer API Client
 
 
 FireFlow API Client
------------------------
+-------------------
 
 .. autoclass:: FireFlowAPIClient
+    :members:
+
+
+Models and Constants
+--------------------
+
+.. automodule:: algosec.models
+    :members:
+    :exclude-members: AllowanceInfo, ChangeRequestActionInfo
+
+
+Exceptions and Errors
+---------------------
+.. automodule:: algosec.errors
     :members:

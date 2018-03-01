@@ -6,3 +6,5 @@ build
 dist
 .eggs
 _build
+_static
+_templates
