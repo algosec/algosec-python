@@ -57,6 +57,7 @@ class RequestedFlow(object):
 
         self._normalize_network_services()
 
+    # TODO: Could be removed when all of the issues with case sensitivity are cleared on the BusinessFlow API
     def _normalize_network_services(self):
         # A new list to store normalized network services names. proto/port definition are made capital case
         # Currently AlgoSec servers support only uppercase protocol names across the board
@@ -113,6 +114,11 @@ class RequestedFlow(object):
         return network_objects_to_containing_object_ids
 
     def get_json_flow_definition(self):
+        """Return a dict object representing a NewFlow as expected by the API.
+
+        Returns:
+            dict: NewFlow object.
+        """
         return dict(
             type=self.type,
             name=self.name,
@@ -125,9 +131,9 @@ class RequestedFlow(object):
             custom_fields=self.custom_fields,
         )
 
-    def populate(self, abf_client):
-        """
-        Populate the mappings and normalization objects based on the AlgoSec APIs
+    # TODO: Remove this method, and the rest of the "is flow contained" logic.
+    def _populate(self, abf_client):
+        """Populate the mappings and normalization objects based on the AlgoSec APIs
 
         :param BusinessFlowAPIClient abf_client:
         """
@@ -169,7 +175,15 @@ class NetworkObjectSearchTypes(Enum):
 
 
 class DeviceAllowanceState(Enum):
-    """Used for the query in IsTrafficAllowedCheck to identify state of each device"""
+    """Enum representing different device allowance states as defined on BusinessFlow.
+
+    Attributes:
+        PARTIALLY_BLOCKED:
+        BLOCKED:
+        ALLOWED:
+        NOT_ROUTED:
+
+    """
     PARTIALLY_BLOCKED = AllowanceInfo("Partially Blocked", "Partially blocking devices")
     BLOCKED = AllowanceInfo("Blocked", "Blocking devices")
     ALLOWED = AllowanceInfo("Allowed", "Allowed devices")
@@ -177,6 +191,18 @@ class DeviceAllowanceState(Enum):
 
     @classmethod
     def from_string(cls, string):
+        """Return an enum corresponding to the given string.
+
+        Example:
+            ::
+                DeviceAllowanceState.from_string("Blocked") # Returns ``DeviceAllowanceState.BLOCKED``
+
+        Raises:
+            UnrecognizedAllowanceState: If the given string could not be matched to any of the enum members.
+
+        Returns:
+            DeviceAllowanceState: The relevant enum matching the given string.
+        """
         if string.lower().startswith('partially'):
             return cls.PARTIALLY_BLOCKED
         elif string.lower().startswith('blocked'):
@@ -193,17 +219,27 @@ ChangeRequestActionInfo = namedtuple("ChangeRequestActionInfo", ["api_value", "t
 
 
 class ChangeRequestAction(Enum):
-    """This object is representing whether the CR we are creating is ALLOW or DROP
+    """Enum representing a change request expected action.
 
     Attributes:
-        ALLOW: This option will mark the change request to allow the requested traffic
-        DROP: This option will mark the change request to block the requested traffic
+        ALLOW: This enum will mark the change request to allow the requested traffic
+        DROP: This enum will mark the change request to block the requested traffic
     """
     ALLOW = ChangeRequestActionInfo("1", "allow")
     DROP = ChangeRequestActionInfo("0", "drop")
 
 
 class NetworkObjectType(Enum):
+    """Enum representing a ``NetworkObject`` type as defined on the API Guide.
+
+    Used by various API clients to communicate with the AlgoSec servers.
+
+    Attributes:
+        HOST:
+        RANGE:
+        GROUP:
+        ABSTRACT:
+    """
     HOST = "Host"
     RANGE = "Range"
     # Currently not supported by "create_network_object" on ABF client
