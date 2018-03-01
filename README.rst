@@ -58,7 +58,7 @@ To run the unittests run::
 
 
 Deploying To PyPi
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
 
 Run::
 
