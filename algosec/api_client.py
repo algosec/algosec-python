@@ -641,6 +641,7 @@ class FireFlowAPIClient(SoapAPIClient):
             sources,
             destinations,
             services,
+            template,
             description="",
     ):
         """Create a new change request.
@@ -669,6 +670,8 @@ class FireFlowAPIClient(SoapAPIClient):
         ticket.description = description
         ticket.requestor = '{} {}'.format(requestor_name, email)
         ticket.subject = subject
+        if (template !='Basic'):
+            ticket.template= template
 
         traffic_line = self.client.factory.create('trafficLine')
 
