@@ -642,6 +642,7 @@ class FireFlowAPIClient(SoapAPIClient):
             destinations,
             services,
             description="",
+            template=None,
     ):
         """Create a new change request.
 
@@ -656,6 +657,8 @@ class FireFlowAPIClient(SoapAPIClient):
             services (list[str]): List of services which describe the type of traffic. Each service could be a service
                 name as defined on AlgoSec servers or just a proto/port pair. (e.g. ssh, http, tcp/50, udp/700)
             description (str): description for the ticket, will be shown on FireFlow.
+            template (str): When different than None, this template will be passed on to FireFlow to be used
+                as the template for the new change requets.
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If change request creation failed.
@@ -669,6 +672,8 @@ class FireFlowAPIClient(SoapAPIClient):
         ticket.description = description
         ticket.requestor = '{} {}'.format(requestor_name, email)
         ticket.subject = subject
+        if template is not None:
+            ticket.template = template
 
         traffic_line = self.client.factory.create('trafficLine')
 
