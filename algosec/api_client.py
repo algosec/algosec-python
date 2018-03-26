@@ -329,7 +329,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             :class:`~algosec.errors.AlgoSecAPIError`: If the network object creation failed.
 
         Returns:
-            dict: The newly create ExistingNetworkObject object.
+            dict: The newly created ExistingNetworkObject object.
         """
         response = self.session.post(
             "{}/new".format(self.network_objects_base_url),
