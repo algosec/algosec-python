@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to AlgoSec Python SDK documentation!
-===================================
+============================================
 
 .. toctree::
    :maxdepth: 2
