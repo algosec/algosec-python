@@ -239,10 +239,10 @@ class NetworkObjectType(Enum):
     Used by various API clients to communicate with the AlgoSec servers.
 
     Attributes:
-        HOST:
-        RANGE:
-        GROUP:
-        ABSTRACT:
+        HOST: Denotes an object that is defined by it's IP address.
+        RANGE: Denotes an object that is defined by an IP range or CIDR.
+        GROUP: Denotes an object that is defined by a list of ExistingNetworkObject or NewNetworkObject objects.
+        ABSTRACT: Denotes an object that is devoid of any particular definition. Defined with empty content.
     """
     HOST = "Host"
     RANGE = "Range"

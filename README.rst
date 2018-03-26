@@ -39,6 +39,26 @@ Contribution
 
 Contributions are welcome! Please follow the standard pull request process.
 
+Documentation
+-------------
+
+.. image:: https://readthedocs.org/projects/algosec-python/badge/
+   :target: https://algosec-python.readthedocs.io/en/latest/
+   :alt: Documentation Status
+
+
+Documentation available online at: https://algosec-python.readthedocs.io/en/latest/
+
+How to build doc's locally?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using Spinx::
+
+    $ cd docs
+    $ make html
+
+Then see the ``docs/_build`` folder created for the html files.
+
 Developing
 ----------
 

@@ -315,15 +315,21 @@ class BusinessFlowAPIClient(RESTAPIClient):
         """Create a new network object.
 
         Args:
-            type (algosec.modiles.NetworkObjectType): The network object type
-            content (str): The IP address, Range or CIDR of the object.
+            type (algosec.models.NetworkObjectType): The network object type
+            content (str): Define the newly created network object. Content depend upon the selected type:
+
+                - :class:`~algosec.models.NetworkObjectType.HOST`: Content is the IP address of the object.
+                - :class:`~algosec.models.NetworkObjectType.RANGE`: Content is IP range or CIDR.
+                - :class:`~algosec.models.NetworkObjectType.GROUP`: Content is a list of *ExistingNetworkObject* or
+                    *NewNetworkObject* objects as defined in the API Guide.
+                - :class:`~algosec.models.NetworkObjectType.ABSTRACT`: Content is None or an empty string.
             name (str): Name of the new network object
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If the network object creation failed.
 
         Returns:
-            dict: The newly create NetworkObject object.
+            dict: The newly created ExistingNetworkObject object.
         """
         response = self.session.post(
             "{}/new".format(self.network_objects_base_url),
