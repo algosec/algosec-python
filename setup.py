@@ -37,6 +37,7 @@ setup(
     install_requires=[
         "requests",
         "enum",
+        "suds-jurko",
         "suds_requests",
         "ipaddress",
     ],
