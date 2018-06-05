@@ -62,13 +62,9 @@ Then see the ``docs/_build`` folder created for the html files.
 Developing
 ----------
 
-To setup the project for local development, make sure you have a Python 2.7 virtualenv setup::
+To install the package for local development just run::
 
-    mkvirtualenv --python=python2.7 algobotframeworkenv -a .
-
-and then to install the package run::
-
-    pip install -e .
+   pipenv install
 
 This will install all the dependencies and set the project up for local usage and development .
 
