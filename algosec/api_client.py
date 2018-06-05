@@ -316,7 +316,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
         Args:
             type (algosec.models.NetworkObjectType): The network object type
-            content (str): Define the newly created network object. Content depend upon the selected type:
+            content (str|list): Define the newly created network object. Content depend upon the selected type:
 
                 - :class:`~algosec.models.NetworkObjectType.HOST`: Content is the IP address of the object.
                 - :class:`~algosec.models.NetworkObjectType.RANGE`: Content is IP range or CIDR.
@@ -435,7 +435,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
         """
         response = self.session.get("{}/{}/flows".format(self.applications_base_url, app_revision_id))
         self._check_api_response(response)
-        return [app for app in response.json() if app["flowType"] == "APPLICATION_FLOW"]
+        return [flow for flow in response.json() if flow["flowType"] == "APPLICATION_FLOW"]
 
     def get_flow_connectivity(self, app_revision_id, flow_id):
         """Return a flow connectivity object for a flow given its ID.
@@ -481,7 +481,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
         """Create an application flow.
 
         Args:
-            app_revision_id (str): The application revision id as defined on ABF to create this flow on
+            app_revision_id (int): The application revision id as defined on ABF to create this flow on
             requested_flow(algosec.models.RequestedFlow): The flow to be created
             retry_for_missing_services (bool):
 
@@ -504,11 +504,11 @@ class BusinessFlowAPIClient(RESTAPIClient):
         except AlgoSecAPIError as api_error:
             # Handling the case when the failure is due to missing network_services from ABF
             # This code will try to create them and re-call this function again with retry=False
-            # to make sure we are not getting into an inifinte look
+            # to make sure we are not getting into an infinite look
             if not retry_for_missing_services:
                 raise
 
-            # Filter all of the cases where we are unable to recognize the readon for the failure
+            # Filter all of the cases where we are unable to recognize the reason for the failure
             if any([
                         api_error.response is None,
                         api_error.response_json is None,
@@ -533,7 +533,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
                 retry_for_missing_services=False
             )
 
-        return response.json()
+        return response.json()[0]
 
     def apply_application_draft(self, revision_id):
         """Apply an application draft and automatically create a FireFlow change request.
