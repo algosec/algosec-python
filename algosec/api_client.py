@@ -159,7 +159,6 @@ class BusinessFlowAPIClient(RESTAPIClient):
         session.verify = self.verify_ssl
         response = session.get(url, auth=(self.user, self.password))
         if response.status_code == httplib.OK:
-            session.cookies.update({"JSESSIONID": response.json().get('jsessionid')})
             return session
         else:
             raise AlgoSecLoginError(
