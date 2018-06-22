@@ -59,21 +59,6 @@ class RequestedFlow(object):
         self.destination_to_containing_object_ids = {}
         self.aggregated_network_services = set()
 
-        self._normalize_network_services()
-
-    # TODO: Could be removed when all of the issues with case sensitivity are cleared on the BusinessFlow API
-    def _normalize_network_services(self):
-        # A new list to store normalized network services names. proto/port definition are made capital case
-        # Currently AlgoSec servers support only uppercase protocol names across the board
-        # For example: Trying to create a flow with service "tcp/54" will fail if there is only service named "TCP/54"
-        # But then creating the exact same service "tcp/54" will give an exception that the service already exists
-        normalized_network_services = []
-        for service in self.network_services:
-            if LiteralService.is_protocol_string(service):
-                service = service.upper()
-            normalized_network_services.append(service)
-        self.network_services = normalized_network_services
-
     def _api_named_object(self, lst):
         """
         ABF expect to get most simple objects as a dict pointing to their name
