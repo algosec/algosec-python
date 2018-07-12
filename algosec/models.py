@@ -234,3 +234,22 @@ class NetworkObjectType(Enum):
     # Currently not supported by "create_network_object" on ABF client
     GROUP = "Group"
     ABSTRACT = ""
+
+
+class ChangeRequestTrafficLine(object):
+    def __init__(self, action, sources, destinations, services):
+        """
+        Represent a traffic line while creating a change request by the api client.
+
+        Args:
+            action (algosec.models.ChangeRequestAction): action requested by this traffic line
+                to allow or drop traffic.
+            sources (list[str]): List of IP address representing the source of the traffic.
+            destinations (list[str]): List of IP address representing the destination of the traffic.
+            services (list[str]): List of services which describe the type of traffic. Each service could be a service
+                name as defined on AlgoSec servers or just a proto/port pair. (e.g. ssh, http, tcp/50, udp/700)
+        """
+        self.action = action
+        self.sources = sources
+        self.destinations = destinations
+        self.services = services

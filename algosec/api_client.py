@@ -666,28 +666,21 @@ class FireFlowAPIClient(SoapAPIClient):
 
     def create_change_request(
             self,
-            action,
             subject,
             requestor_name,
             email,
-            sources,
-            destinations,
-            services,
+            traffic_lines,
             description="",
             template=None,
     ):
         """Create a new change request.
 
         Args:
-            action (algosec.models.ChangeRequestAction): action requested by this Change Request
-                to allow or drop traffic.
             subject (str): The ticket subject, will be shown on FireFlow.
             requestor_name (str): The ticket creator name, will be shown on FireFlow.
             email (str): The email address of the requestor.
-            sources (list[str]): List of IP address representing the source of the traffic.
-            destinations (list[str]): List of IP address representing the destination of the traffic.
-            services (list[str]): List of services which describe the type of traffic. Each service could be a service
-                name as defined on AlgoSec servers or just a proto/port pair. (e.g. ssh, http, tcp/50, udp/700)
+            traffic_lines (list[algosec.models.ChangeRequestTrafficLine]): List of traffic lines each describing its
+                sources, destinations and services.
             description (str): description for the ticket, will be shown on FireFlow.
             template (str): When different than None, this template will be passed on to FireFlow to be used
                 as the template for the new change requets.
@@ -707,25 +700,27 @@ class FireFlowAPIClient(SoapAPIClient):
         if template is not None:
             ticket.template = template
 
-        traffic_line = self.client.factory.create('trafficLine')
+        for traffic_line in traffic_lines:
+            soap_traffic_line = self.client.factory.create('trafficLine')
 
-        for source in sources:
-            traffic_address = self.client.factory.create('trafficAddress')
-            traffic_address.address = source
-            traffic_line.trafficSource.append(traffic_address)
+            soap_traffic_line.action = traffic_line.action.value.api_value
 
-        for dest in destinations:
-            traffic_address = self.client.factory.create('trafficAddress')
-            traffic_address.address = dest
-            traffic_line.trafficDestination.append(traffic_address)
+            for source in traffic_line.sources:
+                traffic_address = self.client.factory.create('trafficAddress')
+                traffic_address.address = source
+                soap_traffic_line.trafficSource.append(traffic_address)
 
-        for service in services:
-            traffic_service = self.client.factory.create('trafficService')
-            traffic_service.service = service
-            traffic_line.trafficService.append(traffic_service)
+            for dest in traffic_line.destinations:
+                traffic_address = self.client.factory.create('trafficAddress')
+                traffic_address.address = dest
+                soap_traffic_line.trafficDestination.append(traffic_address)
 
-        traffic_line.action = action.value.api_value
-        ticket.trafficLines.append(traffic_line)
+            for service in traffic_line.services:
+                traffic_service = self.client.factory.create('trafficService')
+                traffic_service.service = service
+                soap_traffic_line.trafficService.append(traffic_service)
+
+            ticket.trafficLines.append(soap_traffic_line)
 
         # Actually create the ticket
         try:
