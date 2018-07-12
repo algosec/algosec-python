@@ -76,7 +76,6 @@ pygments_style = 'sphinx'
 # -- Options for HTML output -------------------------------------------------
 
 # Check if building documentation on RTD
-import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

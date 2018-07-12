@@ -32,8 +32,8 @@ class IsIncludedInFlowComparisonLogic(FlowComparisonLogic):
          The class is used statically with no need to initiate it.
     """
     @staticmethod
-    def _are_sources_included_in_flow(sourcs_to_containing_object_ids, network_flow):
-        existing_source_object_ids = {obj["objectID"] for obj in network_flow["sources"]}
+    def _are_sources_included_in_flow(sourcs_to_containing_object_ids, server_flow_sources):
+        existing_source_object_ids = {obj["objectID"] for obj in server_flow_sources}
 
         return all(
             containing_object_ids.intersection(existing_source_object_ids)
@@ -41,8 +41,8 @@ class IsIncludedInFlowComparisonLogic(FlowComparisonLogic):
         )
 
     @staticmethod
-    def _are_destinations_included_in_flow(destinations_to_containing_object_ids, network_flow):
-        existing_destination_object_ids = {obj["objectID"] for obj in network_flow["destinations"]}
+    def _are_destinations_included_in_flow(destinations_to_containing_object_ids, server_flow_destinations):
+        existing_destination_object_ids = {obj["objectID"] for obj in server_flow_destinations}
 
         return all(
             containing_object_ids.intersection(existing_destination_object_ids)
@@ -50,12 +50,12 @@ class IsIncludedInFlowComparisonLogic(FlowComparisonLogic):
         )
 
     @staticmethod
-    def _are_network_services_included_in_flow(current_network_services, network_flow):
+    def _are_network_services_included_in_flow(current_network_services, server_flow_services):
         # Mark all of the services that are allowed for all ports with an asterisk
         allowed_protocols = set()
 
         aggregated_flow_network_services = set()
-        for network_service in network_flow["services"]:
+        for network_service in server_flow_services:
             for service_str in network_service["services"]:
                 service = LiteralService(service_str)
                 aggregated_flow_network_services.add(service)
@@ -75,31 +75,31 @@ class IsIncludedInFlowComparisonLogic(FlowComparisonLogic):
         return services_to_check.issubset(aggregated_flow_network_services)
 
     @staticmethod
-    def _are_network_applications_included_in_flow(network_applications, network_flow):
-        if network_flow["networkApplications"] == [ANY_NETWORK_APPLICATION]:
+    def _are_network_applications_included_in_flow(network_applications, server_flow_apps):
+        if server_flow_apps in ([ANY_NETWORK_APPLICATION], []):
             return True
 
         flow_applications = [
             network_application["name"]
-            for network_application in network_flow["networkApplications"]
+            for network_application in server_flow_apps
         ]
 
         return set(network_applications).issubset(flow_applications)
 
     @staticmethod
-    def _are_network_users_included_in_flow(network_users, network_flow):
-        if network_flow["networkUsers"] == [ANY_OBJECT]:
+    def _are_network_users_included_in_flow(network_users, server_flow_users):
+        if server_flow_users in ([ANY_OBJECT], []):
             return True
 
         flow_users = [
             network_user["name"]
-            for network_user in network_flow["networkUsers"]
+            for network_user in server_flow_users
         ]
 
         return set(network_users).issubset(flow_users)
 
     @classmethod
-    def is_included(cls, requested_flow, existing_network_flow):
+    def is_included(cls, requested_flow, server_flow):
         """Return True a RequestedFlow is contained within an existing flow from BusinessFlow.
 
         For each source, destination, user, network_application and service check if that it is contained within
@@ -115,26 +115,26 @@ class IsIncludedInFlowComparisonLogic(FlowComparisonLogic):
 
         Args:
             requested_flow (algosec.models.RequestedFlow): The flow we check if included in the other.
-            existing_network_flow (dict): An existing flow from BusinessFlow as a dict object.
+            server_flow (dict): An existing flow from BusinessFlow as a dict object.
 
         Returns:
             bool: If the requeted_flow is included within the existing_network_flow
         """
         return all([
             cls._are_sources_included_in_flow(
-                requested_flow.source_to_containing_object_ids, existing_network_flow
+                requested_flow.source_to_containing_object_ids, server_flow['sources']
             ),
             cls._are_destinations_included_in_flow(
-                requested_flow.destination_to_containing_object_ids, existing_network_flow
+                requested_flow.destination_to_containing_object_ids, server_flow['destinations']
             ),
             cls._are_network_services_included_in_flow(
-                requested_flow.aggregated_network_services, existing_network_flow
+                requested_flow.aggregated_network_services, server_flow['services']
             ),
             cls._are_network_applications_included_in_flow(
-                requested_flow.network_applications, existing_network_flow
+                requested_flow.network_applications, server_flow.get('networkApplications', [])
             ),
             cls._are_network_users_included_in_flow(
-                requested_flow.network_users, existing_network_flow
+                requested_flow.network_users, server_flow.get('networkUsers', [])
             ),
         ])
 
@@ -149,46 +149,46 @@ class IsEqualToFlowComparisonLogic(FlowComparisonLogic):
      The class is used statically with no need to initiate it.
     """
     @staticmethod
-    def _are_sources_equal_in_flow(source_object_names, network_flow):
-        network_flow_source_object_names = {obj["name"] for obj in network_flow["sources"]}
+    def _are_sources_equal_in_flow(source_object_names, server_flow_sources):
+        network_flow_source_object_names = {obj["name"] for obj in server_flow_sources}
         return set(source_object_names) == set(network_flow_source_object_names)
 
     @staticmethod
-    def _are_destinations_equal_in_flow(destination_object_names, network_flow):
-        network_flow_destination_object_names = {obj["name"] for obj in network_flow["destinations"]}
+    def _are_destinations_equal_in_flow(destination_object_names, server_flow_destinations):
+        network_flow_destination_object_names = {obj["name"] for obj in server_flow_destinations}
         return set(destination_object_names) == set(network_flow_destination_object_names)
 
     @staticmethod
-    def _are_network_services_equal_in_flow(network_service_names, network_flow):
-        network_flow_service_names = {obj["name"] for obj in network_flow["services"]}
+    def _are_network_services_equal_in_flow(network_service_names, server_flow_services):
+        network_flow_service_names = {obj["name"] for obj in server_flow_services}
         return set(network_service_names) == set(network_flow_service_names)
 
     @staticmethod
     def _are_network_applications_equal_in_flow(network_application_names, network_flow):
-        if network_flow["networkApplications"] == [ANY_NETWORK_APPLICATION]:
+        if network_flow in ([ANY_NETWORK_APPLICATION], []):
             return network_application_names == []
 
         flow_application_names = [
             network_application["name"]
-            for network_application in network_flow["networkApplications"]
+            for network_application in network_flow
         ]
 
         return set(network_application_names) == set(flow_application_names)
 
     @staticmethod
     def _are_network_users_equal_in_flow(network_users, network_flow):
-        if network_flow["networkUsers"] == [ANY_OBJECT]:
+        if network_flow in ([ANY_OBJECT], []):
             return network_users == []
 
         flow_users = [
             network_user["name"]
-            for network_user in network_flow["networkUsers"]
+            for network_user in network_flow
         ]
 
         return set(network_users) == set(flow_users)
 
     @classmethod
-    def is_equal(cls, requested_flow, existing_network_flow):
+    def is_equal(cls, requested_flow, flow_from_server):
         """Return True if a RequestedFlow is equal to an existing flow from BusinessFlow.
 
         For each source, destination, user, network_application and service check if that it is equal to
@@ -197,15 +197,30 @@ class IsEqualToFlowComparisonLogic(FlowComparisonLogic):
 
         Args:
             requested_flow (algosec.models.RequestedFlow): The new flow to check if included in the existing flow.
-            existing_network_flow (dict): The existing flow from BusinessFlow.
+            flow_from_server (dict): The existing flow from BusinessFlow.
 
         Returns:
             bool:  True if the requested flow is equal to the existing flow.
         """
         return all([
-            cls._are_sources_equal_in_flow(requested_flow.sources, existing_network_flow),
-            cls._are_destinations_equal_in_flow(requested_flow.destinations, existing_network_flow),
-            cls._are_network_services_equal_in_flow(requested_flow.network_services, existing_network_flow),
-            cls._are_network_applications_equal_in_flow(requested_flow.network_applications, existing_network_flow),
-            cls._are_network_users_equal_in_flow(requested_flow.network_users, existing_network_flow),
+            cls._are_sources_equal_in_flow(
+                requested_flow.sources,
+                flow_from_server['sources'],
+            ),
+            cls._are_destinations_equal_in_flow(
+                requested_flow.destinations,
+                flow_from_server['destinations'],
+            ),
+            cls._are_network_services_equal_in_flow(
+                requested_flow.network_services,
+                flow_from_server['services'],
+            ),
+            cls._are_network_applications_equal_in_flow(
+                requested_flow.network_applications,
+                flow_from_server.get('networkApplications', []),
+            ),
+            cls._are_network_users_equal_in_flow(
+                requested_flow.network_users,
+                flow_from_server.get('networkUsers', []),
+            ),
         ])

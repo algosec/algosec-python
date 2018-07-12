@@ -59,6 +59,7 @@ class APIClient(object):
     Note:
         This class is intended to be inherited. It should not be initiated or used directly in your code.
     """
+
     def __init__(self, server_ip, user, password, verify_ssl=True):
         super(APIClient, self).__init__()
         self.server_ip = server_ip
@@ -198,7 +199,11 @@ class BusinessFlowAPIClient(RESTAPIClient):
             dict: NetworkObject as defined on the API Guide.
 
         """
-        response = self.session.get("{}/service_name/{}".format(self.network_services_base_url, quote_plus(service_name)))
+        response = self.session.get(
+            "{}/service_name/{}".format(
+                self.network_services_base_url, quote_plus(service_name)
+            )
+        )
         self._check_api_response(response)
         return response.json()
 
@@ -279,9 +284,11 @@ class BusinessFlowAPIClient(RESTAPIClient):
         # TODO: This check is being performed as currently the ABF api return weird response when no objects found
         # TODO: Should be removed once the API is fixed to return an empty list when no object are found
         if not isinstance(response.json(), list):
-            logger.warning("search_network_objects: unsupported api response. Return empty result. (reponse: {})".format(
-                response.json()
-            ))
+            logger.warning(
+                "search_network_objects: unsupported api response. Return empty result. (reponse: {})".format(
+                    response.json()
+                )
+            )
             return []
         return response.json()
 
@@ -341,7 +348,8 @@ class BusinessFlowAPIClient(RESTAPIClient):
         """Create network objects if they are not already defined on the server.
 
         Args:
-            all_network_objects (collections.Iterable[str]): List of the network objects to create if missing from the server.
+            all_network_objects (collections.Iterable[str]): List of the network objects to create if
+                missing from the server.
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If the one of the network objects creation failed.
@@ -353,12 +361,19 @@ class BusinessFlowAPIClient(RESTAPIClient):
             If one of the given objects is not a valid IP address or subnet string, the object won't be created.
         """
         # Calculate which network objects we need to create before creating the flow
-        objects_missing_for_algosec = [
-            obj for obj in all_network_objects
-            if is_ip_or_subnet(obj) and not self.search_network_objects(obj, NetworkObjectSearchTypes.EXACT)
-        ]
+        objects_missing_from_algosec = []
+        for obj in all_network_objects:
+            if not is_ip_or_subnet(obj):
+                continue
+            search_objects = self.search_network_objects(obj, NetworkObjectSearchTypes.EXACT)
+            if not search_objects:
+                continue
+            object_names = [search_object.get('name') for search_object in search_objects]
+            if obj not in object_names:
+                objects_missing_from_algosec.append(obj)
+
         created_objects = []
-        for obj in objects_missing_for_algosec:
+        for obj in objects_missing_from_algosec:
             created_object = self.create_network_object(NetworkObjectType.HOST, obj, obj)
             created_objects.append(created_object)
 
@@ -372,7 +387,8 @@ class BusinessFlowAPIClient(RESTAPIClient):
             flow_name (str): The name of the flow to fetch.
 
         Raises:
-            :class:`~algosec.errors.AlgoSecAPIError`: If fetching the full list of flows for the application revision failed
+            :class:`~algosec.errors.AlgoSecAPIError`: If fetching the full list of flows for the application
+                revision failed
             :class:`~algosec.errors.EmptyFlowSearch`: If no flow matching that name could be found
 
         Returns:
@@ -476,13 +492,20 @@ class BusinessFlowAPIClient(RESTAPIClient):
             for flow in self.get_application_flows(app_revision_id)
         )
 
-    def create_application_flow(self, app_revision_id, requested_flow, retry_for_missing_services=True):
+    def create_application_flow(
+            self,
+            app_revision_id,
+            requested_flow,
+            retry_for_missing_services=True,
+            create_missing_objects=True,
+    ):
         """Create an application flow.
 
         Args:
             app_revision_id (int): The application revision id as defined on ABF to create this flow on
             requested_flow(algosec.models.RequestedFlow): The flow to be created
-            retry_for_missing_services (bool):
+            retry_for_missing_services (bool): Missing services are create in AlgoSec if True. Defaults to True.
+            create_missing_objects (bool): Missing objects are created in AlgoSec if True. Defaults to True.
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If application flow creation failed.
@@ -490,8 +513,9 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             dict: An Application object as defined in the API Guide.
         """
-        all_network_objects = chain(requested_flow.destinations, requested_flow.sources)
-        self.create_missing_network_objects(all_network_objects)
+        if create_missing_objects:
+            all_network_objects = set(chain(requested_flow.destinations, requested_flow.sources))
+            self.create_missing_network_objects(all_network_objects)
 
         response = self.session.post(
             "{}/{}/flows/new".format(self.applications_base_url, app_revision_id),
@@ -509,10 +533,10 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
             # Filter all of the cases where we are unable to recognize the reason for the failure
             if any([
-                        api_error.response is None,
-                        api_error.response_json is None,
-                        type(api_error.response_json) != list,
-                        api_error.response.status_code != BAD_REQUEST,
+                api_error.response is None,
+                api_error.response_json is None,
+                type(api_error.response_json) != list,
+                api_error.response.status_code != BAD_REQUEST,
             ]):
                 raise
 
@@ -529,7 +553,8 @@ class BusinessFlowAPIClient(RESTAPIClient):
             return self.create_application_flow(
                 app_revision_id=app_revision_id,
                 requested_flow=requested_flow,
-                retry_for_missing_services=False
+                retry_for_missing_services=False,
+                create_missing_objects=False,
             )
 
         return response.json()[0]
@@ -556,6 +581,7 @@ class SoapAPIClient(APIClient):
     Note:
         This class should not be used directly but rather inherited to implement any new SOAP API clients.
     """
+
     def __init__(self, server_ip, user, password, verify_ssl=True):
         super(SoapAPIClient, self).__init__(server_ip, user, password, verify_ssl)
         self._client = None
@@ -612,6 +638,7 @@ class FireFlowAPIClient(SoapAPIClient):
             client = FireFlowAPIClient(ip, username, password)
             change_request = client.get_change_request_by_id(change_request_id)
     """
+
     @property
     def _wsdl_url_path(self):
         return "https://{}/WebServices/FireFlow.wsdl".format(self.server_ip)
@@ -639,28 +666,21 @@ class FireFlowAPIClient(SoapAPIClient):
 
     def create_change_request(
             self,
-            action,
             subject,
             requestor_name,
             email,
-            sources,
-            destinations,
-            services,
+            traffic_lines,
             description="",
             template=None,
     ):
         """Create a new change request.
 
         Args:
-            action (algosec.models.ChangeRequestAction): action requested by this Change Request
-                to allow or drop traffic.
             subject (str): The ticket subject, will be shown on FireFlow.
             requestor_name (str): The ticket creator name, will be shown on FireFlow.
             email (str): The email address of the requestor.
-            sources (list[str]): List of IP address representing the source of the traffic.
-            destinations (list[str]): List of IP address representing the destination of the traffic.
-            services (list[str]): List of services which describe the type of traffic. Each service could be a service
-                name as defined on AlgoSec servers or just a proto/port pair. (e.g. ssh, http, tcp/50, udp/700)
+            traffic_lines (list[algosec.models.ChangeRequestTrafficLine]): List of traffic lines each describing its
+                sources, destinations and services.
             description (str): description for the ticket, will be shown on FireFlow.
             template (str): When different than None, this template will be passed on to FireFlow to be used
                 as the template for the new change requets.
@@ -680,25 +700,27 @@ class FireFlowAPIClient(SoapAPIClient):
         if template is not None:
             ticket.template = template
 
-        traffic_line = self.client.factory.create('trafficLine')
+        for traffic_line in traffic_lines:
+            soap_traffic_line = self.client.factory.create('trafficLine')
 
-        for source in sources:
-            traffic_address = self.client.factory.create('trafficAddress')
-            traffic_address.address = source
-            traffic_line.trafficSource.append(traffic_address)
+            soap_traffic_line.action = traffic_line.action.value.api_value
 
-        for dest in destinations:
-            traffic_address = self.client.factory.create('trafficAddress')
-            traffic_address.address = dest
-            traffic_line.trafficDestination.append(traffic_address)
+            for source in traffic_line.sources:
+                traffic_address = self.client.factory.create('trafficAddress')
+                traffic_address.address = source
+                soap_traffic_line.trafficSource.append(traffic_address)
 
-        for service in services:
-            traffic_service = self.client.factory.create('trafficService')
-            traffic_service.service = service
-            traffic_line.trafficService.append(traffic_service)
+            for dest in traffic_line.destinations:
+                traffic_address = self.client.factory.create('trafficAddress')
+                traffic_address.address = dest
+                soap_traffic_line.trafficDestination.append(traffic_address)
 
-        traffic_line.action = action.value.api_value
-        ticket.trafficLines.append(traffic_line)
+            for service in traffic_line.services:
+                traffic_service = self.client.factory.create('trafficService')
+                traffic_service.service = service
+                soap_traffic_line.trafficService.append(traffic_service)
+
+            ticket.trafficLines.append(soap_traffic_line)
 
         # Actually create the ticket
         try:
@@ -718,8 +740,8 @@ class FireFlowAPIClient(SoapAPIClient):
             change_request_id: The ID of the change request to fetch.
 
         Raises:
-            :class:`~algosec.errors.AlgoSecAPIError`: If the change request was not found on the server or another error occurred while
-                fetching the change request.
+            :class:`~algosec.errors.AlgoSecAPIError`: If the change request was not found on the server or another
+                error occurred while fetching the change request.
 
         Returns:
             The change request ticket object.
@@ -756,6 +778,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
                 service
             )
     """
+
     @property
     def _wsdl_url_path(self):
         return "https://{}/AFA/php/ws.php?wsdl".format(self.server_ip)
@@ -812,7 +835,8 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             service (str): Service of the simulated traffic (e.g: tcp/200, http)
 
         Raises:
-            :class:`~algosec.errors.AlgoSecAPIError`: If any error occurred while executing the traffic simulation query.
+            :class:`~algosec.errors.AlgoSecAPIError`: If any error occurred while executing the traffic
+                simulation query.
 
         Returns:
             algosec.models.DeviceAllowanceState: Traffic simulation query result.
