@@ -10,6 +10,10 @@ name = "pypi"
 ipython = "*"
 "flake8" = "*"
 ipdb = "*"
+twine = "*"
+nose = "*"
+mock = "*"
+pyhamcrest = "*"
 
 [requires]
 python_version = "2.7"
