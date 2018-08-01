@@ -8,7 +8,7 @@ with open("README.rst") as f:
 
 setup(
     name="algosec",
-    version="0.9.0",
+    version="0.9.1",
     packages=["algosec"],
     url="https://github.com/algosec/algosec-python",
     license="MIT",
@@ -16,7 +16,6 @@ setup(
     author_email="support@algosec.com",
     description="The AlgoSec SDK for Python",
     long_description=long_description,
-    # TODO: Check how those arguments are shown on PYPI
     keywords="algosec businessflow fireflow firewallanalyzer security policy management network security",
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -36,7 +35,7 @@ setup(
     ],
     install_requires=[
         "requests",
-        "enum",
+        "enum34",
         "suds-jurko",
         "suds_requests",
         "ipaddress",
