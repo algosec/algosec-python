@@ -1,14 +1,41 @@
 ==================
 AlgoSec Python SDK
 ==================
-.. image:: https://img.shields.io/pypi/v/algosec.svg
+
+.. start-badges
+
+.. list-table::
+    :stub-columns: 1
+
+    * - docs
+      - |docs|
+    * - tests
+      - | |travis| |coverage|
+    * - package
+      - | |version| |wheel| |supported-versions|
+
+
+.. |version| image:: https://img.shields.io/pypi/v/algosec.svg
    :target: https://pypi.python.org/pypi/algosec
    :alt: Package on PyPi
 
-.. image:: https://readthedocs.org/projects/algosec-python/badge/
+.. |docs| image:: https://readthedocs.org/projects/algosec-python/badge/
    :target: http://algosec-python.readthedocs.io/en/latest/
    :alt: Documentation Status
 
+.. |coverage| image:: https://coveralls.io/repos/github/algosec/algosec-python/badge.svg?branch=master
+    :target: https://coveralls.io/github/algosec/algosec-python?branch=unittest-cov
+
+.. |travis| image:: https://travis-ci.org/algosec/algosec-python.svg?branch=master
+    :target: https://travis-ci.org/algosec/algosec-python
+
+.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/algosec.svg
+    :alt: Supported versions
+    :target: https://pypi.python.org/pypi/algosec
+
+.. |wheel| image:: https://img.shields.io/pypi/wheel/algosec.svg
+    :alt: PyPI Wheel
+    :target: https://pypi.python.org/pypi/algosec
 
 
 A Python SDK providing simple access to AlgoSec APIs, including handy methods
