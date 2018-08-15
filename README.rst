@@ -10,10 +10,18 @@ AlgoSec Python SDK
     * - docs
       - |docs|
     * - tests
-      - | |travis| |coverage|
+      - | |travis| |coverage| |requires|
     * - package
-      - | |version| |wheel| |supported-versions|
+      - | |version| |wheel| |supported-versions| |pyup|
 
+
+.. |pyup| image:: https://pyup.io/repos/github/algosec/algosec-pythnon/shield.svg
+     :target: https://pyup.io/repos/github/algosec/algosec-pythnon/
+     :alt: Updates
+
+.. |requires| image:: https://requires.io/github/algosec/algosec-python/requirements.svg?branch=master
+    :alt: Requirements Status
+    :target: https://requires.io/github/algosec/algosec-python/requirements/?branch=master
 
 .. |version| image:: https://img.shields.io/pypi/v/algosec.svg
    :target: https://pypi.python.org/pypi/algosec
