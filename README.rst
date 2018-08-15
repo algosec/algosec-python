@@ -1,14 +1,49 @@
 ==================
 AlgoSec Python SDK
 ==================
-.. image:: https://img.shields.io/pypi/v/algosec.svg
+
+.. start-badges
+
+.. list-table::
+    :stub-columns: 1
+
+    * - docs
+      - |docs|
+    * - tests
+      - | |travis| |coverage| |requires|
+    * - package
+      - | |version| |wheel| |supported-versions| |pyup|
+
+
+.. |pyup| image:: https://pyup.io/repos/github/algosec/algosec-pythnon/shield.svg
+     :target: https://pyup.io/repos/github/algosec/algosec-pythnon/
+     :alt: Updates
+
+.. |requires| image:: https://requires.io/github/algosec/algosec-python/requirements.svg?branch=master
+    :alt: Requirements Status
+    :target: https://requires.io/github/algosec/algosec-python/requirements/?branch=master
+
+.. |version| image:: https://img.shields.io/pypi/v/algosec.svg
    :target: https://pypi.python.org/pypi/algosec
    :alt: Package on PyPi
 
-.. image:: https://readthedocs.org/projects/algosec-python/badge/
+.. |docs| image:: https://readthedocs.org/projects/algosec-python/badge/
    :target: http://algosec-python.readthedocs.io/en/latest/
    :alt: Documentation Status
 
+.. |coverage| image:: https://coveralls.io/repos/github/algosec/algosec-python/badge.svg?branch=master
+    :target: https://coveralls.io/github/algosec/algosec-python?branch=unittest-cov
+
+.. |travis| image:: https://travis-ci.org/algosec/algosec-python.svg?branch=master
+    :target: https://travis-ci.org/algosec/algosec-python
+
+.. |supported-versions| image:: https://img.shields.io/pypi/pyversions/algosec.svg
+    :alt: Supported versions
+    :target: https://pypi.python.org/pypi/algosec
+
+.. |wheel| image:: https://img.shields.io/pypi/wheel/algosec.svg
+    :alt: PyPI Wheel
+    :target: https://pypi.python.org/pypi/algosec
 
 
 A Python SDK providing simple access to AlgoSec APIs, including handy methods
@@ -76,13 +111,4 @@ Testing
 To run the unittests run::
 
     python setup.py nosetests
-
-
-Deploying To PyPi
-^^^^^^^^^^^^^^^^^^^
-
-Run::
-
-    python setup.py sdist
-    twine upload dist/algosec-*.tar.gz
 

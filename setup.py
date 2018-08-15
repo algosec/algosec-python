@@ -24,14 +24,12 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Topic :: Software Development :: Libraries :: Python Modules",
+        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
-    ],
-    setup_requires=[
-        "nose>=1.3.6",
-    ],
-    tests_require=[
-        "mock>=2.0.0",
-        "PyHamcrest>=1.9.0",
+        # "Programming Language :: Python :: 3",
+        # "Programming Language :: Python :: 3.4",
+        # "Programming Language :: Python :: 3.5",
+        # "Programming Language :: Python :: 3.6",
     ],
     install_requires=[
         "requests",
@@ -40,5 +38,6 @@ setup(
         "suds_requests",
         "ipaddress",
     ],
-    python_requires='~=2.7'
+    # python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
+    python_requires='~=2.7',
 )
