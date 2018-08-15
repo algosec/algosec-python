@@ -1,3 +1,4 @@
+#Stuff
 *.egg-info
 .idea
 .DS_Store
@@ -5,6 +6,12 @@
 build
 dist
 .eggs
-_build
-_static
-_templates
+
+# Docs stuff
+docs/_build
+docs/_static
+docs/_templates
+
+# Tox stuff
+.tox
+.pytest_cache

@@ -26,13 +26,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Programming Language :: Python :: 2.7",
     ],
-    setup_requires=[
-        "nose>=1.3.6",
-    ],
-    tests_require=[
-        "mock>=2.0.0",
-        "PyHamcrest>=1.9.0",
-    ],
     install_requires=[
         "requests",
         "enum34",

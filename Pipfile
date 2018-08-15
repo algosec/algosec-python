@@ -7,11 +7,10 @@ name = "pypi"
 "e1839a8" = {path = ".", editable = true}
 
 [dev-packages]
-ipython = "*"
-"flake8" = "*"
-ipdb = "*"
+flake8 = "*"
 twine = "*"
-nose = "*"
+tox = "*"
+pytest = "*"
 mock = "*"
 pyhamcrest = "*"
 

@@ -827,7 +827,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         return aggregated_result
 
     def run_traffic_simulation_query(self, source, destination, service):
-        """Run a traffic simulation query and return its results.
+        """Run a traffic simulation query given it's traffic lines
 
         Args:
             source (str): Source of the simulated traffic. (e.g. IPs, subnet or an object name)
