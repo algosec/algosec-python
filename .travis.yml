@@ -14,3 +14,12 @@ script:
   - tox
 after_success:
   - coveralls
+# Automatically deploy new tagged versions to PyPi
+deploy:
+  provider: pypi
+  user: Algosec
+  password:
+    secure: U3/Lh0fyMHWqN5w15kE5dbPj+rzQkt5EcsxAquZazT1W6N4IFqzGxsGEQEyEkslfXOWcjkugn7hnK/GMonDIln/yjk0RFCzSVRaufmTz74AXuJYSx7LgtZKJ6LedrUoafgspVVyW+W5tQgVVtZa8a2H6dc5yHVtW1IBfksd9CRdVtCOzqEcqIwkg4Anep9U7g+4CWspaWpa1h/5ligFWrmgpP74Fzue9nA0/hBh+f+8yS5xMvBwWAJiF2SDAuwJbHII5f25joA9Yjekxu2OsnnWYDhbzPrkA5prBmu5tfPcTMUFeC4c6FtzlVknxLjbqRTYgH5p5dFGaGGvhoAgyq+39di3/cr+PycMuH1ggXeSAbciDs66AChmgZPc/YqaqxLsZxt35T9dr7H4NX47JwlsQ0+4w61taLhjStM585jRYaaKedDC6t+WcKrp81FLXsIPtABljv7oMM9JjQTUcZnwKBuJUCOXmlBCCFqlCM+Hq74guhUyPpb3XITRRgMrokIPAGnvNYBBde7flSZdYyFJL+X3lrn8ZNf72EQZSmmxRu+vOWO8VhzcGtwiUhMAAtG1RtsGLIGqDNgdAfcIFNDNDcqPLFzNIkea9hE5p5QYF2bucFwVaEIg8Jjh0I/FQOj5XuD39I/qsHwB8+ynHFMC5TCeC9wP/9vzX8oj0ilk=
+  on:
+    tags: true
+    branch: master
