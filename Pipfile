@@ -11,8 +11,7 @@ flake8 = "*"
 twine = "*"
 tox = "*"
 pytest = "*"
+pytest-cov = "*"
+coveralls = "*"
 mock = "*"
 pyhamcrest = "*"
-
-[requires]
-python_version = "2.7"
