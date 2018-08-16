@@ -7,8 +7,7 @@ from collections import namedtuple
 
 from enum import Enum
 
-from algosec.errors import AlgoSecAPIError, UnrecognizedAllowanceState, UnrecognizedServiceString
-from algosec.helpers import is_ip_or_subnet, LiteralService
+from algosec.errors import UnrecognizedAllowanceState
 
 
 class RequestedFlow(object):
@@ -17,9 +16,7 @@ class RequestedFlow(object):
     This model is used by the :class:`~algosec.api_clients.business_flow.BusinessFlowAPIClient` to
     create and handle different operations regarding new and existing flows.
 
-    Examples:
-        1. It is used to represent a new flow that is about to be created.
-        2. It is used to check if any flow definition is already contained within other existing flows.
+    It is used to represent a new flow that is about to be created.
 
     Args:
         name (str): The name of the new flow.
@@ -59,7 +56,8 @@ class RequestedFlow(object):
         self.destination_to_containing_object_ids = {}
         self.aggregated_network_services = set()
 
-    def _api_named_object(self, lst):
+    @staticmethod
+    def _api_named_object(lst):
         """
         ABF expect to get most simple objects as a dict pointing to their name
         this is a helper function to achieve that
@@ -68,39 +66,6 @@ class RequestedFlow(object):
         :return:
         """
         return [{"name": obj} for obj in lst]
-
-    @classmethod
-    def _build_mapping_from_network_objects_to_containing_object_ids(cls, abf_client, network_objects):
-        """
-        Return a mapping from IPs and Subnets to their containing object IDs
-
-        If the one of the provided network objects in the list is not an IP or a Subnet,
-        the method assumes it is a network object name. Then the method will query ABF
-        for the IP addresses that coprise this network object. Then the function will handle
-        of the comprising IPs as if they were provided as part of the network objects passed to the function.
-        It means you will see them as keys in the returned mapping.
-
-        :param list[str] network_objects: list of IPs, subnets and network object names
-        :return:  mapping from IPs and Subnets to their containing object IDs
-        """
-        network_objects_to_containing_object_ids = {}
-        for network_object in network_objects:
-            if is_ip_or_subnet(network_object):
-                ips_and_subnets = [network_object]
-            else:
-                # translate network object name to the ip addresses it is comprised of
-                try:
-                    ips_and_subnets = abf_client.get_network_object_by_name(network_object)['ipAddresses']
-                except AlgoSecAPIError:
-                    raise AlgoSecAPIError("Unable to resolve network object by name: {}".format(network_object))
-
-            for ip_or_subnet in ips_and_subnets:
-                network_objects_to_containing_object_ids[ip_or_subnet] = {
-                    containing_object["objectID"] for containing_object in
-                    abf_client.search_network_objects(ip_or_subnet, NetworkObjectSearchTypes.CONTAINED)
-                }
-
-        return network_objects_to_containing_object_ids
 
     def get_json_flow_definition(self):
         """Return a dict object representing a NewFlow as expected by the API.
@@ -119,37 +84,6 @@ class RequestedFlow(object):
             comment=self.comment,
             custom_fields=self.custom_fields,
         )
-
-    # TODO: Remove this method, and the rest of the "is flow contained" logic.
-    def _populate(self, abf_client):
-        """Populate the mappings and normalization objects based on the AlgoSec APIs
-
-        :param BusinessFlowAPIClient abf_client:
-        """
-        # Build a map from each source to the object ids of the network objects that contain it
-        self.source_to_containing_object_ids = self._build_mapping_from_network_objects_to_containing_object_ids(
-            abf_client,
-            self.sources,
-        )
-
-        # Build a map from each destination to the object ids of the network objects that contain it
-        self.destination_to_containing_object_ids = self._build_mapping_from_network_objects_to_containing_object_ids(
-            abf_client,
-            self.destinations,
-        )
-
-        for service in self.network_services:
-            try:
-                self.aggregated_network_services.add(LiteralService(service))
-            except UnrecognizedServiceString:
-                # We need to resolve the service names so we'll be able to check if their definition is included
-                # within other network services that will be defined on AlgoSec.
-                try:
-                    network_service = abf_client.get_network_services_by_name(service)
-                    for service_str in network_service["services"]:
-                        self.aggregated_network_services.add(LiteralService(service_str))
-                except AlgoSecAPIError:
-                    raise AlgoSecAPIError("Unable to resolve definition for requested service: {}".format(service))
 
 
 AllowanceInfo = namedtuple("AllowanceInfo", ["text", "title"])

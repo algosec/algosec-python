@@ -12,10 +12,8 @@ import requests
 
 from algosec.api_clients.base import RESTAPIClient
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, EmptyFlowSearch
-from algosec.flow_comparison_logic import IsIncludedInFlowComparisonLogic
 from algosec.helpers import mount_algosec_adapter_on_session, is_ip_or_subnet
 from algosec.models import NetworkObjectSearchTypes, NetworkObjectType
-
 
 logger = logging.getLogger(__name__)
 
@@ -380,25 +378,6 @@ class BusinessFlowAPIClient(RESTAPIClient):
         ))
         self._check_api_response(response)
         return response.json()
-
-    def is_flow_contained_in_app(self, app_revision_id, requested_flow):
-        """Return True if a certain RequestedFlow is already contained in a given application.
-
-        If the requested_flow is already contained within one of the existing application flows, return True.
-
-        Args:
-            requested_flow (algosec.models.RequestedFlow): The definition of the flow to check containment for.
-
-        Raises:
-            :class:`~algosec.errors.AlgoSecAPIError`: If error occurred while fetching the application flows.
-
-        Returns:
-            bool: True if this flow definition is contained within another existing flow in the application.
-        """
-        return any(
-            IsIncludedInFlowComparisonLogic.is_included(requested_flow, flow)
-            for flow in self.get_application_flows(app_revision_id)
-        )
 
     def create_application_flow(
             self,
