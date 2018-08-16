@@ -1,7 +1,6 @@
 """Runnable example code to fetch the application flows from ABF"""
 
-
-from algosec.api_client import BusinessFlowAPIClient
+from algosec.api_clients.business_flow import BusinessFlowAPIClient
 
 if __name__ == "__main__":
     client = BusinessFlowAPIClient('local.algosec.com', 'admin', 'algosec', False)
