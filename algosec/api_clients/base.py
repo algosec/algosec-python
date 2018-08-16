@@ -11,6 +11,7 @@ import traceback
 
 import requests
 import suds_requests
+from requests import HTTPError
 from suds import client
 
 from algosec.errors import AlgoSecAPIError
@@ -60,7 +61,7 @@ class RESTAPIClient(APIClient):
         # Will be initialized once the session is used
         self._session = None
 
-    def _initiate_session(self):
+    def _initiate_session(self):  # pragma: no cover
         raise NotImplementedError()
 
     @property
@@ -79,7 +80,7 @@ class RESTAPIClient(APIClient):
         """Check an API response and raise AlgoSecAPIError if needed.
 
         Args:
-            response: Response object returned from an API call.
+            response (requests.Response): Response object returned from an API call.
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If any error is found in the response object.
@@ -89,8 +90,9 @@ class RESTAPIClient(APIClient):
         """
         try:
             response.raise_for_status()
-        except Exception:
+        except HTTPError:
             try:
+                # Try and extract a json for failed responses for better exception description
                 json = response.json()
             except ValueError:
                 json = {}
@@ -122,13 +124,14 @@ class SoapAPIClient(APIClient):
     def __init__(self, server_ip, user, password, verify_ssl=True):
         super(SoapAPIClient, self).__init__(server_ip, user, password, verify_ssl)
         self._client = None
+        # Used to persist the session id used for security reasons on reoccurring requests
         self._session_id = None
 
-    def _initiate_client(self):
+    def _initiate_client(self):  # pragma: no cover
         raise NotImplementedError()
 
     @property
-    def _wsdl_url_path(self):
+    def _wsdl_url_path(self):   # pragma: no cover
         raise NotImplementedError()
 
     @property

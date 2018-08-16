@@ -166,7 +166,7 @@ class NetworkObjectType(Enum):
     ABSTRACT = ""
 
 
-class ChangeRequestTrafficLine(object):  # pragma: no cover - nothing to test here
+class ChangeRequestTrafficLine(object):
     def __init__(self, action, sources, destinations, services):
         """
         Represent a traffic line while creating a change request by the api client.

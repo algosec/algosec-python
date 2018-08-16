@@ -3,7 +3,7 @@ from inspect import isclass
 import pytest
 
 from algosec.errors import UnrecognizedAllowanceState
-from algosec.models import DeviceAllowanceState, RequestedFlow
+from algosec.models import DeviceAllowanceState, RequestedFlow, ChangeRequestTrafficLine, ChangeRequestAction
 
 
 class TestRequestedFlow(object):
@@ -60,3 +60,13 @@ class TestDeviceAllowanceState(object):
         # Check the handling of unknown state
         with pytest.raises(exception):
             DeviceAllowanceState.from_string(string)
+
+
+class TestChangeRequestTrafficLine(object):
+    def test_init(self):
+        ChangeRequestTrafficLine(
+            ChangeRequestAction.ALLOW,
+            ['source1', 'source2'],
+            ['dest1', 'dest2'],
+            ['service1', 'service2'],
+        )
