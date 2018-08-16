@@ -26,9 +26,10 @@ class RequestedFlow(object):
         network_applications (list[str]): Names of network application for the flow.
         network_services (list[str]): Names of network services names for the flow.
         comment (str): Any comment to save alongside the flow.
-        custom_fields: Custom fields for the new flow
+        custom_fields (list): Custom fields for the new flow
         type (str): Optional. The type of the flow to create. Default to *APPLICATION*.
     """
+
     def __init__(
             self,
             name,
@@ -50,11 +51,6 @@ class RequestedFlow(object):
         self.comment = comment
         self.custom_fields = custom_fields or []
         self.type = type
-
-        # Mapped and normalized objects to be populated later on
-        self.source_to_containing_object_ids = {}
-        self.destination_to_containing_object_ids = {}
-        self.aggregated_network_services = set()
 
     @staticmethod
     def _api_named_object(lst):
@@ -170,7 +166,7 @@ class NetworkObjectType(Enum):
     ABSTRACT = ""
 
 
-class ChangeRequestTrafficLine(object):
+class ChangeRequestTrafficLine(object):  # pragma: no cover - nothing to test here
     def __init__(self, action, sources, destinations, services):
         """
         Represent a traffic line while creating a change request by the api client.
