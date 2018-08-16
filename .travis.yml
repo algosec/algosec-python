@@ -11,6 +11,7 @@ install:
   - pip install tox-travis coveralls
 # command to run tests
 script:
+  - flake8
   - tox
 after_success:
   - coveralls
