@@ -1,129 +1,30 @@
-"""API clients for the following AlgoSec services: **BusinessFlow**, **FireFlow** and **FirewallAnalyzer**.
+"""REST API client for AlgoSec **BusinessFlow**."""
 
-The clients are intended to be imported, initiated and used in any python code.
-Clients implementation is based on AlgoSec's official API guide.
-Clients require three arguments to be initiated:
-
-* AlgoSec server IP
-* username
-* password
-* *verify_ssl* (optional)
-
-Examples:
-    Once initiated, the client is used by calling any of its public functions::
-
-        from algosec.api_clients import FirewallAnalyzerAPIClient
-        client = FirewallAnalyzerAPIClient(ip, username, password)
-        query_result = client.run_traffic_simulation_query(
-            source,
-            dest,
-            service
-        )
-
-    If the API call you were looking for is not yet implemented, you can send authenticated custom API call
-    to the server using the client's ``session`` property.
-    Please see specific API Client documentations to find out how.
-"""
 
 import httplib
 import logging
 import re
-import traceback
-from collections import OrderedDict
 from httplib import BAD_REQUEST
 from itertools import chain
 from urllib import quote_plus
 
 import requests
-import suds_requests
-from suds import client, WebFault
 
-from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, UnrecognizedAllowanceState, EmptyFlowSearch
+from algosec.api_clients.base import RESTAPIClient
+from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, EmptyFlowSearch
 from algosec.flow_comparison_logic import IsIncludedInFlowComparisonLogic
 from algosec.helpers import mount_algosec_adapter_on_session, is_ip_or_subnet
-from algosec.models import NetworkObjectSearchTypes, DeviceAllowanceState, NetworkObjectType
+from algosec.models import NetworkObjectSearchTypes, NetworkObjectType
+
 
 logger = logging.getLogger(__name__)
-
-
-class APIClient(object):
-    """An abstract class inherited by all other API Clients.
-
-    All API clients require the same arguments to be initiated.
-
-    Args:
-        server_ip (str): IP address of the AlgoSec server.
-        user (str): Username used to log in to AlgoSec.
-        password (str): The user's password, similar to the one used to log in to the UI.
-
-    Note:
-        This class is intended to be inherited. It should not be initiated or used directly in your code.
-    """
-
-    def __init__(self, server_ip, user, password, verify_ssl=True):
-        super(APIClient, self).__init__()
-        self.server_ip = server_ip
-        self.user = user
-        self.password = password
-        self.verify_ssl = verify_ssl
-
-
-class RESTAPIClient(APIClient):
-    def __init__(self, server_ip, user, password, verify_ssl=True):
-        super(RESTAPIClient, self).__init__(server_ip, user, password, verify_ssl)
-        # Will be initialized once the session is used
-        self._session = None
-
-    def _initiate_session(self):
-        raise NotImplementedError()
-
-    @property
-    def session(self):
-        """Return an authenticated ``requests`` session.
-
-        The same session is returned on subsequent calls.
-
-        Returns: Authenticated ``requests`` session.
-        """
-        if self._session is None:
-            self._session = self._initiate_session()
-        return self._session
-
-    def _check_api_response(self, response):
-        """Check an API response and raise AlgoSecAPIError if needed.
-
-        Args:
-            response: Response object returned from an API call.
-
-        Raises:
-            :class:`~algosec.errors.AlgoSecAPIError`: If any error is found in the response object.
-
-        Returns:
-            Same response object passed in.
-        """
-        try:
-            response.raise_for_status()
-        except Exception:
-            try:
-                json = response.json()
-            except ValueError:
-                json = {}
-            raise AlgoSecAPIError(
-                "response code: {}, json: {}, exception: {}".format(
-                    response.status_code,
-                    json,
-                    traceback.format_exc(),
-                ),
-                response=response,
-                response_json=json,
-            )
-        return response
 
 
 class BusinessFlowAPIClient(RESTAPIClient):
     """*BusinessFlow* RESTful API client.
 
-    Used by calling its public methods or by sending custom calls using the ``session`` property.
+    Used by initiating and calling its public methods or by sending custom calls using the ``session`` property.
+    Client implementation is strictly based on AlgoSec's official API guide.
     To ease the usability for custom API calls, a bunch of base urls were added as properties to this class
     (see example below).
 
@@ -131,17 +32,24 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
         Using the public methods to send an API call::
 
-            from algosec.api_clients import BusinessFlowAPIClient
+            from algosec.api_clients.business_flow import BusinessFlowAPIClient
             client = BusinessFlowAPIClient(ip, username, password)
             application_revision_id = client.get_application_revision_id_by_name("ApplicationName")
 
         Sending a custom API Call::
 
-            from algosec.api_clients import BusinessFlowAPIClient
+            from algosec.api_clients.business_flow import BusinessFlowAPIClient
             client = BusinessFlowAPIClient(ip, username, password)
             response = client.session.get(
                 "{}/name/{}".format(client.applications_base_url, application_name)
             )
+
+    Args:
+        server_ip (str): IP address of the AlgoSec server.
+        user (str): Username used to log in to AlgoSec.
+        password (str): The user's password, similar to the one used to log in to the UI.
+        verify_ssl (bool): Turn on/off the connection's SSL certificate verification. Defaults to True.
+
     """
 
     def _initiate_session(self):
@@ -573,319 +481,3 @@ class BusinessFlowAPIClient(RESTAPIClient):
         """
         response = self.session.post("{}/{}/apply".format(self.applications_base_url, revision_id))
         return self._check_api_response(response)
-
-
-class SoapAPIClient(APIClient):
-    """Abstract SOAP API class inherited by all SOAP API clients.
-
-    Note:
-        This class should not be used directly but rather inherited to implement any new SOAP API clients.
-    """
-
-    def __init__(self, server_ip, user, password, verify_ssl=True):
-        super(SoapAPIClient, self).__init__(server_ip, user, password, verify_ssl)
-        self._client = None
-        self._session_id = None
-
-    def _initiate_client(self):
-        raise NotImplementedError()
-
-    @property
-    def _wsdl_url_path(self):
-        raise NotImplementedError()
-
-    @property
-    def client(self):
-        """Return a suds SOAP client and make sure ``self._session_id`` is populated
-
-        The same session is returned on subsequent calls.
-        """
-        if self._client is None:
-            self._client = self._initiate_client()
-        return self._client
-
-    def _get_soap_client(self, wsdl_path, **kwargs):
-        """.
-
-        Args:
-            wsdl_path (str): The url for the wsdl to connect to.
-            **kwargs: Keyword-arguments that are forwarded to the suds client constructor.
-
-        Returns:
-            suds.client.Client: A suds SOAP client.
-        """
-        session = requests.Session()
-        session.verify = self.verify_ssl
-        # use ``requests`` based suds implementation to handle AlgoSec's self-signed certificate properly.
-        return client.Client(wsdl_path, transport=suds_requests.RequestsTransport(session), **kwargs)
-
-
-class FireFlowAPIClient(SoapAPIClient):
-    """*FireFlow* SOAP API client.
-
-    Args:
-        server_ip (str): IP address of the AlgoSec server.
-        user (str): Username used to log in to AlgoSec.
-        password (str): The user's password, similar to the one used to log in to the UI.
-
-    Used by calling its public methods or by sending custom calls using the ``client`` property.
-
-    Example:
-
-        Using the public methods to send an API call::
-
-            from algosec.api_clients import FireFlowAPIClient
-            client = FireFlowAPIClient(ip, username, password)
-            change_request = client.get_change_request_by_id(change_request_id)
-    """
-
-    @property
-    def _wsdl_url_path(self):
-        return "https://{}/WebServices/FireFlow.wsdl".format(self.server_ip)
-
-    def _initiate_client(self):
-        """Return a connected suds client and save the new session id to ``self._session_id``
-
-        Raises:
-            AlgoSecLoginError: If login using the username/password failed.
-
-        Returns:
-            suds.client.Client
-        """
-        client = self._get_soap_client(self._wsdl_url_path)
-        try:
-            authenticate = client.service.authenticate(
-                username=self.user,
-                password=self.password,
-            )
-        except WebFault:
-            raise AlgoSecLoginError
-
-        self._session_id = authenticate.sessionId
-        return client
-
-    def create_change_request(
-            self,
-            subject,
-            requestor_name,
-            email,
-            traffic_lines,
-            description="",
-            template=None,
-    ):
-        """Create a new change request.
-
-        Args:
-            subject (str): The ticket subject, will be shown on FireFlow.
-            requestor_name (str): The ticket creator name, will be shown on FireFlow.
-            email (str): The email address of the requestor.
-            traffic_lines (list[algosec.models.ChangeRequestTrafficLine]): List of traffic lines each describing its
-                sources, destinations and services.
-            description (str): description for the ticket, will be shown on FireFlow.
-            template (str): When different than None, this template will be passed on to FireFlow to be used
-                as the template for the new change requets.
-
-        Raises:
-            :class:`~algosec.errors.AlgoSecAPIError`: If change request creation failed.
-
-        Returns:
-            str: The URL for the newley create change request on FireFlow
-        """
-        # Create ticket and traffic lines objects
-        ticket = self.client.factory.create('ticket')
-
-        ticket.description = description
-        ticket.requestor = '{} {}'.format(requestor_name, email)
-        ticket.subject = subject
-        if template is not None:
-            ticket.template = template
-
-        for traffic_line in traffic_lines:
-            soap_traffic_line = self.client.factory.create('trafficLine')
-
-            soap_traffic_line.action = traffic_line.action.value.api_value
-
-            for source in traffic_line.sources:
-                traffic_address = self.client.factory.create('trafficAddress')
-                traffic_address.address = source
-                soap_traffic_line.trafficSource.append(traffic_address)
-
-            for dest in traffic_line.destinations:
-                traffic_address = self.client.factory.create('trafficAddress')
-                traffic_address.address = dest
-                soap_traffic_line.trafficDestination.append(traffic_address)
-
-            for service in traffic_line.services:
-                traffic_service = self.client.factory.create('trafficService')
-                traffic_service.service = service
-                soap_traffic_line.trafficService.append(traffic_service)
-
-            ticket.trafficLines.append(soap_traffic_line)
-
-        # Actually create the ticket
-        try:
-            ticket_added = self.client.service.createTicket(sessionId=self._session_id, ticket=ticket)
-        except WebFault:
-            raise AlgoSecAPIError
-
-        ticket_url = ticket_added.ticketDisplayURL
-        return ticket_url
-
-    def get_change_request_by_id(self, change_request_id):
-        """Get a change request by its ID.
-
-        Useful for checking the status of a change request you opened through the API.
-
-        Args:
-            change_request_id: The ID of the change request to fetch.
-
-        Raises:
-            :class:`~algosec.errors.AlgoSecAPIError`: If the change request was not found on the server or another
-                error occurred while fetching the change request.
-
-        Returns:
-            The change request ticket object.
-        """
-        try:
-            response = self.client.service.getTicket(sessionId=self._session_id, ticketId=change_request_id)
-        except WebFault, e:
-            if 'Can not get ticket for id' in e.fault.faultstring:
-                raise AlgoSecAPIError("Change request was not found on the server.")
-            # some other unknown error occurred
-            raise AlgoSecAPIError
-        return response.ticket
-
-
-class FirewallAnalyzerAPIClient(SoapAPIClient):
-    """*FirewallAnalyzer* SOAP API client.
-
-    Args:
-        server_ip (str): IP address of the AlgoSec server.
-        user (str): Username used to log in to AlgoSec.
-        password (str): The user's password, similar to the one used to log in to the UI.
-
-    Used by calling its public methods or by sending custom calls using the ``client`` property.
-
-    Example:
-
-        Using the public methods to send an API call::
-
-            from algosec.api_clients import FirewallAnalyzerAPIClient
-            client = FirewallAnalyzerAPIClient(ip, username, password)
-            query_result = client.run_traffic_simulation_query(
-                source,
-                dest,
-                service
-            )
-    """
-
-    @property
-    def _wsdl_url_path(self):
-        return "https://{}/AFA/php/ws.php?wsdl".format(self.server_ip)
-
-    def _initiate_client(self):
-        """Return a connected suds client and save the new session id to ``self._session_id``
-
-        Raises:
-            AlgoSecLoginError: If login using the username/password failed.
-
-        Returns:
-            suds.client.Client
-        """
-        client = self._get_soap_client(self._wsdl_url_path, location=self._wsdl_url_path.split('?')[0])
-        try:
-            self._session_id = client.service.connect(
-                UserName=self.user,
-                Password=self.password,
-                Domain=''
-            )
-
-        except WebFault:
-            raise AlgoSecLoginError
-        return client
-
-    def _calc_aggregated_query_result(self, query_results):
-        """Return aggregated calculated traffic query result.
-
-        Since we had the "QueryResult" missing from the API before AlgoSec version 2017.02 we check here if it is
-        part of the result. If not, we try and calculate the traffic query result based on the results we got
-        for the various devices under the query.
-
-        Returns:
-            algosec.models.DeviceAllowanceState: Aggregated traffic simulation result.
-        """
-        # Understanding the value of the total result, is the traffic blocked or allowed or partially blocked?
-        if query_results[DeviceAllowanceState.PARTIALLY_BLOCKED]:
-            aggregated_result = DeviceAllowanceState.PARTIALLY_BLOCKED
-        elif query_results[DeviceAllowanceState.BLOCKED]:
-            if query_results[DeviceAllowanceState.ALLOWED]:
-                aggregated_result = DeviceAllowanceState.PARTIALLY_BLOCKED
-            else:
-                aggregated_result = DeviceAllowanceState.BLOCKED
-        else:
-            aggregated_result = DeviceAllowanceState.ALLOWED
-        return aggregated_result
-
-    def run_traffic_simulation_query(self, source, destination, service):
-        """Run a traffic simulation query given it's traffic lines
-
-        Args:
-            source (str): Source of the simulated traffic. (e.g. IPs, subnet or an object name)
-            destination (str): Destination of the simulated traffic. (e.g. IPs, subnet or an object name)
-            service (str): Service of the simulated traffic (e.g: tcp/200, http)
-
-        Raises:
-            :class:`~algosec.errors.AlgoSecAPIError`: If any error occurred while executing the traffic
-                simulation query.
-
-        Returns:
-            algosec.models.DeviceAllowanceState: Traffic simulation query result.
-        """
-        query_params = {'Source': source, 'Destination': destination, 'Service': service}
-        try:
-            query_result = self.client.service.query(
-                SessionID=self._session_id,
-                QueryInput=query_params
-            ).QueryResult
-        except WebFault:
-            raise AlgoSecAPIError
-
-        devices = []
-        if query_result is not None:
-            query_result = query_result[0]
-            if query_result.QueryItem:
-                # In case there is only one object in the result
-                query_item = query_result.QueryItem
-                devices = query_item.Device if type(query_item.Device) is list else [query_item.Device]
-
-        # Making a dict from the result type to a list of devices. Keep it always ordered by the result type
-        query_results = OrderedDict([
-            (DeviceAllowanceState.BLOCKED, []),
-            (DeviceAllowanceState.PARTIALLY_BLOCKED, []),
-            (DeviceAllowanceState.ALLOWED, [])
-        ])
-
-        # Group the devices by groups according to their device result
-        for device in devices:
-            try:
-                allowance_state = DeviceAllowanceState.from_string(device.IsAllowed)
-            except UnrecognizedAllowanceState:
-                logger.warning(
-                    "Unknown device state found. Device: {}, state: {}".format(
-                        device,
-                        device.IsAllowed,
-                    )
-                )
-            else:
-                query_results[allowance_state].append(device)
-
-        # Now calculate to the traffic query result.
-        # Since we had the "QueryResult" missing from the API before AlgoSec version 2017.02 we check here if it is
-        # part of the result. If not, we try and calculate the traffic query result based on the results we got
-        # for the various devices under the query
-        if hasattr(query_result, "QueryResult") and query_result.QueryResult:
-            aggregated_result = DeviceAllowanceState.from_string(query_result.QueryResult)
-        else:
-            aggregated_result = self._calc_aggregated_query_result(query_results)
-
-        return aggregated_result

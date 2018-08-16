@@ -14,7 +14,7 @@ from algosec.helpers import is_ip_or_subnet, LiteralService
 class RequestedFlow(object):
     """Represents a NewFlow model from the API Guide.
 
-    This model is used by the :class:`~algosec.api_client.BusinessFlowAPIClient` to
+    This model is used by the :class:`~algosec.api_clients.business_flow.BusinessFlowAPIClient` to
     create and handle different operations regarding new and existing flows.
 
     Examples:
@@ -156,7 +156,7 @@ AllowanceInfo = namedtuple("AllowanceInfo", ["text", "title"])
 
 
 class NetworkObjectSearchTypes(Enum):
-    """Enum used for :py:meth:`~algosec.api_clients.BusinessFlowAPIClient.search_network_objects`"""
+    """Enum used for :py:meth:`~algosec.api_clients.business_flow.BusinessFlowAPIClient.search_network_objects`"""
     INTERSECT = "INTERSECT"
     CONTAINED = "CONTAINED"
     CONTAINING = "CONTAINING"
