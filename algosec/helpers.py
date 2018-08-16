@@ -5,7 +5,8 @@ Note:
 """
 import re
 
-from ipaddress import IPv4Network, AddressValueError
+import six
+from ipaddress import IPv4Network, AddressValueError, NetmaskValueError
 from requests.adapters import HTTPAdapter
 
 from algosec.errors import UnrecognizedServiceString
@@ -34,6 +35,9 @@ def mount_algosec_adapter_on_session(session):
     """Used to mount the ``AlgoSecServersHTTPAdapter`` on a ``requests`` session.
 
     The adapter is mounted for all HTTP/HTTPS calls.
+
+    Args:
+        session (requests.Session): The requests session to mount the AlgoSec adapter on.
     """
     session.mount('https://', AlgoSecServersHTTPAdapter())
     session.mount('http://', AlgoSecServersHTTPAdapter())
@@ -50,9 +54,9 @@ def is_ip_or_subnet(string):
     """
     try:
         # string must be unicode for this package
-        IPv4Network(unicode(string))
+        IPv4Network(six.text_type(string))
         return True
-    except AddressValueError:
+    except (AddressValueError, NetmaskValueError, ValueError):
         return False
 
 

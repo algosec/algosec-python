@@ -22,10 +22,8 @@ class AlgoSecAPIError(Exception):
     """
     def __init__(self, *args, **kwargs):
         """Initialize RequestException with `request` and `response` objects."""
-        response = kwargs.pop('response', None)
-        self.response = response
-        response_json = kwargs.pop('response_json', None)
-        self.response_json = response_json
+        self.response = kwargs.pop('response', None)
+        self.response_json = kwargs.pop('response_json', None)
         super(AlgoSecAPIError, self).__init__(*args, **kwargs)
 
 
