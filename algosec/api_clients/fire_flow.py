@@ -153,7 +153,7 @@ class FireFlowAPIClient(SoapAPIClient):
         """
         try:
             response = self.client.service.getTicket(sessionId=self._session_id, ticketId=change_request_id)
-        except WebFault, e:
+        except WebFault as e:
             if 'Can not get ticket for id' in e.fault.faultstring:
                 raise AlgoSecAPIError("Change request was not found on the server.")
             # some other unknown error occurred
