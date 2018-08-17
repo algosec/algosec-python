@@ -1,5 +1,3 @@
-from inspect import isclass
-
 import pytest
 
 from algosec.errors import UnrecognizedAllowanceState

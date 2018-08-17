@@ -3,13 +3,10 @@
 Note:
     Most developers will not have to use any of the contents of this module directly.
 """
-import re
 
 import six
 from ipaddress import IPv4Network, AddressValueError, NetmaskValueError
 from requests.adapters import HTTPAdapter
-
-from algosec.errors import UnrecognizedServiceString
 
 
 class AlgoSecServersHTTPAdapter(HTTPAdapter):
