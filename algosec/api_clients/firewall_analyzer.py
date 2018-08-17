@@ -104,6 +104,28 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             aggregated_result = DeviceAllowanceState.ALLOWED
         return aggregated_result
 
+    @staticmethod
+    def _prepare_simulation_query_results(devices):
+        query_results = OrderedDict([
+            (DeviceAllowanceState.BLOCKED, []),
+            (DeviceAllowanceState.PARTIALLY_BLOCKED, []),
+            (DeviceAllowanceState.ALLOWED, [])
+        ])
+        # Group the devices by groups according to their device result
+        for device in devices:
+            try:
+                allowance_state = DeviceAllowanceState.from_string(device.IsAllowed)
+            except UnrecognizedAllowanceState:
+                logger.warning(
+                    "Unknown device state found. Device: {}, state: {}".format(
+                        device,
+                        device.IsAllowed,
+                    )
+                )
+            else:
+                query_results[allowance_state].append(device)
+        return query_results
+
     def run_traffic_simulation_query(self, source, destination, service):
         """Run a traffic simulation query given it's traffic lines
 
@@ -130,6 +152,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
 
         devices = []
         if query_result is not None:
+            # TODO: Make code here more clean. What is being done here? Debug and simplify
             query_result = query_result[0]
             if query_result.QueryItem:
                 # In case there is only one object in the result
@@ -137,25 +160,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
                 devices = query_item.Device if type(query_item.Device) is list else [query_item.Device]
 
         # Making a dict from the result type to a list of devices. Keep it always ordered by the result type
-        query_results = OrderedDict([
-            (DeviceAllowanceState.BLOCKED, []),
-            (DeviceAllowanceState.PARTIALLY_BLOCKED, []),
-            (DeviceAllowanceState.ALLOWED, [])
-        ])
-
-        # Group the devices by groups according to their device result
-        for device in devices:
-            try:
-                allowance_state = DeviceAllowanceState.from_string(device.IsAllowed)
-            except UnrecognizedAllowanceState:
-                logger.warning(
-                    "Unknown device state found. Device: {}, state: {}".format(
-                        device,
-                        device.IsAllowed,
-                    )
-                )
-            else:
-                query_results[allowance_state].append(device)
+        query_results = self._prepare_simulation_query_results(devices)
 
         # Now calculate to the traffic query result.
         # Since we had the "QueryResult" missing from the API before AlgoSec version 2017.02 we check here if it is

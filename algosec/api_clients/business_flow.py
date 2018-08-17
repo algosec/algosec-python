@@ -1,14 +1,13 @@
 """REST API client for AlgoSec **BusinessFlow**."""
 
 
-import httplib
 import logging
 import re
-from httplib import BAD_REQUEST
 from itertools import chain
-from urllib import quote_plus
 
+from six.moves.urllib.parse import quote_plus
 import requests
+from requests import status_codes
 
 from algosec.api_clients.base import RESTAPIClient
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, EmptyFlowSearch
@@ -65,7 +64,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
         logger.debug("logging in to AlgoSec servers: {}".format(url))
         session.verify = self.verify_ssl
         response = session.get(url, auth=(self.user, self.password))
-        if response.status_code == httplib.OK:
+        if response.status_code == status_codes.codes.OK:
             return session
         else:
             raise AlgoSecLoginError(
@@ -423,7 +422,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
                 api_error.response is None,
                 api_error.response_json is None,
                 type(api_error.response_json) != list,
-                api_error.response.status_code != BAD_REQUEST,
+                api_error.response.status_code != status_codes.codes.BAD_REQUEST,
             ]):
                 raise
 

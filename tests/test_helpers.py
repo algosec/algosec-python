@@ -6,7 +6,7 @@ from algosec.helpers import mount_algosec_adapter_on_session, AlgoSecServersHTTP
 
 def test_algosec_servers_http_adapter(mocker):
     adapter = AlgoSecServersHTTPAdapter()
-    with mocker.patch('__builtin__.super') as mock_super:
+    with mocker.patch('six.moves.builtins.super') as mock_super:
         adapter.send()
 
         assert super.return_value.send.call_args == mocker.call(
