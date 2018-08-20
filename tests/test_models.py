@@ -13,18 +13,17 @@ class TestRequestedFlow(object):
         ]
 
     def test_get_json_flow_definition(self, mocker):
-        with mocker.patch.object(RequestedFlow, '_api_named_object'):
-            flow = RequestedFlow(
-                name='name',
-                sources=['source1', 'source2'],
-                destinations=['dest1', 'dest2'],
-                network_users=['user1', 'user2'],
-                network_applications=['app1', 'app2'],
-                network_services=['service1', 'service2'],
-                comment='comment',
-                type='type',
-            )
-
+        flow = RequestedFlow(
+            name='name',
+            sources=['source1', 'source2'],
+            destinations=['dest1', 'dest2'],
+            network_users=['user1', 'user2'],
+            network_applications=['app1', 'app2'],
+            network_services=['service1', 'service2'],
+            comment='comment',
+            type='type',
+        )
+        with mocker.patch.object(flow, '_api_named_object'):
             assert flow.get_json_flow_definition() == dict(
                 type=flow.type,
                 name=flow.name,

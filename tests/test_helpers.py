@@ -1,21 +1,21 @@
+import mock
 import pytest
 import requests
 
 from algosec.helpers import mount_algosec_adapter_on_session, AlgoSecServersHTTPAdapter, is_ip_or_subnet
 
 
-def test_algosec_servers_http_adapter(mocker):
+@mock.patch('six.moves.builtins.super')
+def test_algosec_servers_http_adapter(mock_super, mocker):
     adapter = AlgoSecServersHTTPAdapter()
-    with mocker.patch('six.moves.builtins.super') as mock_super:
-        adapter.send()
-
-        assert super.return_value.send.call_args == mocker.call(
-            timeout=(
-                AlgoSecServersHTTPAdapter.ALGOSEC_SERVER_CONNECT_TIMEOUT,
-                AlgoSecServersHTTPAdapter.ALGOSEC_SERVER_READ_TIMEOUT
-            )
+    adapter.send()
+    assert super.return_value.send.call_args == mocker.call(
+        timeout=(
+            AlgoSecServersHTTPAdapter.ALGOSEC_SERVER_CONNECT_TIMEOUT,
+            AlgoSecServersHTTPAdapter.ALGOSEC_SERVER_READ_TIMEOUT
         )
-        assert mock_super(AlgoSecServersHTTPAdapter, adapter).calls[0]
+    )
+    assert mock_super(AlgoSecServersHTTPAdapter, adapter).calls[0]
 
 
 def test_mount_algosec_adapter_on_session(mocker):

@@ -82,28 +82,6 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             raise AlgoSecLoginError
         return client
 
-    def _calc_aggregated_query_result(self, query_results):
-        """Return aggregated calculated traffic query result.
-
-        Since we had the "QueryResult" missing from the API before AlgoSec version 2017.02 we check here if it is
-        part of the result. If not, we try and calculate the traffic query result based on the results we got
-        for the various devices under the query.
-
-        Returns:
-            algosec.models.DeviceAllowanceState: Aggregated traffic simulation result.
-        """
-        # Understanding the value of the total result, is the traffic blocked or allowed or partially blocked?
-        if query_results[DeviceAllowanceState.PARTIALLY_BLOCKED]:
-            aggregated_result = DeviceAllowanceState.PARTIALLY_BLOCKED
-        elif query_results[DeviceAllowanceState.BLOCKED]:
-            if query_results[DeviceAllowanceState.ALLOWED]:
-                aggregated_result = DeviceAllowanceState.PARTIALLY_BLOCKED
-            else:
-                aggregated_result = DeviceAllowanceState.BLOCKED
-        else:
-            aggregated_result = DeviceAllowanceState.ALLOWED
-        return aggregated_result
-
     @staticmethod
     def _prepare_simulation_query_results(devices):
         query_results = OrderedDict([
@@ -115,6 +93,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         for device in devices:
             try:
                 allowance_state = DeviceAllowanceState.from_string(device.IsAllowed)
+                query_results[allowance_state].append(device)
             except UnrecognizedAllowanceState:
                 logger.warning(
                     "Unknown device state found. Device: {}, state: {}".format(
@@ -122,9 +101,57 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
                         device.IsAllowed,
                     )
                 )
-            else:
-                query_results[allowance_state].append(device)
         return query_results
+
+    @staticmethod
+    def _calc_aggregated_query_result(query_results):
+        """Return aggregated calculated traffic query result.
+
+        Since we had the "QueryResult" missing from the API before AlgoSec version 2017.02 we check here if it is
+        part of the result. If not, we try and calculate the traffic query result based on the results we got
+        for the various devices under the query.
+
+        Returns:
+            algosec.models.DeviceAllowanceState: Aggregated traffic simulation result.
+        """
+        # Understanding the value of the total result, is the traffic blocked or allowed or partially blocked?
+        if query_results[DeviceAllowanceState.PARTIALLY_BLOCKED]:
+            return DeviceAllowanceState.PARTIALLY_BLOCKED
+        elif query_results[DeviceAllowanceState.BLOCKED]:
+            if query_results[DeviceAllowanceState.ALLOWED]:
+                # Result contain both blocked and allowed, thus it is partial
+                return DeviceAllowanceState.PARTIALLY_BLOCKED
+            # Only blocked
+            return DeviceAllowanceState.BLOCKED
+        # No partial or blocked results, so it is assumed to be allowed
+        return DeviceAllowanceState.ALLOWED
+
+    @classmethod
+    def _get_summarized_query_result(cls, query_response, query_results):
+        """
+        Return final simulation query result.
+
+        The final result is fetched directly from the soap response object if it is available.
+        Otherwise, it is manually calculated from the simulation query results per device.
+
+        This function is needed as the final "QueryResult" was missing from the API before AlgoSec version 2017.02.
+        Therefore we first check here if it is part of the result. If not, we try and calculate the traffic
+        query result based on the results we got for the various devices for the query.
+
+        Args:
+            query_response: Soap response for the simulation query soap call.
+            query_results: Results for the simulation query soap call per network devices grouped by their allowance
+             state.
+
+        Returns:
+             algosec.models.DeviceAllowanceState: The simulation query final result
+
+        """
+        if hasattr(query_response, "QueryResult") and query_response.QueryResult:
+            aggregated_result = DeviceAllowanceState.from_string(query_response.QueryResult)
+        else:
+            aggregated_result = cls._calc_aggregated_query_result(query_results)
+        return aggregated_result
 
     def run_traffic_simulation_query(self, source, destination, service):
         """Run a traffic simulation query given it's traffic lines
@@ -141,34 +168,26 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         Returns:
             algosec.models.DeviceAllowanceState: Traffic simulation query result.
         """
-        query_params = {'Source': source, 'Destination': destination, 'Service': service}
         try:
-            query_result = self.client.service.query(
+            simulation_query_response = self.client.service.query(
                 SessionID=self._session_id,
-                QueryInput=query_params
+                QueryInput={
+                    'Source': source,
+                    'Destination': destination,
+                    'Service': service
+                }
             ).QueryResult
         except WebFault:
             raise AlgoSecAPIError
 
-        devices = []
-        if query_result is not None:
-            # TODO: Make code here more clean. What is being done here? Debug and simplify
-            query_result = query_result[0]
-            if query_result.QueryItem:
-                # In case there is only one object in the result
-                query_item = query_result.QueryItem
-                devices = query_item.Device if type(query_item.Device) is list else [query_item.Device]
+        if simulation_query_response is None or not simulation_query_response[0].QueryItem:
+            devices = []
+        else:
+            devices = simulation_query_response[0].QueryItem.Device
+            if type(devices) is not list:
+                # In case there is only one object in the result, we listify the object
+                devices = [devices]
 
         # Making a dict from the result type to a list of devices. Keep it always ordered by the result type
         query_results = self._prepare_simulation_query_results(devices)
-
-        # Now calculate to the traffic query result.
-        # Since we had the "QueryResult" missing from the API before AlgoSec version 2017.02 we check here if it is
-        # part of the result. If not, we try and calculate the traffic query result based on the results we got
-        # for the various devices under the query
-        if hasattr(query_result, "QueryResult") and query_result.QueryResult:
-            aggregated_result = DeviceAllowanceState.from_string(query_result.QueryResult)
-        else:
-            aggregated_result = self._calc_aggregated_query_result(query_results)
-
-        return aggregated_result
+        return self._get_summarized_query_result(simulation_query_response[0], query_results)
