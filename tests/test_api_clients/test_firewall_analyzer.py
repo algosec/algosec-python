@@ -18,15 +18,6 @@ class TestFirewallAnalyzerAPIClient(object):
             verify_ssl=True
         )
 
-    @pytest.fixture()
-    def mock_device_result(self, request):
-        return FirewallAnalyzerAPIClient(
-            'server-ip',
-            'username',
-            'password',
-            verify_ssl=True
-        )
-
     @pytest.mark.parametrize('host,expected', [
         ('127.0.0.1', 'https://127.0.0.1/AFA/php/ws.php?wsdl'),
         ('local.algosec.com', 'https://local.algosec.com/AFA/php/ws.php?wsdl'),
