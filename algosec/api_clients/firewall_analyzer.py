@@ -84,6 +84,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
 
     @staticmethod
     def _prepare_simulation_query_results(devices):
+        """Return traffic simulation query results aggregated by device allowance state"""
         query_results = OrderedDict([
             (DeviceAllowanceState.BLOCKED, []),
             (DeviceAllowanceState.PARTIALLY_BLOCKED, []),
@@ -147,7 +148,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
              algosec.models.DeviceAllowanceState: The simulation query final result
 
         """
-        if hasattr(query_response, "QueryResult") and query_response.QueryResult:
+        if getattr(query_response, "QueryResult", None):
             aggregated_result = DeviceAllowanceState.from_string(query_response.QueryResult)
         else:
             aggregated_result = cls._calc_aggregated_query_result(query_results)
