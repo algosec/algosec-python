@@ -46,3 +46,16 @@ class TestFireFlowAPIClient(object):
         with mocker.patch.object(fireflow_client, "_get_soap_client", mock_get_soap_client):
             with pytest.raises(AlgoSecLoginError):
                 fireflow_client._initiate_client()
+
+    def test_get_change_request_by_id(self):
+        pass
+
+    def test_get_change_request_by_id__good_error_description_when_ticket_is_not_on_server(self):
+        pass
+
+    def test_create_change_request(self):
+        pass
+
+    def test_create_change_request__faulty_api_call(self):
+        """Make sure that upon api call failure, AlgoSecAPIError is raised"""
+        pass
