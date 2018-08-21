@@ -4,8 +4,11 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-# Get 3.7 here when travis add support for it https://github.com/SoCo/SoCo/pull/628
-#  - "3.7"
+matrix:
+  include:
+  - python: 3.7
+    dist: xenial
+    sudo: true
 # command to install dependencies
 install:
   - pip install tox-travis coveralls flake8
