@@ -69,6 +69,32 @@ class FireFlowAPIClient(SoapAPIClient):
         self._session_id = authenticate.sessionId
         return client
 
+    def _create_soap_traffic_line(self, traffic_line):
+        """
+        Create new FireFlow traffic line based on TrafficLine object.
+
+        Args:
+            traffic_line (algosec.models.ChangeRequestTrafficLine): The traffic line to create.
+
+        Returns: Soap traffic line object
+
+        """
+        soap_traffic_line = self.client.factory.create('trafficLine')
+        soap_traffic_line.action = traffic_line.action.value.api_value
+        for source in traffic_line.sources:
+            traffic_address = self.client.factory.create('trafficAddress')
+            traffic_address.address = source
+            soap_traffic_line.trafficSource.append(traffic_address)
+        for dest in traffic_line.destinations:
+            traffic_address = self.client.factory.create('trafficAddress')
+            traffic_address.address = dest
+            soap_traffic_line.trafficDestination.append(traffic_address)
+        for service in traffic_line.services:
+            traffic_service = self.client.factory.create('trafficService')
+            traffic_service.service = service
+            soap_traffic_line.trafficService.append(traffic_service)
+        return soap_traffic_line
+
     def create_change_request(
             self,
             subject,
@@ -106,26 +132,7 @@ class FireFlowAPIClient(SoapAPIClient):
             ticket.template = template
 
         for traffic_line in traffic_lines:
-            soap_traffic_line = self.client.factory.create('trafficLine')
-
-            soap_traffic_line.action = traffic_line.action.value.api_value
-
-            for source in traffic_line.sources:
-                traffic_address = self.client.factory.create('trafficAddress')
-                traffic_address.address = source
-                soap_traffic_line.trafficSource.append(traffic_address)
-
-            for dest in traffic_line.destinations:
-                traffic_address = self.client.factory.create('trafficAddress')
-                traffic_address.address = dest
-                soap_traffic_line.trafficDestination.append(traffic_address)
-
-            for service in traffic_line.services:
-                traffic_service = self.client.factory.create('trafficService')
-                traffic_service.service = service
-                soap_traffic_line.trafficService.append(traffic_service)
-
-            ticket.trafficLines.append(soap_traffic_line)
+            ticket.trafficLines.append(self._create_soap_traffic_line(traffic_line))
 
         # Actually create the ticket
         try:
