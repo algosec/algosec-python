@@ -32,6 +32,10 @@ deploy:
     tags: true
     branch: master
     condition: "$TOXENV = deploy"
+branches:
+  # Trigger build only for master, the rest should use PRs for builds to work
+  only:
+  - master
 notifications:
   email:
     on_success: never
