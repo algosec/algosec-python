@@ -18,6 +18,7 @@ install:
 script:
   - flake8
   - tox
+  - echo $TOXENV
 after_success:
   - echo $TOXENV
   - coveralls
