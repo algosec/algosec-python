@@ -18,7 +18,6 @@ setup(
     long_description=long_description,
     keywords="algosec businessflow fireflow firewallanalyzer security policy management network security",
     classifiers=[
-        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "License :: OSI Approved :: MIT License",
