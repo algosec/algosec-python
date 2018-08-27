@@ -1,7 +1,7 @@
 """Runnable example code to create a change request if AlgoSec FireFlow"""
 
 
-from algosec.api_client import FireFlowAPIClient
+from algosec.api_clients.fire_flow import FireFlowAPIClient
 from algosec.models import ChangeRequestTrafficLine, ChangeRequestAction
 
 if __name__ == "__main__":

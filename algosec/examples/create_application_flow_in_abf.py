@@ -1,7 +1,7 @@
 """Runnable example code to create an application flow in Business flow
 
 """
-from algosec.api_client import BusinessFlowAPIClient
+from algosec.api_clients.business_flow import BusinessFlowAPIClient
 from algosec.models import RequestedFlow
 
 if __name__ == "__main__":
