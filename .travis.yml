@@ -4,6 +4,8 @@ python:
   - '3.4'
   - '3.5'
   - '3.6'
+  - 'pypy'
+  - 'pypy3.5'
 matrix:
   include:
   - python: 3.7
@@ -28,6 +30,13 @@ deploy:
   on:
     tags: true
     branch: master
+    # TODO: Find a way to fix this so tagged commits does not error out due to multiple PyPi deployments
+    # within the different tox versions
+#    condition: "$TOXENV = deploy"
+branches:
+  # Trigger build only for master, the rest should use PRs for builds to work
+  only:
+  - master
 notifications:
   email:
     on_success: never
