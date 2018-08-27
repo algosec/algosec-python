@@ -271,10 +271,16 @@ class BusinessFlowAPIClient(RESTAPIClient):
             if not is_ip_or_subnet(obj):
                 continue
             search_objects = self.search_network_objects(obj, NetworkObjectSearchTypes.EXACT)
-            if not search_objects:
-                continue
-            object_names = [search_object.get('name') for search_object in search_objects]
-            if obj not in object_names:
+            if search_objects:
+                # EXACT object search is by content, not by name.
+                # Therefore, we make check if the exact object name was found
+                # Even if the object exists under a different name, we want to make sure it is
+                # marked for re-creation here.
+                object_names = [search_object.get('name') for search_object in search_objects]
+                if obj not in object_names:
+                    objects_missing_from_algosec.append(obj)
+            else:
+                # No object was found, mark for creation
                 objects_missing_from_algosec.append(obj)
 
         created_objects = []
@@ -335,7 +341,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             None
         """
         flow_id = self.get_flow_by_name(app_revision_id, flow_name)['flowID']
-        return self.delete_flow_by_id(app_revision_id, flow_id)
+        self.delete_flow_by_id(app_revision_id, flow_id)
 
     def get_application_flows(self, app_revision_id):
         """Return all flows of the application revision.
@@ -445,11 +451,11 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
         return response.json()[0]
 
-    def apply_application_draft(self, revision_id):
+    def apply_application_draft(self, app_revision_id):
         """Apply an application draft and automatically create a FireFlow change request.
 
         Args:
-            revision_id (int|str): The revision ID of the application to apply the draft for.
+            app_revision_id (int|str): The revision ID of the application to apply the draft for.
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If error occurred while trying to apply the application draft.
@@ -457,5 +463,5 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             requests.models.Response: The API call response.
         """
-        response = self.session.post("{}/{}/apply".format(self.applications_base_url, revision_id))
-        return self._check_api_response(response)
+        response = self.session.post("{}/{}/apply".format(self.applications_base_url, app_revision_id))
+        self._check_api_response(response)
