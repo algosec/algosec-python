@@ -15,8 +15,8 @@ AlgoSec Python SDK
       - | |version| |wheel| |supported-versions| |pyup|
 
 
-.. |pyup| image:: https://pyup.io/repos/github/algosec/algosec-pythnon/shield.svg
-     :target: https://pyup.io/repos/github/algosec/algosec-pythnon/
+.. |pyup| image:: https://pyup.io/repos/github/algosec/algosec-python/shield.svg
+     :target: https://pyup.io/repos/github/algosec/algosec-python/
      :alt: Updates
 
 .. |requires| image:: https://requires.io/github/algosec/algosec-python/requirements.svg?branch=master
