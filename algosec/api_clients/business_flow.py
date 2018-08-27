@@ -386,16 +386,15 @@ class BusinessFlowAPIClient(RESTAPIClient):
             self,
             app_revision_id,
             requested_flow,
-            retry_for_missing_services=True,
-            create_missing_objects=True,
     ):
         """Create an application flow.
+
+        Creates network services that were defined in the flow but
+        are not currently exist on ABF.
 
         Args:
             app_revision_id (int): The application revision id as defined on ABF to create this flow on
             requested_flow(algosec.models.RequestedFlow): The flow to be created
-            retry_for_missing_services (bool): Missing services are create in AlgoSec if True. Defaults to True.
-            create_missing_objects (bool): Missing objects are created in AlgoSec if True. Defaults to True.
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If application flow creation failed.
@@ -403,50 +402,15 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             dict: An Application object as defined in the API Guide.
         """
-        if create_missing_objects:
-            all_network_objects = set(chain(requested_flow.destinations, requested_flow.sources))
-            self.create_missing_network_objects(all_network_objects)
+        all_network_objects = set(requested_flow.destinations + requested_flow.sources)
+        self.create_missing_network_objects(all_network_objects)
 
         response = self.session.post(
             "{}/{}/flows/new".format(self.applications_base_url, app_revision_id),
             # We send a list since the API is looking for a list on NewFlows
             json=[requested_flow.get_json_flow_definition()],
         )
-        try:
-            self._check_api_response(response)
-        except AlgoSecAPIError as api_error:
-            # Handling the case when the failure is due to missing network_services from ABF
-            # This code will try to create them and re-call this function again with retry=False
-            # to make sure we are not getting into an infinite look
-            if not retry_for_missing_services:
-                raise
-
-            # Filter all of the cases where we are unable to recognize the reason for the failure
-            if any([
-                api_error.response is None,
-                api_error.response_json is None,
-                type(api_error.response_json) != list,
-                api_error.response.status_code != status_codes.codes.BAD_REQUEST,
-            ]):
-                raise
-
-            # Identify the missing services by parsing manually the service names from the json errors
-            service_does_not_exist_pattern = "Service object named (UDP|TCP)/(\d+) does not exist"
-            for error_line in api_error.response_json:
-                match = re.match(service_does_not_exist_pattern, error_line, re.IGNORECASE)
-                if match:
-                    proto, port = match.groups()
-                    self.create_network_service(
-                        service_name="{}/{}".format(proto, port),
-                        content=[(proto, port)]
-                    )
-            return self.create_application_flow(
-                app_revision_id=app_revision_id,
-                requested_flow=requested_flow,
-                retry_for_missing_services=False,
-                create_missing_objects=False,
-            )
-
+        self._check_api_response(response)
         return response.json()[0]
 
     def apply_application_draft(self, app_revision_id):
