@@ -2,12 +2,10 @@
 
 
 import logging
-import re
-from itertools import chain
 
-from six.moves.urllib.parse import quote_plus
 import requests
 from requests import status_codes
+from six.moves.urllib.parse import quote_plus
 
 from algosec.api_clients.base import RESTAPIClient
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, EmptyFlowSearch

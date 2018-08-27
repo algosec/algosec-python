@@ -3,8 +3,8 @@ from mock import mock, MagicMock, call
 from requests import status_codes
 
 from algosec.api_clients.business_flow import BusinessFlowAPIClient
-from algosec.errors import AlgoSecLoginError, EmptyFlowSearch
-from algosec.models import NetworkObjectType, NetworkObjectSearchTypes
+from algosec.errors import AlgoSecLoginError, EmptyFlowSearch, AlgoSecAPIError
+from algosec.models import NetworkObjectType, NetworkObjectSearchTypes, RequestedFlow
 
 
 class TestBusinessFlowAPIClient(object):
@@ -156,6 +156,16 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.get.return_value
         response.json.return_value = api_result
         assert client.get_network_object_by_name('network-object-name') == network_object
+
+    @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient._check_api_response')
+    @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.session')
+    def test_get_network_object_by_name__invalid_response_object(self, mock_session, mock_check_response, client):
+        """Make sure that we support the return value of a list of one object"""
+        api_result = MagicMock()
+        response = mock_session.get.return_value
+        response.json.return_value = api_result
+        with pytest.raises(AlgoSecAPIError):
+            client.get_network_object_by_name('network-object-name')
 
     @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient._check_api_response')
     @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.session')
@@ -327,17 +337,63 @@ class TestBusinessFlowAPIClient(object):
         )
         mock_check_response.assert_called_once_with(response)
         assert result == response.json.return_value
-    #
-    # @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient._check_api_response')
-    # @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.session')
-    # def test_create_application_flow(self, mock_session, mock_check_response, client):
-    #     response = mock_session.get.return_value
-    #     result = client.create_application_flow()
-    #     mock_session.get.assert_called_once_with(
-    #         'url',
-    #     )
-    #     mock_check_response.assert_called_once_with(response)
-    #     assert result == response.json.return_value
+
+    @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.create_missing_network_objects')
+    @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient._check_api_response')
+    @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.session')
+    def test_create_application_flow(
+            self,
+            mock_session,
+            mock_check_response,
+            mock_create_missing_objects,
+            client
+    ):
+        requested_flow = RequestedFlow(
+            name='flow-name',
+            sources=['source1', 'source2', 'double-obj'],
+            destinations=['dest1', 'dest2', 'double-obj'],
+            network_users=['user1', 'user2'],
+            network_applications=['app1', 'app2'],
+            network_services=['service1', 'service2'],
+            comment='comment',
+            type='flow-type',
+        )
+        response = mock_session.post.return_value
+        result = client.create_application_flow(
+            'app-revision-id',
+            requested_flow
+        )
+        mock_session.post.assert_called_once_with(
+            'https://server-ip/BusinessFlow/rest/v1/applications/app-revision-id/flows/new',
+            json=[{
+                'type': 'flow-type',
+                'name': 'flow-name',
+                'sources': [
+                    {'name': 'source1'},
+                    {'name': 'source2'},
+                    {'name': 'double-obj'}
+                ],
+                'destinations': [
+                    {'name': 'dest1'},
+                    {'name': 'dest2'},
+                    {'name': 'double-obj'}
+                ],
+                'users': ['user1', 'user2'],
+                'network_applications': [{'name': 'app1'}, {'name': 'app2'}],
+                'services': [{'name': 'service1'}, {'name': 'service2'}],
+                'comment': 'comment',
+                'custom_fields': []
+            }]
+        )
+        mock_check_response.assert_called_once_with(response)
+        mock_create_missing_objects.assert_called_once_with({
+            'source1',
+            'source2',
+            'dest1',
+            'dest2',
+            'double-obj'
+        })
+        assert result == response.json.return_value[0]
 
     @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient._check_api_response')
     @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.session')
