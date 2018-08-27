@@ -32,7 +32,7 @@ AlgoSec Python SDK
    :alt: Documentation Status
 
 .. |coverage| image:: https://coveralls.io/repos/github/algosec/algosec-python/badge.svg?branch=master
-    :target: https://coveralls.io/github/algosec/algosec-python?branch=unittest-cov
+    :target: https://coveralls.io/github/algosec/algosec-python?branch=master
 
 .. |travis| image:: https://travis-ci.org/algosec/algosec-python.svg?branch=master
     :target: https://travis-ci.org/algosec/algosec-python
