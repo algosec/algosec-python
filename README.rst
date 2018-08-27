@@ -108,7 +108,7 @@ This will install all the dependencies and set the project up for local usage an
 Testing
 ^^^^^^^
 
-To run the unittests run::
+To run the unittests for all supported python versions, simply run::
 
-    python setup.py nosetests
+    tox
 
