@@ -1,9 +1,10 @@
 import pytest
-from mock import mock, MagicMock
+from mock import mock, MagicMock, call
 from requests import status_codes
 
 from algosec.api_clients.business_flow import BusinessFlowAPIClient
 from algosec.errors import AlgoSecLoginError, EmptyFlowSearch
+from algosec.models import NetworkObjectType, NetworkObjectSearchTypes
 
 
 class TestBusinessFlowAPIClient(object):
@@ -158,7 +159,12 @@ class TestBusinessFlowAPIClient(object):
 
     @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient._check_api_response')
     @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.session')
-    def test_create_network_object(self, mock_session, mock_check_response, client):
+    def test_create_network_object(
+            self,
+            mock_session,
+            mock_check_response,
+            client,
+    ):
         network_object_type = MagicMock()
         response = mock_session.post.return_value
         result = client.create_network_object(network_object_type, 'object-content', 'object-name')
@@ -172,17 +178,69 @@ class TestBusinessFlowAPIClient(object):
         )
         mock_check_response.assert_called_once_with(response)
         assert result == response.json.return_value
-    #
-    # @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient._check_api_response')
-    # @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.session')
-    # def test_create_missing_network_objects(self, mock_session, mock_check_response, client):
-    #     response = mock_session.get.return_value
-    #     result = client.create_missing_network_objects()
-    #     mock_session.get.assert_called_once_with(
-    #         'url',
-    #     )
-    #     mock_check_response.assert_called_once_with(response)
-    #     assert result == response.json.return_value
+
+    @mock.patch('algosec.api_clients.business_flow.is_ip_or_subnet')
+    @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.search_network_objects')
+    @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.create_network_object')
+    @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient._check_api_response')
+    @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.session')
+    def test_create_missing_network_objects(
+            self,
+            mock_session,
+            mock_check_response,
+            mock_create_network_object,
+            mock_search_network_objects,
+            mock_is_ip_or_subnet,
+            client,
+    ):
+
+        def is_ip_or_subnet(string):
+            if string == 'non-ip-or-subnet':
+                return False
+            return True
+
+        def object_search(obj_string, search_type):
+            return {
+                # Object that had no search result
+                '10.0.0.1': [],
+                # Object with search result with no matching object name
+                '10.0.0.2': [
+                    {'name': 'object-with-same-content-but-different-name'},
+                ],
+                # Object with search result that it is already created on ABF
+                '10.0.0.3': [
+                    {'name': '10.0.0.3'},
+                ],
+            }[obj_string]
+
+        def created_object(type, obj_string, obj_string2):
+            return {'name': obj_string}
+
+        mock_is_ip_or_subnet.side_effect = is_ip_or_subnet
+        mock_search_network_objects.side_effect = object_search
+        mock_create_network_object.side_effect = created_object
+
+        missing_objects = [
+            # Non creatable object
+            'non-ip-or-subnet',
+            # Objects we can create
+            '10.0.0.1',
+            '10.0.0.2',
+            '10.0.0.3',
+        ]
+        created_objects = client.create_missing_network_objects(missing_objects)
+        # All objects are searched
+        assert mock_search_network_objects.call_args_list == [
+            call('10.0.0.1', NetworkObjectSearchTypes.EXACT),
+            call('10.0.0.2', NetworkObjectSearchTypes.EXACT),
+            call('10.0.0.3', NetworkObjectSearchTypes.EXACT),
+        ]
+        # Only specific objects are created
+        assert mock_create_network_object.call_args_list == [
+            call(NetworkObjectType.HOST, '10.0.0.1', '10.0.0.1'),
+            call(NetworkObjectType.HOST, '10.0.0.2', '10.0.0.2'),
+        ]
+        assert created_objects == [{'name': '10.0.0.1'}, {'name': '10.0.0.2'}]
 
     @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient.get_application_flows')
     @mock.patch('algosec.api_clients.business_flow.BusinessFlowAPIClient._check_api_response')

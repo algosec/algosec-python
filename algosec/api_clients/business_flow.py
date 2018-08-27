@@ -283,12 +283,10 @@ class BusinessFlowAPIClient(RESTAPIClient):
                 # No object was found, mark for creation
                 objects_missing_from_algosec.append(obj)
 
-        created_objects = []
-        for obj in objects_missing_from_algosec:
-            created_object = self.create_network_object(NetworkObjectType.HOST, obj, obj)
-            created_objects.append(created_object)
-
-        return created_objects
+        return [
+            self.create_network_object(NetworkObjectType.HOST, obj, obj)
+            for obj in objects_missing_from_algosec
+        ]
 
     def get_flow_by_name(self, app_revision_id, flow_name):
         """Return application flow by its name
