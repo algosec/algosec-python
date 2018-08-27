@@ -18,9 +18,7 @@ install:
 script:
   - flake8
   - tox
-  - echo $TOXENV
 after_success:
-  - echo $TOXENV
   - coveralls
 # Automatically deploy new tagged versions to PyPi
 deploy:
@@ -32,6 +30,8 @@ deploy:
   on:
     tags: true
     branch: master
+    # TODO: Find a way to fix this so tagged commits does not error out due to multiple PyPi deployments
+    # within the different tox versions
 #    condition: "$TOXENV = deploy"
 branches:
   # Trigger build only for master, the rest should use PRs for builds to work
