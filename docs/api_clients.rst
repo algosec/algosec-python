@@ -5,12 +5,11 @@ Welcome! This page explain the best way to use ``algosec`` API clients.
 We'll start with a short brief description of the module and its constitutions followed by in-depth
 explanation and exploration of each of the API Clients.
 
-.. automodule:: algosec.api_client
-
 
 BusinessFlow API Client
 -----------------------
 
+.. automodule:: algosec.api_clients.business_flow
 .. autoclass:: BusinessFlowAPIClient
     :members:
 
@@ -18,6 +17,7 @@ BusinessFlow API Client
 FirewallAnalyzer API Client
 ---------------------------
 
+.. automodule:: algosec.api_clients.firewall_analyzer
 .. autoclass:: FirewallAnalyzerAPIClient
     :members:
 
@@ -25,6 +25,7 @@ FirewallAnalyzer API Client
 FireFlow API Client
 -------------------
 
+.. automodule:: algosec.api_clients.fire_flow
 .. autoclass:: FireFlowAPIClient
     :members:
 
