@@ -6,6 +6,9 @@ We'll start with a short brief description of the module and its constitutions f
 explanation and exploration of each of the API Clients.
 
 
+.. automodule::algosec.api_clients.business_flow
+    :members:
+
 BusinessFlow API Client
 -----------------------
 .. currentmodule:: algosec.api_clients.business_flow
