@@ -11,7 +11,7 @@ Welcome to AlgoSec Python SDK documentation!
    :caption: Contents:
 
    readme
-   api_clients
+   clients
    license
    support
 
