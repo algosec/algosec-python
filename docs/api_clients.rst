@@ -8,22 +8,24 @@ explanation and exploration of each of the API Clients.
 
 BusinessFlow API Client
 -----------------------
-
-.. autoclass:: algosec.api_clients.business_flow.BusinessFlowAPIClient
+.. currentmodule:: algosec.api_clients.business_flow
+.. autoclass:: BusinessFlowAPIClient
     :members:
 
 
 FirewallAnalyzer API Client
 ---------------------------
 
-.. autoclass:: algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient
+.. currentmodule:: algosec.api_clients.firewall_analyzer
+.. autoclass:: FirewallAnalyzerAPIClient
     :members:
 
 
 FireFlow API Client
 -------------------
 
-.. autoclass:: algosec.api_clients.fire_flow.FireFlowAPIClient
+.. currentmodule:: algosec.api_clients.fire_flow
+.. autoclass:: FireFlowAPIClient
     :members:
 
 
