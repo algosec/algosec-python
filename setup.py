@@ -8,7 +8,7 @@ with open("README.rst") as f:
 
 setup(
     name="algosec",
-    version="1.0.4",
+    version="1.0.5",
     packages=["algosec"],
     url="https://github.com/algosec/algosec-python",
     license="MIT",
