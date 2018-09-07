@@ -1,6 +1,6 @@
 from codecs import open
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # Get the long description from the README file
 with open("README.rst") as f:
@@ -9,7 +9,7 @@ with open("README.rst") as f:
 setup(
     name="algosec",
     version="1.0.5",
-    packages=["algosec"],
+    packages=find_packages(exclude=['tests', 'tests.*']),
     url="https://github.com/algosec/algosec-python",
     license="MIT",
     author="Almog Cohen",
