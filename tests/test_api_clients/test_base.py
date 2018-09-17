@@ -3,9 +3,9 @@ import requests
 import suds_requests
 from mock import create_autospec, MagicMock
 from requests import Response, HTTPError
-from suds import client
+from suds import client, WebFault
 
-from algosec.api_clients.base import APIClient, RESTAPIClient, SoapAPIClient
+from algosec.api_clients.base import APIClient, RESTAPIClient, SoapAPIClient, report_soap_failure
 from algosec.errors import AlgoSecAPIError
 
 
@@ -59,8 +59,10 @@ class TestRESTAPIClient(object):
 
         with pytest.raises(AlgoSecAPIError) as e:
             rest_client._check_api_response(mock_response)
-            assert e.response == mock_response
-            assert e.response_json == mock_response.json()
+
+        assert e.value.response == mock_response
+        assert e.value.response_content == mock_response.json()
+        assert e.value.status_code == mock_response.status_code
 
     def test_check_api_response__use_empty_json_on_fail_with_no_json(self, rest_client, mock_response):
         mock_response.raise_for_status.side_effect = HTTPError
@@ -68,9 +70,12 @@ class TestRESTAPIClient(object):
         with pytest.raises(AlgoSecAPIError) as e:
             # No json on response
             mock_response.json.side_effect = ValueError
+            mock_response.content = response_content = 'some-response-content'
             rest_client._check_api_response(mock_response)
-            assert e.response == mock_response
-            assert e.response_json == {}
+
+        assert e.value.response == mock_response
+        assert e.value.response_content == response_content
+        assert e.value.status_code == mock_response.status_code
 
 
 class TestSoapAPIClient(object):
@@ -110,3 +115,33 @@ class TestSoapAPIClient(object):
                     wsdl_path,
                     transport=suds_requests.RequestsTransport(session)
                 )
+
+
+class TestReportSoapFailure(object):
+    def test_report_soap_failure__detailed_transport_error(self, responses):
+        wsdl_path = 'http://some-wsdl-path'
+        api_error = 'some error description'
+        responses.add(
+            responses.GET,
+            wsdl_path,
+            json={'error': api_error}, status=500
+        )
+
+        with pytest.raises(AlgoSecAPIError) as e:
+            with report_soap_failure(AlgoSecAPIError):
+                # Force an api soap call, that is destined to fail
+                client.Client(wsdl_path, transport=suds_requests.RequestsTransport())
+
+        assert "status_code: 500" in str(e)
+        assert api_error in str(e)
+
+    def test_report_soap_failure__webfault_is_fetched(self):
+        """See that webfault is translated into AlgoSecAPIError"""
+        with pytest.raises(AlgoSecAPIError):
+            with report_soap_failure(AlgoSecAPIError):
+                raise WebFault("Some Error", document={})
+
+    def test_report_soap_failure__no_failure(self):
+        # See that no exception is raised
+        with report_soap_failure(AlgoSecAPIError):
+            pass

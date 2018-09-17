@@ -13,17 +13,20 @@ class AlgoSecAPIError(Exception):
     Attributes:
         response: The response object that caused the error.
             If it was not passed to the constructor, will be None.
-        response_json (dict): The JSON of the response that caused the error.
-            Will be None if is not available.
+        response_content (dict|str): The content of the response that caused the error.
+            If it is a JSON, a JSON will be stored and not the raw content. Will be None if is not passed.
+        status_code (int): The status code of the response of the failed API call. (Optional)
 
     Keyword Args:
         response: The response object that caused the error. (Optional)
-        response_json (dict): The JSON of the response that caused the error. (Optional)
+        response_content (dict): The content of the response of the failed API call. (Optional)
+        status_code (int): The status code of the response of the failed API call. (Optional)
     """
     def __init__(self, *args, **kwargs):
         """Initialize RequestException with `request` and `response` objects."""
         self.response = kwargs.pop('response', None)
-        self.response_json = kwargs.pop('response_json', None)
+        self.status_code = kwargs.pop('status_code', None)
+        self.response_content = kwargs.pop('response_content', None)
         super(AlgoSecAPIError, self).__init__(*args, **kwargs)
 
 

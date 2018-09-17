@@ -9,7 +9,7 @@ from algosec.models import ChangeRequestTrafficLine, ChangeRequestAction
 
 class TestFireFlowAPIClient(object):
     @pytest.fixture()
-    def fireflow_client(self, request):
+    def fireflow_client(self):
         return FireFlowAPIClient(
             'server-ip',
             'username',
@@ -67,22 +67,6 @@ class TestFireFlowAPIClient(object):
 
         with pytest.raises(AlgoSecAPIError):
             fireflow_client.get_change_request_by_id(MagicMock())
-
-    @mock.patch('algosec.api_clients.fire_flow.FireFlowAPIClient.client')
-    def test_get_change_request_by_id__good_error_description_when_ticket_is_not_on_server(
-            self,
-            mock_soap_client,
-            fireflow_client
-    ):
-        change_request_id = 999999
-        soap_error = MagicMock()
-        soap_error.faultstring = 'Can not get ticket for id {}'.format(change_request_id)
-        mock_soap_client.service.getTicket.side_effect = WebFault(soap_error, document={})
-
-        with pytest.raises(AlgoSecAPIError) as excinfo:
-            fireflow_client.get_change_request_by_id(MagicMock())
-
-        assert str(excinfo.value) == 'Change request was not found on the server.'
 
     @mock.patch('algosec.api_clients.fire_flow.FireFlowAPIClient.client')
     @mock.patch('algosec.api_clients.fire_flow.FireFlowAPIClient._create_soap_traffic_line')
