@@ -6,15 +6,14 @@ specific API client implementations. Classes here are used by all three clients 
 """
 import logging
 import traceback
-from contextlib import contextmanager
 
 import requests
 import suds_requests
 from requests import HTTPError
-from suds import client, WebFault
-from suds.transport import TransportError
+from suds import client
 
 from algosec.errors import AlgoSecAPIError
+from algosec.helpers import report_soap_failure, LogSOAPMessages
 
 logger = logging.getLogger(__name__)
 
@@ -40,40 +39,6 @@ class APIClient(object):
         self.user = user
         self.password = password
         self.verify_ssl = verify_ssl
-
-
-@contextmanager
-def report_soap_failure(exception_to_raise):
-    """
-    Handle soap calls and raise proper exception when needed.
-
-    Used as a context manager by wrapping the code blocks with soap calls
-
-    Args:
-        exception_to_raise (algosec.errors.AlgoSecAPIError): The exception type that should be
-            raised in case of execution failure.
-
-    Returns:
-        Nothing. Used as
-    """
-    reason = "SOAP API call failed."
-    try:
-        yield
-    except WebFault:
-        # Handle exceptions in SOAP logical level
-        raise exception_to_raise(reason)
-    except TransportError as e:
-        # Handle exceptions at the transport layer
-        # For example, when getting status code 500 from the server upon mere HTTP request
-        # This code assumes that the transport error is raised by the suds_requests package.
-        status_code = e.httpcode
-        response_content = e.fp.read()
-        reason += ' status_code: {}, response_content: {}'.format(status_code, response_content)
-        raise exception_to_raise(
-            reason,
-            status_code=status_code,
-            response_content=response_content,
-        )
 
 
 class RESTAPIClient(APIClient):
@@ -193,4 +158,9 @@ class SoapAPIClient(APIClient):
         session.verify = self.verify_ssl
         # use ``requests`` based suds implementation to handle AlgoSec's self-signed certificate properly.
         with report_soap_failure(AlgoSecAPIError):
-            return client.Client(wsdl_path, transport=suds_requests.RequestsTransport(session), **kwargs)
+            return client.Client(
+                wsdl_path,
+                transport=suds_requests.RequestsTransport(session),
+                plugins=[LogSOAPMessages()],
+                **kwargs
+            )

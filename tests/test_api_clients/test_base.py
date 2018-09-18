@@ -5,7 +5,8 @@ from mock import create_autospec, MagicMock
 from requests import Response, HTTPError
 from suds import client, WebFault
 
-from algosec.api_clients.base import APIClient, RESTAPIClient, SoapAPIClient, report_soap_failure
+from algosec.api_clients.base import APIClient, RESTAPIClient, SoapAPIClient
+from algosec.helpers import report_soap_failure
 from algosec.errors import AlgoSecAPIError
 
 

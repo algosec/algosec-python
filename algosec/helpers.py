@@ -3,10 +3,18 @@
 Note:
     Most developers will not have to use any of the contents of this module directly.
 """
+import logging
+from contextlib import contextmanager
 
 import six
 from ipaddress import IPv4Network, AddressValueError, NetmaskValueError
 from requests.adapters import HTTPAdapter
+from suds import WebFault
+from suds.plugin import MessagePlugin
+from suds.transport import TransportError
+
+
+log = logging.getLogger(__name__)
 
 
 class AlgoSecServersHTTPAdapter(HTTPAdapter):
@@ -55,3 +63,50 @@ def is_ip_or_subnet(string):
         return True
     except (AddressValueError, NetmaskValueError, ValueError):
         return False
+
+
+@contextmanager
+def report_soap_failure(exception_to_raise):
+    """
+    Handle soap calls and raise proper exception when needed.
+
+    Used as a context manager by wrapping the code blocks with soap calls
+
+    Args:
+        exception_to_raise (algosec.errors.AlgoSecAPIError): The exception type that should be
+            raised in case of execution failure.
+
+    Returns:
+        Nothing. Used as
+    """
+    reason = "SOAP API call failed."
+    try:
+        yield
+    except WebFault:
+        # Handle exceptions in SOAP logical level
+        raise exception_to_raise(reason)
+    except TransportError as e:
+        # Handle exceptions at the transport layer
+        # For example, when getting status code 500 from the server upon mere HTTP request
+        # This code assumes that the transport error is raised by the suds_requests package.
+        status_code = e.httpcode
+        response_content = e.fp.read()
+        reason += ' status_code: {}, response_content: {}'.format(status_code, response_content)
+        raise exception_to_raise(
+            reason,
+            status_code=status_code,
+            response_content=response_content,
+        )
+
+
+class LogSOAPMessages(MessagePlugin):
+    """Used to send soap log messages into the builtin logging module"""
+    def __init__(self, level=logging.DEBUG):
+        self.level = level
+        super(LogSOAPMessages, self).__init__()
+
+    def sending(self, context):
+        log.log(logging.DEBUG, "Sending SOAP message: {}".format(str(context.envelope)))
+
+    def received(self, context):
+        log.log(logging.DEBUG, "Received SOAP message: {}".format(str(context.reply)))

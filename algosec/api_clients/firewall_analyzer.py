@@ -26,7 +26,8 @@ Examples:
 import logging
 from collections import OrderedDict
 
-from algosec.api_clients.base import SoapAPIClient, report_soap_failure
+from algosec.api_clients.base import SoapAPIClient
+from algosec.helpers import report_soap_failure
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, UnrecognizedAllowanceState
 from algosec.models import DeviceAllowanceState
 
