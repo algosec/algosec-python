@@ -99,7 +99,8 @@ def report_soap_failure(exception_to_raise):
         )
 
 
-class LogSOAPMessages(MessagePlugin):
+# LogSOAPMessages inherit from `object` as the `MessagePlugin` is not defined as new-style class object
+class LogSOAPMessages(MessagePlugin, object):
     """Used to send soap log messages into the builtin logging module"""
     def __init__(self, level=logging.DEBUG):
         self.level = level
