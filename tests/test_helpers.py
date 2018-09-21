@@ -57,62 +57,48 @@ def test_is_ip_or_subnet(string, expected):
 class TestLogSOAPMessages(object):
     @classmethod
     def setup_class(cls):
-        logging.getLogger().setLevel(logging.NOTSET)
+        logging.getLogger().setLevel(logging.DEBUG)
 
     @classmethod
     def teardown_class(cls):
         logging.getLogger().setLevel(logging.INFO)
 
-    @pytest.mark.parametrize("level", [
-        logging.CRITICAL,
-        logging.ERROR,
-        logging.WARNING,
-        logging.INFO,
-        logging.DEBUG,
-    ])
     @pytest.mark.parametrize("message", [
         b'some bits',
         True,
         123,
         'some string'
     ])
-    def test_sending(self, caplog, level, message):
+    def test_sending(self, caplog, message):
         context = MessageContext()
         context.envelope = message
 
-        logging_plugin = LogSOAPMessages(level)
+        logging_plugin = LogSOAPMessages()
         logging_plugin.sending(context)
 
         log_records = list(caplog.records)
         assert len(log_records) == 1
         log_record = log_records[0]
 
-        assert log_record.levelno == level
+        assert log_record.levelno == logging.DEBUG
         assert log_record.message == "Sending SOAP message: {}".format(str(message))
 
-    @pytest.mark.parametrize("level", [
-        logging.CRITICAL,
-        logging.ERROR,
-        logging.WARNING,
-        logging.INFO,
-        logging.DEBUG,
-    ])
     @pytest.mark.parametrize("message", [
         b'some bits',
         True,
         123,
         'some string'
     ])
-    def test_received(self, caplog, level, message):
+    def test_received(self, caplog, message):
         context = MessageContext()
         context.reply = message
 
-        logging_plugin = LogSOAPMessages(level)
+        logging_plugin = LogSOAPMessages()
         logging_plugin.received(context)
 
         log_records = list(caplog.records)
         assert len(log_records) == 1
         log_record = log_records[0]
 
-        assert log_record.levelno == level
+        assert log_record.levelno == logging.DEBUG
         assert log_record.message == "Received SOAP message: {}".format(str(message))
