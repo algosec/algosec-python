@@ -1,8 +1,16 @@
+import logging
+
 import mock
 import pytest
 import requests
+from suds.plugin import MessageContext
 
-from algosec.helpers import mount_algosec_adapter_on_session, AlgoSecServersHTTPAdapter, is_ip_or_subnet
+from algosec.helpers import (
+    mount_algosec_adapter_on_session,
+    AlgoSecServersHTTPAdapter,
+    is_ip_or_subnet,
+    LogSOAPMessages,
+)
 
 
 @mock.patch('six.moves.builtins.super')
@@ -44,3 +52,67 @@ def test_mount_algosec_adapter_on_session(mocker):
 ])
 def test_is_ip_or_subnet(string, expected):
     assert is_ip_or_subnet(string) == expected
+
+
+class TestLogSOAPMessages(object):
+    @classmethod
+    def setup_class(cls):
+        logging.getLogger().setLevel(logging.NOTSET)
+
+    @classmethod
+    def teardown_class(cls):
+        logging.getLogger().setLevel(logging.INFO)
+
+    @pytest.mark.parametrize("level", [
+        logging.CRITICAL,
+        logging.ERROR,
+        logging.WARNING,
+        logging.INFO,
+        logging.DEBUG,
+    ])
+    @pytest.mark.parametrize("message", [
+        b'some bits',
+        True,
+        123,
+        'some string'
+    ])
+    def test_sending(self, caplog, level, message):
+        context = MessageContext()
+        context.envelope = message
+
+        logging_plugin = LogSOAPMessages(level)
+        logging_plugin.sending(context)
+
+        log_records = list(caplog.records)
+        assert len(log_records) == 1
+        log_record = log_records[0]
+
+        assert log_record.levelno == level
+        assert log_record.message == "Sending SOAP message: {}".format(str(message))
+
+    @pytest.mark.parametrize("level", [
+        logging.CRITICAL,
+        logging.ERROR,
+        logging.WARNING,
+        logging.INFO,
+        logging.DEBUG,
+    ])
+    @pytest.mark.parametrize("message", [
+        b'some bits',
+        True,
+        123,
+        'some string'
+    ])
+    def test_received(self, caplog, level, message):
+        context = MessageContext()
+        context.reply = message
+
+        logging_plugin = LogSOAPMessages(level)
+        logging_plugin.received(context)
+
+        log_records = list(caplog.records)
+        assert len(log_records) == 1
+        log_record = log_records[0]
+
+        assert log_record.levelno == level
+        assert log_record.message == "Received SOAP message: {}".format(str(message))

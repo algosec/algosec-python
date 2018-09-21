@@ -14,9 +14,6 @@ from suds.plugin import MessagePlugin
 from suds.transport import TransportError
 
 
-log = logging.getLogger(__name__)
-
-
 class AlgoSecServersHTTPAdapter(HTTPAdapter):
     """HTTP adapter to customize ``requests`` sessions with AlgoSec's servers.
 
@@ -103,11 +100,12 @@ def report_soap_failure(exception_to_raise):
 class LogSOAPMessages(MessagePlugin, object):
     """Used to send soap log messages into the builtin logging module"""
     def __init__(self, level=logging.DEBUG):
+        self.log = logging.getLogger(__name__)
         self.level = level
         super(LogSOAPMessages, self).__init__()
 
     def sending(self, context):
-        log.log(logging.DEBUG, "Sending SOAP message: {}".format(str(context.envelope)))
+        self.log.log(self.level, "Sending SOAP message: {}".format(str(context.envelope)))
 
     def received(self, context):
-        log.log(logging.DEBUG, "Received SOAP message: {}".format(str(context.reply)))
+        self.log.log(self.level, "Received SOAP message: {}".format(str(context.reply)))
