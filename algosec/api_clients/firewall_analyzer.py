@@ -26,9 +26,8 @@ Examples:
 import logging
 from collections import OrderedDict
 
-from suds import WebFault
-
 from algosec.api_clients.base import SoapAPIClient
+from algosec.helpers import report_soap_failure
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, UnrecognizedAllowanceState
 from algosec.models import DeviceAllowanceState
 
@@ -71,15 +70,12 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             suds.client.Client
         """
         client = self._get_soap_client(self._wsdl_url_path, location=self._wsdl_url_path.split('?')[0])
-        try:
+        with report_soap_failure(AlgoSecLoginError):
             self._session_id = client.service.connect(
                 UserName=self.user,
                 Password=self.password,
                 Domain=''
             )
-
-        except WebFault:
-            raise AlgoSecLoginError
         return client
 
     @staticmethod
@@ -169,7 +165,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         Returns:
             algosec.models.DeviceAllowanceState: Traffic simulation query result.
         """
-        try:
+        with report_soap_failure(AlgoSecAPIError):
             simulation_query_response = self.client.service.query(
                 SessionID=self._session_id,
                 QueryInput={
@@ -178,8 +174,6 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
                     'Service': service
                 }
             ).QueryResult
-        except WebFault:
-            raise AlgoSecAPIError
 
         if simulation_query_response is None or not simulation_query_response[0].QueryItem:
             devices = []

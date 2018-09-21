@@ -14,9 +14,8 @@ Examples:
 """
 import logging
 
-from suds import WebFault
-
 from algosec.api_clients.base import SoapAPIClient
+from algosec.helpers import report_soap_failure
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError
 
 logger = logging.getLogger(__name__)
@@ -58,13 +57,11 @@ class FireFlowAPIClient(SoapAPIClient):
             suds.client.Client
         """
         client = self._get_soap_client(self._wsdl_url_path)
-        try:
+        with report_soap_failure(AlgoSecLoginError):
             authenticate = client.service.authenticate(
                 username=self.user,
                 password=self.password,
             )
-        except WebFault:
-            raise AlgoSecLoginError
 
         self._session_id = authenticate.sessionId
         return client
@@ -135,10 +132,8 @@ class FireFlowAPIClient(SoapAPIClient):
             ticket.trafficLines.append(self._create_soap_traffic_line(traffic_line))
 
         # Actually create the ticket
-        try:
+        with report_soap_failure(AlgoSecAPIError):
             ticket_added = self.client.service.createTicket(sessionId=self._session_id, ticket=ticket)
-        except WebFault:
-            raise AlgoSecAPIError
 
         ticket_url = ticket_added.ticketDisplayURL
         return ticket_url
@@ -158,11 +153,6 @@ class FireFlowAPIClient(SoapAPIClient):
         Returns:
             The change request ticket object.
         """
-        try:
+        with report_soap_failure(AlgoSecAPIError):
             response = self.client.service.getTicket(sessionId=self._session_id, ticketId=change_request_id)
-        except WebFault as e:
-            if 'Can not get ticket for id' in e.fault.faultstring:
-                raise AlgoSecAPIError("Change request was not found on the server.")
-            # some other unknown error occurred
-            raise AlgoSecAPIError
         return response.ticket

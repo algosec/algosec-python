@@ -4,9 +4,7 @@ Includes base classes for both REST and SOAP API clients. Classes in this file a
 specific API client implementations. Classes here are used by all three clients currently implemented.
 
 """
-
 import logging
-
 import traceback
 
 import requests
@@ -15,6 +13,7 @@ from requests import HTTPError
 from suds import client
 
 from algosec.errors import AlgoSecAPIError
+from algosec.helpers import report_soap_failure, LogSOAPMessages
 
 logger = logging.getLogger(__name__)
 
@@ -93,17 +92,18 @@ class RESTAPIClient(APIClient):
         except HTTPError:
             try:
                 # Try and extract a json for failed responses for better exception description
-                json = response.json()
+                content = response.json()
             except ValueError:
-                json = {}
+                content = response.content
             raise AlgoSecAPIError(
-                "response code: {}, json: {}, exception: {}".format(
+                "response code: {}, content: {}, exception: {}".format(
                     response.status_code,
-                    json,
+                    content,
                     traceback.format_exc(),
                 ),
                 response=response,
-                response_json=json,
+                response_content=content,
+                status_code=response.status_code,
             )
         return response
 
@@ -157,4 +157,10 @@ class SoapAPIClient(APIClient):
         session = requests.Session()
         session.verify = self.verify_ssl
         # use ``requests`` based suds implementation to handle AlgoSec's self-signed certificate properly.
-        return client.Client(wsdl_path, transport=suds_requests.RequestsTransport(session), **kwargs)
+        with report_soap_failure(AlgoSecAPIError):
+            return client.Client(
+                wsdl_path,
+                transport=suds_requests.RequestsTransport(session),
+                plugins=[LogSOAPMessages()],
+                **kwargs
+            )
