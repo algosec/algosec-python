@@ -1,3 +1,2 @@
 # File with requirements needed by the ReadTheDocs virtual env to process our docs
-sphinxcontrib-napoleon==0.6.1
 Sphinx==1.7.9
