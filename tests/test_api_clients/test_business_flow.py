@@ -29,7 +29,6 @@ class TestBusinessFlowAPIClient(object):
         ) as mock_check_response:
             yield mock_check_response
 
-
     @mock.patch('requests.session')
     @mock.patch('algosec.api_clients.business_flow.mount_algosec_adapter_on_session')
     def test_initiate_session(self, mock_session_adapter, mock_requests_session, client, request):

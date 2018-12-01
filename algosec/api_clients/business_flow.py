@@ -48,8 +48,8 @@ class BusinessFlowAPIClient(RESTAPIClient):
     """
 
     ABF_APPLICATION_DASHBOARD_URL = '/#!application/{}/dashboard'
-    ASSOCIATED_APPLICATIONS_UI_QUERY = '/#!applications/query' \
-                '?q=%7B%22addresses%22%3A%5B%7B%22address%22%3A%22{}%22%7D%5D%2C%22devices%22%3A%5B%5D%7D'
+    ASSOCIATED_APPLICATIONS_UI_QUERY = '/#!applications/query?q=%7B%22addresses%22%3A%5B%7B%22' \
+                                       'address%22%3A%22{}%22%7D%5D%2C%22devices%22%3A%5B%5D%7D'
 
     def _initiate_session(self):
         """Return an authenticated session to the AlgoSec server.
