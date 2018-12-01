@@ -26,7 +26,7 @@ Examples:
 import logging
 from collections import OrderedDict
 
-from deprecated.sphinx import deprecated
+from deprecated import deprecated
 
 from algosec.api_clients.base import SoapAPIClient
 from algosec.helpers import report_soap_failure
@@ -152,8 +152,31 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             aggregated_result = cls._calc_aggregated_query_result(query_results)
         return aggregated_result
 
+    def _execute_traffic_simulation_query(self, source, destination, service):
+        with report_soap_failure(AlgoSecAPIError):
+            simulation_query_response = self.client.service.query(
+                SessionID=self._session_id,
+                QueryInput={
+                    'Source': source,
+                    'Destination': destination,
+                    'Service': service
+                }
+            ).QueryResult
+        query_url = ''
+        if simulation_query_response is None or not simulation_query_response[0].QueryItem:
+            devices = []
+        else:
+            query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
+            devices = simulation_query_response[0].QueryItem.Device
+            if type(devices) is not list:
+                # In case there is only one object in the result, we listify the object
+                devices = [devices]
+        # Making a dict from the result type to a list of devices. Keep it always ordered by the result type
+        query_results = self._prepare_simulation_query_results(devices)
+        return query_results, query_url, simulation_query_response
+
     @deprecated(
-        version='1.1.0',
+        version='1.2.0',
         reason="This function will be removed soon. Please use `execute_traffic_simulation_query` instead."
     )
     def run_traffic_simulation_query(self, source, destination, service):
@@ -172,28 +195,11 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         Returns:
             algosec.models.DeviceAllowanceState: Traffic simulation query result.
         """
-        with report_soap_failure(AlgoSecAPIError):
-            simulation_query_response = self.client.service.query(
-                SessionID=self._session_id,
-                QueryInput={
-                    'Source': source,
-                    'Destination': destination,
-                    'Service': service
-                }
-            ).QueryResult
-
-        # query_url = ''
-        if simulation_query_response is None or not simulation_query_response[0].QueryItem:
-            devices = []
-        else:
-            # query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
-            devices = simulation_query_response[0].QueryItem.Device
-            if type(devices) is not list:
-                # In case there is only one object in the result, we listify the object
-                devices = [devices]
-
-        # Making a dict from the result type to a list of devices. Keep it always ordered by the result type
-        query_results = self._prepare_simulation_query_results(devices)
+        query_results, query_url, simulation_query_response = self._execute_traffic_simulation_query(
+            source,
+            destination,
+            service
+        )
         return self._get_summarized_query_result(simulation_query_response[0], query_results)
 
     def execute_traffic_simulation_query(self, source, destination, service):
@@ -217,28 +223,11 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
                 'query_url': 'https://local.algosec.com/fa/query/results/#/work/ALL_FIREWALLS_query-1543622562206/'
             }
         """
-        with report_soap_failure(AlgoSecAPIError):
-            simulation_query_response = self.client.service.query(
-                SessionID=self._session_id,
-                QueryInput={
-                    'Source': source,
-                    'Destination': destination,
-                    'Service': service
-                }
-            ).QueryResult
-
-        query_url = ''
-        if simulation_query_response is None or not simulation_query_response[0].QueryItem:
-            devices = []
-        else:
-            query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
-            devices = simulation_query_response[0].QueryItem.Device
-            if type(devices) is not list:
-                # In case there is only one object in the result, we listify the object
-                devices = [devices]
-
-        # Making a dict from the result type to a list of devices. Keep it always ordered by the result type
-        query_results = self._prepare_simulation_query_results(devices)
+        query_results, query_url, simulation_query_response = self._execute_traffic_simulation_query(
+            source,
+            destination,
+            service
+        )
         return {
             'result': self._get_summarized_query_result(simulation_query_response[0], query_results),
             'query_url': query_url,
