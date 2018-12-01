@@ -26,6 +26,8 @@ Examples:
 import logging
 from collections import OrderedDict
 
+from deprecated.sphinx import deprecated
+
 from algosec.api_clients.base import SoapAPIClient
 from algosec.helpers import report_soap_failure
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, UnrecognizedAllowanceState
@@ -150,8 +152,13 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             aggregated_result = cls._calc_aggregated_query_result(query_results)
         return aggregated_result
 
+    @deprecated(
+        version='1.1.0',
+        reason="This function will be removed soon. Please use `execute_traffic_simulation_query` instead."
+    )
     def run_traffic_simulation_query(self, source, destination, service):
-        """Run a traffic simulation query given it's traffic lines
+        """
+        Run a traffic simulation query.
 
         Args:
             source (str): Source of the simulated traffic. (e.g. IPs, subnet or an object name)
@@ -175,9 +182,11 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
                 }
             ).QueryResult
 
+        # query_url = ''
         if simulation_query_response is None or not simulation_query_response[0].QueryItem:
             devices = []
         else:
+            # query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
             devices = simulation_query_response[0].QueryItem.Device
             if type(devices) is not list:
                 # In case there is only one object in the result, we listify the object
@@ -186,3 +195,51 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         # Making a dict from the result type to a list of devices. Keep it always ordered by the result type
         query_results = self._prepare_simulation_query_results(devices)
         return self._get_summarized_query_result(simulation_query_response[0], query_results)
+
+    def execute_traffic_simulation_query(self, source, destination, service):
+        """
+        Return results and browser URL for a traffic simulation query.
+
+        Args:
+            source (str): Source of the simulated traffic. (e.g. IPs, subnet or an object name)
+            destination (str): Destination of the simulated traffic. (e.g. IPs, subnet or an object name)
+            service (str): Service of the simulated traffic (e.g: tcp/200, http)
+
+        Raises:
+            :class:`~algosec.errors.AlgoSecAPIError`: If any error occurred while executing the traffic
+                simulation query.
+
+        Returns:
+            dict: A dict mapping the results to their values. For example:
+
+            {
+                'result': DeviceAllowanceState.ALLOWED,
+                'query_url': 'https://local.algosec.com/fa/query/results/#/work/ALL_FIREWALLS_query-1543622562206/'
+            }
+        """
+        with report_soap_failure(AlgoSecAPIError):
+            simulation_query_response = self.client.service.query(
+                SessionID=self._session_id,
+                QueryInput={
+                    'Source': source,
+                    'Destination': destination,
+                    'Service': service
+                }
+            ).QueryResult
+
+        query_url = ''
+        if simulation_query_response is None or not simulation_query_response[0].QueryItem:
+            devices = []
+        else:
+            query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
+            devices = simulation_query_response[0].QueryItem.Device
+            if type(devices) is not list:
+                # In case there is only one object in the result, we listify the object
+                devices = [devices]
+
+        # Making a dict from the result type to a list of devices. Keep it always ordered by the result type
+        query_results = self._prepare_simulation_query_results(devices)
+        return {
+            'result': self._get_summarized_query_result(simulation_query_response[0], query_results),
+            'query_url': query_url,
+            }
