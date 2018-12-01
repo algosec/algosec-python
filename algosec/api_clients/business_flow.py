@@ -47,6 +47,10 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
     """
 
+    ABF_APPLICATION_DASHBOARD_URL = '/#!application/{}/dashboard'
+    ASSOCIATED_APPLICATIONS_UI_QUERY = '/#!applications/query' \
+                '?q=%7B%22addresses%22%3A%5B%7B%22address%22%3A%22{}%22%7D%5D%2C%22devices%22%3A%5B%5D%7D'
+
     def _initiate_session(self):
         """Return an authenticated session to the AlgoSec server.
 
@@ -58,7 +62,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
         """
         session = requests.session()
         mount_algosec_adapter_on_session(session)
-        url = "https://{}/BusinessFlow/rest/v1/login".format(self.server_ip)
+        url = "{}/rest/v1/login".format(self.business_flow_base_url, self.server_ip)
         logger.debug("logging in to AlgoSec servers: {}".format(url))
         session.verify = self.verify_ssl
         response = session.get(url, auth=(self.user, self.password))
@@ -70,9 +74,14 @@ class BusinessFlowAPIClient(RESTAPIClient):
             )
 
     @property
+    def business_flow_base_url(self):
+        """str: Return the base url for BusinessFlow."""
+        return 'https://{}/BusinessFlow'.format(self.server_ip)
+
+    @property
     def api_base_url(self):
         """str: Return the base url for all API calls."""
-        return "https://{}/BusinessFlow/rest/v1".format(self.server_ip)
+        return "{}/rest/v1".format(self.business_flow_base_url, self.server_ip)
 
     @property
     def applications_base_url(self):
@@ -425,3 +434,63 @@ class BusinessFlowAPIClient(RESTAPIClient):
         """
         response = self.session.post("{}/{}/apply".format(self.applications_base_url, app_revision_id))
         self._check_api_response(response)
+
+    def get_abf_application_dashboard_url(self, application_revision_id):
+        """
+        Return URL for the application dashboard.
+
+        This is the applications's dashboard on AlgoSec BusinessFlow and it can be viewed in the browser.
+
+        Args:
+            application_revision_id: The application revision ID to return the dashboard URL for.
+
+        Returns:
+            str: URL for the application dashboard on the AlgoSec BusinessFlow. An Example would look like that:
+            https://10.0.0.12/BusinessFlow/#!application/293/dashboard
+        """
+        return self.business_flow_base_url + self.ABF_APPLICATION_DASHBOARD_URL.format(application_revision_id)
+
+    def get_associated_applications_ui_query(self, queried_ip_address):
+        """
+        Return URL that can be used in the browser to view the associated applications query.
+
+        Args:
+            queried_ip_address: The IP address we wish to find associated applications for.
+
+        Returns:
+            str: URL for ssociated applications query that can be viewed in the browser.
+        """
+        return self.business_flow_base_url + self.ASSOCIATED_APPLICATIONS_UI_QUERY.format(queried_ip_address)
+
+    @staticmethod
+    def is_application_critical(application_json):
+        """
+        Return True if the application's json has the critical label set.
+
+        Args:
+            application_json: The application Json as returned from AlgoSec BusinessFlow APIs.
+
+        Returns:
+            bool: True if the application is marked as a critical application
+        """
+        return any(label['name'] == 'Critical' for label in application_json.get('labels', []))
+
+    def get_associated_applications(self, ip_address):
+        """
+        Return all applications containing network objects related to IP addresses.
+
+        Args:
+            ip_address (str): The IP address to search associated applications for
+
+        Raises:
+            :class:`~algosec.errors.AlgoSecAPIError`: If error occurred while trying to fetch associated applications.
+
+        Returns:
+            list: List of dictionaries each representing an associated application.
+
+        """
+        response = self.session.get(
+            "{}/find/applications?address={}".format(self.network_objects_base_url, ip_address),
+        )
+        self._check_api_response(response)
+        return response.json()
