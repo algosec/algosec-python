@@ -393,11 +393,11 @@ class TestBusinessFlowAPIClient(object):
 
     def test_get_abf_application_dashboard_url(self, client):
         dashboard_url = client.get_abf_application_dashboard_url('<app-revision-id>')
-        assert dashboard_url == 'https://server-ip/BusinessFlow/#!application/<app-revision-id>/dashboard'
+        assert dashboard_url == 'https://server-ip/BusinessFlow/#application/<app-revision-id>/dashboard'
 
     def test_get_associated_applications_ui_query(self, client):
         ui_query_url = client.get_associated_applications_ui_query('10.0.0.1')
-        assert ui_query_url == 'https://server-ip/BusinessFlow/#!applications/query?q=%7B%22addresses%22%3A%5B%7B%22' \
+        assert ui_query_url == 'https://server-ip/BusinessFlow/#applications/query?q=%7B%22addresses%22%3A%5B%7B%22' \
                                'address%22%3A%2210.0.0.1%22%7D%5D%2C%22devices%22%3A%5B%5D%7D'
 
     @pytest.mark.parametrize("app_json, expected_result", [

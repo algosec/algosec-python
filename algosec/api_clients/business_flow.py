@@ -47,8 +47,8 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
     """
 
-    ABF_APPLICATION_DASHBOARD_URL = '/#!application/{}/dashboard'
-    ASSOCIATED_APPLICATIONS_UI_QUERY = '/#!applications/query?q=%7B%22addresses%22%3A%5B%7B%22' \
+    ABF_APPLICATION_DASHBOARD_URL = '/#application/{}/dashboard'
+    ASSOCIATED_APPLICATIONS_UI_QUERY = '/#applications/query?q=%7B%22addresses%22%3A%5B%7B%22' \
                                        'address%22%3A%22{}%22%7D%5D%2C%22devices%22%3A%5B%5D%7D'
 
     def _initiate_session(self):
@@ -446,7 +446,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
         Returns:
             str: URL for the application dashboard on the AlgoSec BusinessFlow. An Example would look like that:
-            https://10.0.0.12/BusinessFlow/#!application/293/dashboard
+            https://10.0.0.12/BusinessFlow/#application/293/dashboard
         """
         return self.business_flow_base_url + self.ABF_APPLICATION_DASHBOARD_URL.format(application_revision_id)
 
