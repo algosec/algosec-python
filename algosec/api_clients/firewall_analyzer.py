@@ -214,6 +214,9 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             source (str): Source of the simulated traffic. (e.g. IPs, subnet or an object name)
             destination (str): Destination of the simulated traffic. (e.g. IPs, subnet or an object name)
             service (str): Service of the simulated traffic (e.g: tcp/200, http)
+            target (str): Name of a device or a group the query should run on.
+                With the default None value, the query will run on the entire network
+                and all permitted devices for the user.
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If any error occurred while executing the traffic
