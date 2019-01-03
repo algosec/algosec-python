@@ -4,7 +4,7 @@
 Examples:
     Once initiated, the client is used by calling any of its public functions::
 
-        from algosec.api_clients import FireFlowAPIClient
+        from algosec.api_clients.fire_flow import FireFlowAPIClient
         client = FireFlowAPIClient(ip, username, password)
         change_request = get_change_request_by_id(change_request_id)
 
@@ -31,7 +31,7 @@ class FireFlowAPIClient(SoapAPIClient):
 
         Using the public methods to send an API call::
 
-            from algosec.api_clients import FireFlowAPIClient
+            from algosec.api_clients.fire_flow import FireFlowAPIClient
             client = FireFlowAPIClient(ip, username, password)
             change_request = client.get_change_request_by_id(change_request_id)
 

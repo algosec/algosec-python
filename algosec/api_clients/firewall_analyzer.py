@@ -11,7 +11,7 @@ Clients require three arguments to be initiated (and total of four):
 Examples:
     Once initiated, the client is used by calling any of its public functions::
 
-        from algosec.api_clients import FirewallAnalyzerAPIClient
+        from algosec.api_clients.firewall_analyzer import FirewallAnalyzerAPIClient
         client = FirewallAnalyzerAPIClient(ip, username, password)
         query_result = client.run_traffic_simulation_query(
             source,
@@ -46,7 +46,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
 
         Using the public methods to send an API call::
 
-            from algosec.api_clients import FirewallAnalyzerAPIClient
+            from algosec.api_clients.firewall_analyzer import FirewallAnalyzerAPIClient
             client = FirewallAnalyzerAPIClient(ip, username, password)
             query_result = client.run_traffic_simulation_query(source, dest, service)
 
