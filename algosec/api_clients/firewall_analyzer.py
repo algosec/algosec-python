@@ -152,21 +152,23 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             aggregated_result = cls._calc_aggregated_query_result(query_results)
         return aggregated_result
 
-    def _execute_traffic_simulation_query(self, source, destination, service):
+    def _execute_traffic_simulation_query(self, source, destination, service, target=None):
         with report_soap_failure(AlgoSecAPIError):
-            simulation_query_response = self.client.service.query(
-                SessionID=self._session_id,
+            params = dict(
                 QueryInput={
                     'Source': source,
                     'Destination': destination,
                     'Service': service
                 }
-            ).QueryResult
-        query_url = ''
+            )
+            if target is not None:
+                params['QueryTarget'] = target
+
+            simulation_query_response = self.client.service.query(SessionID=self._session_id, **params).QueryResult
+        query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
         if simulation_query_response is None or not simulation_query_response[0].QueryItem:
             devices = []
         else:
-            query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
             devices = simulation_query_response[0].QueryItem.Device
             if type(devices) is not list:
                 # In case there is only one object in the result, we listify the object
@@ -202,7 +204,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         )
         return self._get_summarized_query_result(simulation_query_response[0], query_results)
 
-    def execute_traffic_simulation_query(self, source, destination, service):
+    def execute_traffic_simulation_query(self, source, destination, service, target=None):
         """
         Return results and browser URL for a traffic simulation query.
 
@@ -210,6 +212,9 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             source (str): Source of the simulated traffic. (e.g. IPs, subnet or an object name)
             destination (str): Destination of the simulated traffic. (e.g. IPs, subnet or an object name)
             service (str): Service of the simulated traffic (e.g: tcp/200, http)
+            target (str): Name of a device or a group the query should run on.
+                With the default None value, the query will run on the entire network
+                and all permitted devices for the user.
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If any error occurred while executing the traffic
@@ -226,7 +231,8 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         query_results, query_url, simulation_query_response = self._execute_traffic_simulation_query(
             source,
             destination,
-            service
+            service,
+            target=target,
         )
         return {
             'result': self._get_summarized_query_result(simulation_query_response[0], query_results),
