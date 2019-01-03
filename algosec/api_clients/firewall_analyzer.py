@@ -152,16 +152,20 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             aggregated_result = cls._calc_aggregated_query_result(query_results)
         return aggregated_result
 
-    def _execute_traffic_simulation_query(self, source, destination, service):
+    def _execute_traffic_simulation_query(self, source, destination, service, target=None):
         with report_soap_failure(AlgoSecAPIError):
-            simulation_query_response = self.client.service.query(
+            params = dict(
                 SessionID=self._session_id,
                 QueryInput={
                     'Source': source,
                     'Destination': destination,
                     'Service': service
                 }
-            ).QueryResult
+            )
+            if target is not None:
+                params['QueryTarget'] = target
+
+            simulation_query_response = self.client.service.query(**params).QueryResult
         query_url = ''
         if simulation_query_response is None or not simulation_query_response[0].QueryItem:
             devices = []
@@ -202,7 +206,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         )
         return self._get_summarized_query_result(simulation_query_response[0], query_results)
 
-    def execute_traffic_simulation_query(self, source, destination, service):
+    def execute_traffic_simulation_query(self, source, destination, service, target=None):
         """
         Return results and browser URL for a traffic simulation query.
 
@@ -226,7 +230,8 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         query_results, query_url, simulation_query_response = self._execute_traffic_simulation_query(
             source,
             destination,
-            service
+            service,
+            target=target,
         )
         return {
             'result': self._get_summarized_query_result(simulation_query_response[0], query_results),

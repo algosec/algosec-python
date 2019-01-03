@@ -296,3 +296,59 @@ class TestFirewallAnalyzerAPIClient(object):
                 simulation_query_response[0],
                 mock_prepare_results.return_value
             )
+
+    @mock.patch('algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._prepare_simulation_query_results')
+    @mock.patch('algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._get_summarized_query_result')
+    def test_execute_traffic_simulation_query__with_target(
+            self,
+            mock_get_summarized_query,
+            mock_prepare_results,
+            mocker,
+            analyzer_client
+    ):
+        # Mock the client and it's response content
+        query_response_devices = [MagicMock()]
+        query_response_url = [MagicMock()]
+        simulation_query_response = MagicMock()
+        simulation_query_response[0].QueryItem.Device = query_response_devices
+        simulation_query_response[0].QueryHTMLPath = query_response_url
+        mock_soap_client = MagicMock()
+        mock_soap_client.service.query.return_value.QueryResult = simulation_query_response
+        analyzer_client._session_id = MagicMock()
+
+        # mock the simulation input
+        source = MagicMock()
+        dest = MagicMock()
+        service = MagicMock()
+        with mocker.patch.object(analyzer_client, "_client", mock_soap_client):
+            target_firewall = 'someFirewallDevice'
+            simulation_result = analyzer_client.execute_traffic_simulation_query(
+                source,
+                dest,
+                service,
+                target=target_firewall,
+            )
+
+            # assert return value
+            assert simulation_result == {
+                'result': mock_get_summarized_query.return_value,
+                'query_url': query_response_url,
+            }
+
+            # assert internal simulation query call
+            mock_soap_client.service.query.assert_called_once_with(
+                SessionID=analyzer_client._session_id,
+                QueryInput={
+                    'Source': source,
+                    'Destination': dest,
+                    'Service': service
+                },
+                QueryTarget=target_firewall,
+            )
+
+            # assert internal helper calls
+            mock_prepare_results.assert_called_once_with(query_response_devices)
+            mock_get_summarized_query.assert_called_once_with(
+                simulation_query_response[0],
+                mock_prepare_results.return_value
+            )
