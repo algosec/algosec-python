@@ -155,7 +155,6 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
     def _execute_traffic_simulation_query(self, source, destination, service, target=None):
         with report_soap_failure(AlgoSecAPIError):
             params = dict(
-                SessionID=self._session_id,
                 QueryInput={
                     'Source': source,
                     'Destination': destination,
@@ -165,12 +164,11 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             if target is not None:
                 params['QueryTarget'] = target
 
-            simulation_query_response = self.client.service.query(**params).QueryResult
-        query_url = ''
+            simulation_query_response = self.client.service.query(SessionID=self._session_id, **params).QueryResult
+        query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
         if simulation_query_response is None or not simulation_query_response[0].QueryItem:
             devices = []
         else:
-            query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
             devices = simulation_query_response[0].QueryItem.Device
             if type(devices) is not list:
                 # In case there is only one object in the result, we listify the object
