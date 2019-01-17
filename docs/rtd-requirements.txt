@@ -1,2 +1,2 @@
 # File with requirements needed by the ReadTheDocs virtual env to process our docs
-Sphinx==1.7.9
+Sphinx==1.8.3
