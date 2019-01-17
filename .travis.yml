@@ -4,39 +4,30 @@ python:
   - '3.4'
   - '3.5'
   - '3.6'
-  - 'pypy'
-  - 'pypy3.5'
+  - pypy
+  - pypy3.5
 matrix:
   include:
-  - python: 3.7
-    dist: xenial
-    sudo: true
-# command to install dependencies
+    - python: 3.7
+      dist: xenial
+      sudo: true
 install:
   - pip install tox-travis coveralls flake8
-# command to run tests
 script:
   - flake8
   - tox
 after_success:
   - coveralls
-# Automatically deploy new tagged versions to PyPi
 deploy:
   provider: pypi
-  distributions: "sdist bdist_wheel"
+  distributions: sdist bdist_wheel
   user: Algosec
   password:
-    secure: MTSZ3MbHTix8Jd2b1/Wn+xgnFdfARAM0R5nJxMgJlb3OXmZkphj9ggErsiU/3wx943vSdulpUp0m5KXcvvQ06zF4eCwfgguXHaqay/YFFNCE2CB7nKfV+gpal+8AWA5g5DFG/02UqxlFO25kp/rutT0s5aR8Oe3td+N62dncnZhDWSDV/Fvv6e+4blKjVVcyYNJxV5T2zf341QaWDFVfGGV7KAohdIU4KComjE/KMRmEOyginpYRytZ9HxOmjEJ1EjOFWLLq99wQcWuOVF0HfrW8VmJ70+diFt6pnGBV2DQKrs8ij7NdpM84WHX+rbfAdBRThM/4mTEaxwmbHR4cWIBWLkMJ9s6ZtSdpG8Wb1qO97esY3r1c14W08FyhJrNN1QHdRVH2GE9KM40V0xXuwEJOQUKONElVHRUvZqoDXxXwv6lIFDriuqVK8DidM4FKMIoYLTOtBnnz/5SciTmzGM0S9NCCwhp5+vbzKOyuYGPGVAGok4sEyGPeCC1pX+wc5Zyg98ppvp54J0wZ0uwagJl7hHAdvx0hYEJmgqvAWQzDGYUyPT07pM1s5CYVilhRgUGypfNvjkHc6oDJBi651WI0KSh3+YvB6pBpyM38JMauhNmqTG/7E+yeydmqLXuOaP2etXG+OfmINiQmMIlTsFqFv+aIzT8bSqZFwyX/sqA=
+    secure: oWwAfP7BDBcSq19zff/mc9xQkIOEA3GWb6Xa82JixfqasOYA1bR5zHM/DQNHTStuabp4H3c5K/9j02shOQal66MlDjcaGGugWY1be62oxCoegFhJaTI+b5ujt+K/nHoUulqv+PaIQXHzhvHl4nRS4IXVJL8yuU6sip+2sVRZhkx5P11CQ/d3OFGwUbXxM+cSPPd1zHTqXkn8/Lwkipd8bSIRgNopVu9HdbXslwVX0MrzkKptNjR9E8bt7vHOtFWaxOfKvP0zVOzpaAKiTLqUrWejLpRHx0H9b0IofsLn7C9aGRPWM4L2vJVpb9quj3ekmR9Qe2axm3yLoeYiuV1MRiFiGpXbFhUuBQwsHHPGZAfsBUA3jl9YDNpZiQrZfgwFMMUc0CG4U1kA8NJZ050INujaWGkji8M+xuU1o/XgJtXJ4LBQu3P1fhrbi3IeGdDK+DyQ1koovGedTPnxFRSHzvc7EeLmqgGUwFKNYEcu1NvCl9YU7CVDeBMWxRvbow348ahESEFbEMlwY1Ym5+SVDbvZIxR62HRbv6LlsixdoZgTzKqG3v/px7XAs/sn/O1tb+AdU0hBQQKM4WNm1sb2bOLuhXmMQDKSQYdnnwdCaXYSV1lBvWms9HA+TsUKDCCdKgAteiRkv8G1o10amLkgGaFMvRTFK8DgI0e4nJI/nDc=
   on:
     tags: true
-    branch: master
-    # TODO: Find a way to fix this so tagged commits does not error out due to multiple PyPi deployments
-    # within the different tox versions
-#    condition: "$TOXENV = deploy"
-branches:
-  # Trigger build only for master, the rest should use PRs for builds to work
-  only:
-  - master
+    repo: algosec/algosec-python
+    python: 3.6
 notifications:
   email:
     on_success: never
