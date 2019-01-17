@@ -1,5 +1,6 @@
 import pytest
 import requests
+import responses
 import suds_requests
 from mock import create_autospec, MagicMock
 from requests import Response, HTTPError
@@ -119,7 +120,8 @@ class TestSoapAPIClient(object):
 
 
 class TestReportSoapFailure(object):
-    def test_report_soap_failure__detailed_transport_error(self, responses):
+    @responses.activate
+    def test_report_soap_failure__detailed_transport_error(self):
         wsdl_path = 'http://some-wsdl-path'
         api_error = 'some error description'
         responses.add(
