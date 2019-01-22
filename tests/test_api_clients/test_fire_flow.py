@@ -26,13 +26,15 @@ class TestFireFlowAPIClient(object):
         assert fireflow_client._wsdl_url_path == expected
 
     @mock.patch('algosec.api_clients.fire_flow.FireFlowAPIClient._get_soap_client')
-    @mock.patch('algosec.api_clients.fire_flow.FireFlowAPIClient._wsdl_url_path')
-    def test_initiate_client(self, mock_wsdl_path, mock_get_soap_client, mocker, fireflow_client):
+    def test_initiate_client(self, mock_get_soap_client, mocker, fireflow_client):
         client = fireflow_client._initiate_client()
 
         # Assert that the soap client was created properly
         assert client == fireflow_client._get_soap_client.return_value
-        fireflow_client._get_soap_client.assert_called_once_with(mock_wsdl_path)
+        fireflow_client._get_soap_client.assert_called_once_with(
+            'https://server-ip/WebServices/FireFlow.wsdl',
+            location='https://server-ip/WebServices/WSDispatcher.pl',
+        )
 
         # Assert that the soap client was logged in and the session id was saved
         assert client.service.authenticate.call_args == mocker.call(

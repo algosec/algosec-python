@@ -135,6 +135,10 @@ class SoapAPIClient(APIClient):
         raise NotImplementedError()
 
     @property
+    def _soap_service_location(self):   # pragma: no cover
+        raise NotImplementedError()
+
+    @property
     def client(self):
         """Return a suds SOAP client and make sure ``self._session_id`` is populated
 

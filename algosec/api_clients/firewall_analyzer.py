@@ -60,7 +60,11 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
 
     @property
     def _wsdl_url_path(self):
-        return "https://{}/AFA/php/ws.php?wsdl".format(self.server_ip)
+        return 'https://{}/AFA/php/ws.php?wsdl'.format(self.server_ip)
+
+    @property
+    def _soap_service_location(self):   # pragma: no cover
+        return 'https://{}/AFA/php/ws.php'.format(self.server_ip)
 
     def _initiate_client(self):
         """Return a connected suds client and save the new session id to ``self._session_id``
@@ -71,7 +75,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         Returns:
             suds.client.Client
         """
-        client = self._get_soap_client(self._wsdl_url_path, location=self._wsdl_url_path.split('?')[0])
+        client = self._get_soap_client(self._wsdl_url_path, location=self._soap_service_location)
         with report_soap_failure(AlgoSecLoginError):
             self._session_id = client.service.connect(
                 UserName=self.user,
