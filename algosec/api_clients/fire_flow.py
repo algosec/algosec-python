@@ -45,7 +45,11 @@ class FireFlowAPIClient(SoapAPIClient):
 
     @property
     def _wsdl_url_path(self):
-        return "https://{}/WebServices/FireFlow.wsdl".format(self.server_ip)
+        return 'https://{}/WebServices/FireFlow.wsdl'.format(self.server_ip)
+
+    @property
+    def _soap_service_location(self):
+        return 'https://{}/WebServices/WSDispatcher.pl'.format(self.server_ip)
 
     def _initiate_client(self):
         """Return a connected suds client and save the new session id to ``self._session_id``
@@ -56,7 +60,7 @@ class FireFlowAPIClient(SoapAPIClient):
         Returns:
             suds.client.Client
         """
-        client = self._get_soap_client(self._wsdl_url_path)
+        client = self._get_soap_client(self._wsdl_url_path, location=self._soap_service_location)
         with report_soap_failure(AlgoSecLoginError):
             authenticate = client.service.authenticate(
                 username=self.user,
