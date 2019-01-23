@@ -22,7 +22,7 @@ class AlgoSecServersHTTPAdapter(HTTPAdapter):
     * Setting the default connect and read timeout.
         This connect timeout prevent the connections from hanging when the server is unreachable.
     """
-    ALGOSEC_SERVER_CONNECT_TIMEOUT = 5
+    ALGOSEC_SERVER_CONNECT_TIMEOUT = 15
     ALGOSEC_SERVER_READ_TIMEOUT = None
 
     def __init__(self, *args, **kwargs):
