@@ -11,6 +11,7 @@ import requests
 import suds_requests
 from requests import HTTPError
 from suds import client
+from suds.cache import NoCache
 
 from algosec.errors import AlgoSecAPIError
 from algosec.helpers import report_soap_failure, LogSOAPMessages
@@ -166,5 +167,6 @@ class SoapAPIClient(APIClient):
                 wsdl_path,
                 transport=suds_requests.RequestsTransport(session),
                 plugins=[LogSOAPMessages()],
+                cache=NoCache(),
                 **kwargs
             )
