@@ -5,16 +5,17 @@ from requests import status_codes
 from algosec.api_clients.business_flow import BusinessFlowAPIClient
 from algosec.errors import AlgoSecLoginError, EmptyFlowSearch, AlgoSecAPIError
 from algosec.models import NetworkObjectType, NetworkObjectSearchTypes, RequestedFlow
+from tests.conftest import ALGOSEC_SERVER, ALGOSEC_USERNAME, ALGOSEC_PASSWORD, ALGOSEC_VERIFY_SSL
 
 
 class TestBusinessFlowAPIClient(object):
     @pytest.fixture()
     def client(self, request):
         return BusinessFlowAPIClient(
-            'server-ip',
-            'username',
-            'password',
-            verify_ssl=True
+            ALGOSEC_SERVER,
+            ALGOSEC_USERNAME,
+            ALGOSEC_PASSWORD,
+            verify_ssl=ALGOSEC_VERIFY_SSL,
         )
 
     @pytest.fixture()
@@ -31,27 +32,20 @@ class TestBusinessFlowAPIClient(object):
 
     @mock.patch('requests.session')
     @mock.patch('algosec.api_clients.business_flow.mount_algosec_adapter_on_session')
-    def test_initiate_session(self, mock_session_adapter, mock_requests_session, client, request):
+    def test_initiate_session(self, mock_session_adapter, mock_requests_session, client):
         # Mock successful login
         login_response = mock_requests_session.return_value.get.return_value
         login_response.status_code = status_codes.codes.OK
-
-        client = BusinessFlowAPIClient(
-            'server-ip',
-            'username',
-            'password',
-            verify_ssl=MagicMock(),
-        )
 
         new_session = client._initiate_session()
 
         assert new_session == mock_requests_session.return_value
         assert new_session.verify == client.verify_ssl
         new_session.get.assert_called_once_with(
-            "https://server-ip/BusinessFlow/rest/v1/login",
+            "https://testing.algosec.com/BusinessFlow/rest/v1/login",
             auth=(
-                'username',
-                'password',
+                ALGOSEC_USERNAME,
+                ALGOSEC_PASSWORD,
             )
         )
         mock_session_adapter.assert_called_once_with(new_session)
@@ -62,13 +56,6 @@ class TestBusinessFlowAPIClient(object):
         login_response = mock_requests_session.return_value.get.return_value
         login_response.status_code = "ANYTHING_BUT_OK"
 
-        client = BusinessFlowAPIClient(
-            'server-ip',
-            'username',
-            'password',
-            verify_ssl=MagicMock(),
-        )
-
         with pytest.raises(AlgoSecLoginError):
             client._initiate_session()
 
@@ -76,7 +63,7 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.get.return_value
         result = client.get_network_service_by_name('service-name')
         mock_session.get.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/network_services/service_name/service-name',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/network_services/service_name/service-name',
         )
         mock_check_response.assert_called_once_with(response)
         assert result == response.json.return_value
@@ -85,7 +72,7 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.post.return_value
         result = client.create_network_service('service-name', [('tcp', 50)])
         mock_session.post.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/network_services/new',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/network_services/new',
             json={
                 'name': 'service-name',
                 'content': [{'protocol': 'tcp', 'port': 50}],
@@ -99,7 +86,7 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.get.return_value
         result = client.get_application_revision_id_by_name('app-name')
         mock_session.get.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/applications/name/app-name',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/applications/name/app-name',
         )
         mock_check_response.assert_called_once_with(response)
         assert result == response.json.return_value['revisionID']
@@ -112,7 +99,7 @@ class TestBusinessFlowAPIClient(object):
         response.json.return_value = search_result
         result = client.search_network_objects('ip-or-subnet', search_type)
         mock_session.get.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/network_objects/find',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/network_objects/find',
             params={
                 'address': 'ip-or-subnet',
                 'type': search_type.value,
@@ -126,7 +113,7 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.get.return_value
         result = client.search_network_objects('ip-or-subnet', search_type)
         mock_session.get.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/network_objects/find',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/network_objects/find',
             params={
                 'address': 'ip-or-subnet',
                 'type': search_type.value,
@@ -142,7 +129,7 @@ class TestBusinessFlowAPIClient(object):
         response.json.return_value = network_object
         result = client.get_network_object_by_name('network-object-name')
         mock_session.get.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/network_objects/name/network-object-name',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/network_objects/name/network-object-name',
         )
         mock_check_response.assert_called_once_with(response)
         assert result == network_object
@@ -173,7 +160,7 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.post.return_value
         result = client.create_network_object(network_object_type, 'object-content', 'object-name')
         mock_session.post.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/network_objects/new',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/network_objects/new',
             json={
                 'type': network_object_type.value,
                 'name': 'object-name',
@@ -195,7 +182,6 @@ class TestBusinessFlowAPIClient(object):
             mock_session,
             mock_check_response,
     ):
-
         def is_ip_or_subnet(string):
             if string == 'non-ip-or-subnet':
                 return False
@@ -272,7 +258,7 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.delete.return_value
         client.delete_flow_by_id('app-revision-id', 'flow-id')
         mock_session.delete.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/applications/app-revision-id/flows/flow-id'
+            'https://testing.algosec.com/BusinessFlow/rest/v1/applications/app-revision-id/flows/flow-id'
         )
         mock_check_response.assert_called_once_with(response)
 
@@ -304,7 +290,7 @@ class TestBusinessFlowAPIClient(object):
 
         result = client.get_application_flows('app-revision-id')
         mock_session.get.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/applications/app-revision-id/flows',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/applications/app-revision-id/flows',
         )
         mock_check_response.assert_called_once_with(response)
         assert result == [flow1, flow2]
@@ -313,7 +299,8 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.post.return_value
         result = client.get_flow_connectivity('app-revision-id', 'flow-id')
         mock_session.post.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/applications/app-revision-id/flows/flow-id/check_connectivity',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/applications/'
+            'app-revision-id/flows/flow-id/check_connectivity',
         )
         mock_check_response.assert_called_once_with(response)
         assert result == response.json.return_value
@@ -342,7 +329,7 @@ class TestBusinessFlowAPIClient(object):
             requested_flow
         )
         mock_session.post.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/applications/app-revision-id/flows/new',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/applications/app-revision-id/flows/new',
             json=[{
                 'type': 'flow-type',
                 'name': 'flow-name',
@@ -377,7 +364,7 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.post.return_value
         client.apply_application_draft('app-revision-id')
         mock_session.post.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/applications/app-revision-id/apply',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/applications/app-revision-id/apply',
         )
         mock_check_response.assert_called_once_with(response)
 
@@ -385,7 +372,8 @@ class TestBusinessFlowAPIClient(object):
         response = mock_session.get.return_value
         result = client.get_associated_applications('app-revision-id')
         mock_session.get.assert_called_once_with(
-            'https://server-ip/BusinessFlow/rest/v1/network_objects/find/applications?address=app-revision-id',
+            'https://testing.algosec.com/BusinessFlow/rest/v1/network_objects/find/'
+            'applications?address=app-revision-id',
         )
         mock_check_response.assert_called_once_with(response)
 
@@ -393,12 +381,13 @@ class TestBusinessFlowAPIClient(object):
 
     def test_get_abf_application_dashboard_url(self, client):
         dashboard_url = client.get_abf_application_dashboard_url('<app-revision-id>')
-        assert dashboard_url == 'https://server-ip/BusinessFlow/#application/<app-revision-id>/dashboard'
+        assert dashboard_url == 'https://testing.algosec.com/BusinessFlow/#application/<app-revision-id>/dashboard'
 
     def test_get_associated_applications_ui_query(self, client):
         ui_query_url = client.get_associated_applications_ui_query('10.0.0.1')
-        assert ui_query_url == 'https://server-ip/BusinessFlow/#applications/query?q=%7B%22addresses%22%3A%5B%7B%22' \
-                               'address%22%3A%2210.0.0.1%22%7D%5D%2C%22devices%22%3A%5B%5D%7D'
+        assert ui_query_url == 'https://testing.algosec.com/BusinessFlow/' \
+                               '#applications/query?q=%7B%22addresses%22%3A%5B%7B%22address' \
+                               '%22%3A%2210.0.0.1%22%7D%5D%2C%22devices%22%3A%5B%5D%7D'
 
     @pytest.mark.parametrize("app_json, expected_result", [
         ({'labels': [{'name': 'Critical'}]}, True),

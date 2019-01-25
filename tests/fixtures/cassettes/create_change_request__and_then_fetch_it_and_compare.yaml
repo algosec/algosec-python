@@ -1,0 +1,495 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.21.0]
+    method: GET
+    uri: https://testing.algosec.com/WebServices/FireFlow.wsdl
+  response:
+    body: {string: "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n\
+        <definitions  targetNamespace=\"https://www.algosec.com/WSHandler\" name=\"\
+        FireFlowWebService\" xmlns=\"http://schemas.xmlsoap.org/wsdl/\" \n\t\t\t \
+        \ xmlns:wsp=\"http://www.w3.org/ns/ws-policy\"\n\t\t\t  xmlns:tns=\"https://www.algosec.com/WSHandler\"\
+        \n\t\t\t  xmlns:wsdl=\"http://schemas.xmlsoap.org/wsdl/\"\n\t\t\t  xmlns:xsd=\"\
+        http://www.w3.org/2001/XMLSchema\"\n\t\t\t  xmlns:wsp1_2=\"http://schemas.xmlsoap.org/ws/2004/09/policy\"\
+        \n\t\t\t  xmlns:soap=\"http://schemas.xmlsoap.org/wsdl/soap/\"\n\t\t\t  xmlns:wsam=\"\
+        http://www.w3.org/2007/05/addressing/metadata\"\n\t\t\t  xmlns:wsu=\"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd\"\
+        >\n\t<types>\n\t\t<xs:schema version=\"1.0\"  targetNamespace=\"https://www.algosec.com/WSHandler\"\
+        \n\t\t\t\t\t\t\t\t  xmlns:tns=\"https://www.algosec.com/WSHandler\"\n\t\t\t\
+        \t\t\t\t\t  xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n\n\t\t\t<xs:element\
+        \ name=\"createTicket\" nillable=\"false\" >\n\t\t\t\t<xs:complexType>\n\t\
+        \t\t\t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element name=\"FFWSHeader\" type=\"\
+        tns:FFWSHeader\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"sessionId\" type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\
+        \t\t\t\t\t\t<xs:element name=\"ticket\" type=\"tns:ticket\" minOccurs=\"1\"\
+        \ maxOccurs=\"1\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\
+        \t\t\t</xs:element>\n\n\t\t\t<xs:element name=\"createTicketResponse\" nillable=\"\
+        false\" >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t\
+        <xs:element name=\"result\" type=\"xs:int\" minOccurs=\"1\" maxOccurs=\"1\"\
+        />\n\t\t\t\t\t\t<xs:element name=\"message\" type=\"xs:string\" minOccurs=\"\
+        1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"ticketDisplayURL\" type=\"\
+        xs:string\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"\
+        ticketId\" type=\"xs:int\" nillable=\"true\" minOccurs=\"0\" maxOccurs=\"\
+        unbounded\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t\
+        </xs:element>\n\n\t\t\t<xs:element name=\"authenticate\" nillable=\"false\"\
+        \ >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"FFWSHeader\" type=\"tns:FFWSHeader\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t\t<xs:element name=\"username\" type=\"xs:string\" minOccurs=\"\
+        1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"password\" type=\"xs:string\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"domain\"\
+        \ type=\"xs:string\" minOccurs=\"0\" maxOccurs=\"1\"/>\n\t\t\t\t\t</xs:sequence>\n\
+        \t\t\t\t</xs:complexType>\n\t\t\t</xs:element>\n\n\t\t\t<xs:element name=\"\
+        authenticateResponse\" nillable=\"false\" >\n\t\t\t\t<xs:complexType>\n\t\t\
+        \t\t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element name=\"result\" type=\"xs:int\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"sessionId\"\
+        \ type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"faSessionId\" type=\"xs:string\" minOccurs=\"0\" maxOccurs=\"1\"\
+        />\n\t\t\t\t\t\t<xs:element name=\"phpSessionId\" type=\"xs:string\" minOccurs=\"\
+        0\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"faToken\" type=\"xs:string\"\
+        \ minOccurs=\"0\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"ldapMemberOfDNs\"\
+        \ type=\"xs:string\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t\
+        </xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t</xs:element>\n\t\t\t<xs:element\
+        \ name=\"getTicket\" nillable=\"false\" >\n\t\t\t\t<xs:complexType>\n\t\t\t\
+        \t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element name=\"FFWSHeader\" type=\"tns:FFWSHeader\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"sessionId\"\
+        \ type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"ticketId\" type=\"xs:int\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\
+        \t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t</xs:element>\n\t\t\
+        \t<xs:element name=\"getTicketResponse\" nillable=\"false\" >\n\t\t\t\t<xs:complexType>\n\
+        \t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element name=\"result\" type=\"xs:int\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"ticket\"\
+        \ type=\"tns:ticket\" nillable=\"true\" minOccurs=\"0\" maxOccurs=\"1\"/>\n\
+        \t\t\t\t\t\t<xs:element name=\"subTicketIds\" type=\"xs:int\" nillable=\"\
+        true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"parentTicketId\" type=\"xs:int\" nillable=\"true\" minOccurs=\"0\"\
+        \ maxOccurs=\"1\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\
+        \t\t\t</xs:element>\n\n\t\t\t<xs:element name=\"getFields\" nillable=\"false\"\
+        \ >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"FFWSHeader\" type=\"tns:FFWSHeader\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t\t<xs:element name=\"sessionId\" type=\"xs:string\" minOccurs=\"\
+        1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"ticketId\" type=\"xs:int\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"fields\"\
+        \ type=\"tns:fields\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t</xs:sequence>\n\
+        \t\t\t\t</xs:complexType>\n\t\t\t</xs:element>\n\t\t\t\n\t\t\t<xs:element\
+        \ name=\"getFieldsResponse\" nillable=\"false\" >\n\t\t\t\t<xs:complexType>\n\
+        \t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element name=\"result\" type=\"xs:int\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"fields\"\
+        \ type=\"tns:customField\" nillable=\"true\" minOccurs=\"0\" maxOccurs=\"\
+        unbounded\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t\
+        </xs:element>\n\t\t\t\n\t\t\t<xs:element name=\"getTemplateFields\" nillable=\"\
+        false\" >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t\
+        <xs:element name=\"FFWSHeader\" type=\"tns:FFWSHeader\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t\t<xs:element name=\"sessionId\" type=\"xs:string\" minOccurs=\"\
+        1\" maxOccurs=\"1\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\
+        \t\t\t</xs:element>\n\n\t\t\t<xs:element name=\"getTemplateFieldsResponse\"\
+        \ nillable=\"false\" >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\
+        \t\t\t\t\t\t<xs:element name=\"template\" type=\"tns:templateCFs\" minOccurs=\"\
+        1\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\
+        \t\t\t</xs:element>\n\n\t\t\t<xs:element name=\"isSessionAlive\" nillable=\"\
+        false\" >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t\
+        <xs:element name=\"FFWSHeader\" type=\"tns:FFWSHeader\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t\t<xs:element name=\"sessionId\" type=\"xs:string\" minOccurs=\"\
+        1\" maxOccurs=\"1\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\
+        \t\t\t</xs:element>\n\n\t\t\t<xs:element name=\"isSessionAliveResponse\" nillable=\"\
+        false\" >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t\
+        <xs:element name=\"result\" type=\"xs:int\" minOccurs=\"1\" maxOccurs=\"1\"\
+        />\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t</xs:element>\n\
+        \n\t\t\t<xs:element name=\"updateObjectCustomField\" nillable=\"false\" >\n\
+        \t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"FFWSHeader\" type=\"tns:FFWSHeader\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t\t<xs:element name=\"sessionId\" type=\"xs:string\" minOccurs=\"\
+        1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"objectType\" type=\"\
+        tns:objectType\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"objectId\" type=\"xs:int\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\
+        \t\t\t\t<xs:element name=\"customField\" type=\"tns:customField\" minOccurs=\"\
+        1\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\
+        \t\t\t</xs:element>\n\n\t\t\t<xs:element name=\"updateObjectCustomFieldResponse\"\
+        \ nillable=\"false\" >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\
+        \t\t\t\t\t\t<xs:element name=\"result\" type=\"xs:int\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t\t<!-- result values: 1 for success, 0 for failure -->\n\t\
+        \t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t</xs:element>\n\n\
+        \t\t\t<xs:element name=\"addObjectCustomField\" nillable=\"false\" >\n\t\t\
+        \t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element name=\"\
+        FFWSHeader\" type=\"tns:FFWSHeader\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\
+        \t\t\t\t\t<xs:element name=\"sessionId\" type=\"xs:string\" minOccurs=\"1\"\
+        \ maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"objectType\" type=\"tns:objectType\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"objectId\"\
+        \ type=\"xs:int\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"customField\" type=\"tns:customField\" minOccurs=\"1\" maxOccurs=\"\
+        unbounded\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t\
+        </xs:element>\n\n\t\t\t<xs:element name=\"addObjectCustomFieldResponse\" nillable=\"\
+        false\" >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t\
+        <xs:element name=\"result\" type=\"xs:int\" minOccurs=\"1\" maxOccurs=\"1\"\
+        />\n\t\t\t\t\t\t<!-- result values: 1 for success, 0 for failure -->\n\t\t\
+        \t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t</xs:element>\n\n\t\
+        \t\t<xs:element name=\"deleteObjectCustomField\" nillable=\"false\" >\n\t\t\
+        \t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\t\t\t\t\t\t<xs:element name=\"\
+        FFWSHeader\" type=\"tns:FFWSHeader\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\
+        \t\t\t\t\t<xs:element name=\"sessionId\" type=\"xs:string\" minOccurs=\"1\"\
+        \ maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"objectType\" type=\"tns:objectType\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"objectId\"\
+        \ type=\"xs:int\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element\
+        \ name=\"customField\" type=\"tns:customField\" minOccurs=\"1\" maxOccurs=\"\
+        unbounded\"/>\n\t\t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t\
+        </xs:element>\n\n\t\t\t<xs:element name=\"deleteObjectCustomFieldResponse\"\
+        \ nillable=\"false\" >\n\t\t\t\t<xs:complexType>\n\t\t\t\t\t<xs:sequence>\n\
+        \t\t\t\t\t\t<xs:element name=\"result\" type=\"xs:int\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t\t<!-- result values: 1 for success, 0 for failure -->\n\t\
+        \t\t\t\t</xs:sequence>\n\t\t\t\t</xs:complexType>\n\t\t\t</xs:element>\n\n\
+        \t\t\t<xs:complexType name=\"FFWSHeader\">\n\t\t\t\t<xs:sequence>\n\t\t\t\t\
+        \t<xs:element name=\"version\" type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t<xs:element name=\"opaque\" type=\"xs:string\" minOccurs=\"\
+        1\" maxOccurs=\"1\"/>\n\t\t\t\t</xs:sequence>\n\t\t\t</xs:complexType>\n\n\
+        \t\t\t<xs:complexType name=\"ticket\">\n\t\t\t\t<xs:sequence>\n\t\t\t\t\t\
+        <xs:element name=\"template\" type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t<xs:element name=\"attachments\" type=\"tns:attachment\"\
+        \ nillable=\"true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t\
+        <xs:element name=\"cc\" type=\"xs:string\" minOccurs=\"0\"/>\n\t\t\t\t\t<xs:element\
+        \ name=\"customFields\" type=\"tns:customField\" nillable=\"true\" minOccurs=\"\
+        0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t<xs:element name=\"description\"\
+        \ type=\"xs:string\" minOccurs=\"0\"/>\n\t\t\t\t\t<xs:element name=\"devices\"\
+        \ type=\"xs:string\" nillable=\"true\" minOccurs=\"0\" maxOccurs=\"unbounded\"\
+        />\n\t\t\t\t\t<xs:element name=\"due\" type=\"xs:string\" minOccurs=\"0\"\
+        />\n\t\t\t\t\t<xs:element name=\"expire\" type=\"xs:string\" minOccurs=\"\
+        0\"/>\n\t\t\t\t\t<xs:element name=\"externalId\" type=\"xs:string\" minOccurs=\"\
+        0\"/>\n\t\t\t\t\t<xs:element name=\"owner\" type=\"xs:string\" minOccurs=\"\
+        0\"/>\n\t\t\t\t\t<xs:element name=\"priority\" type=\"xs:string\" minOccurs=\"\
+        0\"/>\n\t\t\t\t\t<xs:element name=\"refersTo\" type=\"xs:string\" minOccurs=\"\
+        0\"/>\n\t\t\t\t\t<xs:element name=\"referredBy\" type=\"xs:string\" minOccurs=\"\
+        0\"/>\n\t\t\t\t\t<xs:element name=\"requestor\" type=\"xs:string\" minOccurs=\"\
+        0\"/>\n\t\t\t\t\t<xs:element name=\"subject\" type=\"xs:string\" minOccurs=\"\
+        0\"/>\n\t\t\t\t\t<xs:element name=\"trafficLines\" type=\"tns:trafficLine\"\
+        \ nillable=\"true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t\
+        <xs:element name=\"objectChangeLines\" type=\"tns:objectChangeLine\" nillable=\"\
+        true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t<xs:element name=\"\
+        status\" type=\"xs:string\" minOccurs=\"0\"/>\n\t\t\t\t\t<xs:element name=\"\
+        id\" type=\"xs:int\" minOccurs=\"0\"/>\n\t\t\t\t\t<xs:element name=\"domain\"\
+        \ type=\"xs:string\" minOccurs=\"0\"/>\n\t\t\t\t</xs:sequence>\n\t\t\t</xs:complexType>\n\
+        \n\t\t\t<xs:complexType name=\"fields\">\n\t\t\t\t<xs:sequence>\n\t\t\t\t\t\
+        <xs:element name=\"key\" type=\"xs:string\" minOccurs=\"0\"  maxOccurs=\"\
+        unbounded\"/>\n\t\t\t\t</xs:sequence>\n\t\t\t</xs:complexType>\n\t\t\t<!--\
+        \ Allowed Keys: -->\n\t\t\t<!-- All user-defined custom fields under cateogry\
+        \ \"additional\" -->\n\t\t\t<!-- All user-defined custom fields under cateogry\
+        \ \"external API\" -->\n\t\t\t<!-- The following fields:\n\t\t\t\tid\n\t\t\
+        \t\tstatus\n\t\t\t\tsubject\n\t\t\t\trequestor\n\t\t\t\towner\n\t\t\t\tcc\n\
+        \t\t\t\tdue\n\t\t\t\texpire\n\t\t\t\tpriority\n\t\t\t\tdevices\n\t\t\t\ttemplate\n\
+        \t\t\t\tdescription\n\t\t\t\tdomain\n\t\t\t\texternalId\n\t\t\t\trefersTo\n\
+        \t\t\t\treferredBy\n\t\t\t\towning group\n\t\t\t\tadditional responsible groups\n\
+        \t\t\t-->\n\t\t\t<xs:complexType name=\"templateCFs\">\n\t\t\t\t<xs:sequence>\n\
+        \t\t\t\t\t<xs:element name=\"name\" type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t<xs:element name=\"type\" type=\"xs:string\" minOccurs=\"\
+        1\" maxOccurs=\"1\"/>\n\t\t\t\t\t<xs:element name=\"enabled\" type=\"xs:string\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t<xs:element name=\"customField\"\
+        \ type=\"tns:customFieldData\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\
+        \t\t\t\t</xs:sequence>\n\t\t\t</xs:complexType>\n\n\t\t\t<xs:complexType name=\"\
+        customFieldData\">\n\t\t\t\t<xs:sequence>\n\t\t\t\t\t<xs:element name=\"name\"\
+        \ type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t<xs:element\
+        \ name=\"displayName\" type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"1\"\
+        />\n\t\t\t\t\t<xs:element name=\"type\" type=\"xs:string\" minOccurs=\"1\"\
+        \ maxOccurs=\"1\"/>\n\t\t\t\t\t<xs:element name=\"maxValues\" type=\"xs:string\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t<xs:element name=\"category\"\
+        \ type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t<xs:element\
+        \ name=\"defaultValue\" type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"1\"\
+        />\n\t\t\t\t\t<xs:element name=\"validation\" type=\"xs:string\" minOccurs=\"\
+        1\" maxOccurs=\"1\"/>\n\t\t\t\t</xs:sequence>\n\t\t\t</xs:complexType>\n\n\
+        \t\t\t<xs:complexType name=\"customField\">\n\t\t\t\t<xs:sequence>\n\t\t\t\
+        \t\t<xs:element name=\"key\" type=\"xs:string\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t\t<xs:element name=\"values\" type=\"xs:string\" nillable=\"\
+        true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t</xs:sequence>\n\
+        \t\t\t</xs:complexType>\n\n\t\t\t<xs:complexType name=\"attachment\">\n\t\t\
+        \t\t<xs:sequence>\n\t\t\t\t\t<xs:element name=\"fileName\" type=\"xs:string\"\
+        \ minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t<xs:element name=\"fileContent\"\
+        \ type=\"xs:base64Binary\" nillable=\"true\" minOccurs=\"1\" maxOccurs=\"\
+        1\"/>\n\t\t\t\t</xs:sequence>\n\t\t\t</xs:complexType>\n\n\t\t\t<xs:complexType\
+        \ name=\"trafficLine\">\n\t\t\t\t<xs:sequence>\n\t\t\t\t\t<xs:element name=\"\
+        action\" type=\"xs:int\"/>\n\t\t\t\t\t<xs:element name=\"customFields\" type=\"\
+        tns:customField\" nillable=\"true\" minOccurs=\"0\" maxOccurs=\"unbounded\"\
+        />\n\t\t\t\t\t<xs:element name=\"nat\" type=\"tns:trafficNAT\" minOccurs=\"\
+        0\"/>\n\t\t\t\t\t<xs:element name=\"trafficDestination\" type=\"tns:trafficAddress\"\
+        \ nillable=\"true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t\
+        <xs:element name=\"trafficService\" type=\"tns:trafficService\" nillable=\"\
+        true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t<xs:element name=\"\
+        trafficSource\" type=\"tns:trafficAddress\" nillable=\"true\" minOccurs=\"\
+        0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t<xs:element name=\"trafficUser\"\
+        \ type=\"tns:trafficUser\" nillable=\"true\" minOccurs=\"0\" maxOccurs=\"\
+        unbounded\"/>\n\t\t\t\t\t<xs:element name=\"trafficApplication\" type=\"tns:trafficApplication\"\
+        \ nillable=\"true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t\
+        <xs:element name=\"trafficLineOriginalId\" type=\"xs:string\" nillable=\"\
+        true\" minOccurs=\"0\" maxOccurs=\"1\"/>\n\t\t\t\t</xs:sequence>\n\t\t\t</xs:complexType>\n\
+        \n\t\t\t<xs:complexType name=\"trafficNAT\">\n\t\t\t\t<xs:sequence>\n\t\t\t\
+        \t\t<xs:element name=\"destination\" type=\"xs:string\" minOccurs=\"0\"/>\n\
+        \t\t\t\t\t<xs:element name=\"port\" type=\"xs:int\" minOccurs=\"0\"/>\n\t\t\
+        \t\t\t<xs:element name=\"source\" type=\"xs:string\" minOccurs=\"0\"/>\n\t\
+        \t\t\t\t<xs:element name=\"type\" type=\"xs:int\"/>\n\t\t\t\t</xs:sequence>\n\
+        \t\t\t</xs:complexType>\n\n\t\t\t<xs:complexType name=\"trafficAddress\">\n\
+        \t\t\t\t<xs:sequence>\n\t\t\t\t\t<xs:element name=\"address\" type=\"xs:string\"\
+        \ minOccurs=\"0\"/>\n\t\t\t\t\t<xs:element name=\"customFields\" type=\"tns:customField\"\
+        \ nillable=\"true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t</xs:sequence>\n\
+        \t\t\t</xs:complexType>\n\n\t\t\t<xs:complexType name=\"trafficService\">\n\
+        \t\t\t\t<xs:sequence>\n\t\t\t\t\t<xs:element name=\"customFields\" type=\"\
+        tns:customField\" nillable=\"true\" minOccurs=\"0\" maxOccurs=\"unbounded\"\
+        />\n\t\t\t\t\t<xs:element name=\"service\" type=\"xs:string\" minOccurs=\"\
+        0\"/>\n\t\t\t\t</xs:sequence>\n\t\t\t</xs:complexType>\n\n\t\t\t<xs:complexType\
+        \ name=\"trafficUser\">\n\t\t\t\t<xs:sequence>\n\t\t\t\t\t<xs:element name=\"\
+        customFields\" type=\"tns:customField\" nillable=\"true\" minOccurs=\"0\"\
+        \ maxOccurs=\"unbounded\"/>\n\t\t\t\t\t<xs:element name=\"user\" type=\"xs:string\"\
+        \ minOccurs=\"0\"/>\n\t\t\t\t</xs:sequence>\n\t\t\t</xs:complexType>\n\n\t\
+        \t\t<xs:complexType name=\"trafficApplication\">\n\t\t\t\t<xs:sequence>\n\t\
+        \t\t\t\t<xs:element name=\"customFields\" type=\"tns:customField\" nillable=\"\
+        true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t<xs:element name=\"\
+        application\" type=\"xs:string\" minOccurs=\"0\"/>\n\t\t\t\t</xs:sequence>\n\
+        \t\t\t</xs:complexType>\n\n\t\t\t<xs:complexType name=\"objectChangeLine\"\
+        >\n\t\t\t\t<xs:sequence>\n\t\t\t\t\t<xs:element name=\"action\" type=\"xs:string\"\
+        /> \n\t\t\t\t\t<xs:element name=\"objectType\" type=\"xs:string\"/>\n\t\t\t\
+        \t\t<xs:element name=\"objectName\" type=\"xs:string\"/>\n\t\t\t\t\t<xs:element\
+        \ name=\"actionTarget\" type=\"xs:string\"/>\n\t\t\t\t\t<xs:element name=\"\
+        values\" type=\"xs:string\" nillable=\"true\" minOccurs=\"0\" maxOccurs=\"\
+        unbounded\"/> \n\t\t\t\t\t<xs:element name=\"customFields\" type=\"tns:customField\"\
+        \ nillable=\"true\" minOccurs=\"0\" maxOccurs=\"unbounded\"/>\n\t\t\t\t\t\
+        <xs:element name=\"scope\" type=\"xs:int\"/> \n\t\t\t\t</xs:sequence>\n\t\t\
+        \t</xs:complexType>\n\n\t\t\t<xs:simpleType name=\"objectType\">\n\t\t\t \
+        \ <xs:restriction base=\"xs:string\">\n\t\t\t    <xs:enumeration value=\"\
+        ticket\" />\n\t\t\t    <xs:enumeration value=\"user\" />\n\t\t\t    <xs:enumeration\
+        \ value=\"group\" />\n\t\t\t  </xs:restriction>\n\t\t\t</xs:simpleType>\n\n\
+        \t\t\t<xs:element name=\"ErrorDetails\">\n\t\t\t\t<xs:complexType>\n\t\t\t\
+        \t\t<xs:all>\n\t\t\t\t\t\t<xs:element name=\"code\" type=\"xs:int\" minOccurs=\"\
+        0\" maxOccurs=\"1\"/>\n\t\t\t\t\t\t<xs:element name=\"description\" type=\"\
+        xs:string\" minOccurs=\"1\" maxOccurs=\"1\"/>\n\t\t\t\t\t</xs:all>\n\t\t\t\
+        \t</xs:complexType>\n\t\t\t</xs:element>\t\n\t\t</xs:schema>\n\t</types>\n\
+        \n\t<message name=\"createTicket\">\n\t\t<part name=\"parameters\" element=\"\
+        tns:createTicket\"/>\n\t</message>\n\n\t<message name=\"createTicketResponse\"\
+        >\n\t\t<part name=\"parameters\" element=\"tns:createTicketResponse\"/>\n\t\
+        </message>\n\n\t<message name=\"getTicket\">\n\t\t<part name=\"parameters\"\
+        \ element=\"tns:getTicket\"/>\n\t</message>\n\t<message name=\"getTicketResponse\"\
+        >\n\t\t<part name=\"parameters\" element=\"tns:getTicketResponse\"/>\n\t</message>\n\
+        \t<message name=\"getFields\">\n\t\t<part name=\"parameters\" element=\"tns:getFields\"\
+        />\n\t</message>\n\t<message name=\"getFieldsResponse\">\n\t\t<part name=\"\
+        parameters\" element=\"tns:getFieldsResponse\"/>\n\t</message>\n\t<message\
+        \ name=\"getTemplateFields\">\n\t\t<part name=\"parameters\" element=\"tns:getTemplateFields\"\
+        />\n\t</message>\n\t<message name=\"getTemplateFieldsResponse\">\n\t\t<part\
+        \ name=\"parameters\" element=\"tns:getTemplateFieldsResponse\"/>\n\t</message>\n\
+        \n\t<message name=\"authenticate\">\n\t\t<part name=\"parameters\" element=\"\
+        tns:authenticate\"/>\n\t</message>\n\n\t<message name=\"authenticateResponse\"\
+        >\n\t\t<part name=\"parameters\" element=\"tns:authenticateResponse\"/>\n\t\
+        </message>\n\n\t<message name=\"isSessionAlive\">\n\t\t<part name=\"parameters\"\
+        \ element=\"tns:isSessionAlive\"/>\n\t</message>\n\n\t<message name=\"isSessionAliveResponse\"\
+        >\n\t\t<part name=\"parameters\" element=\"tns:isSessionAliveResponse\"/>\n\
+        \t</message>\n\n\t<message name=\"updateObjectCustomField\">\n\t\t<part name=\"\
+        parameters\" element=\"tns:updateObjectCustomField\"/>\n\t</message>\n\n\t\
+        <message name=\"updateObjectCustomFieldResponse\">\n\t\t<part name=\"parameters\"\
+        \ element=\"tns:updateObjectCustomFieldResponse\"/>\n\t</message>\n\n\t<message\
+        \ name=\"addObjectCustomField\">\n\t\t<part name=\"parameters\" element=\"\
+        tns:addObjectCustomField\"/>\n\t</message>\n\n\t<message name=\"addObjectCustomFieldResponse\"\
+        >\n\t\t<part name=\"parameters\" element=\"tns:addObjectCustomFieldResponse\"\
+        />\n\t</message>\n\n\t<message name=\"deleteObjectCustomField\">\n\t\t<part\
+        \ name=\"parameters\" element=\"tns:deleteObjectCustomField\"/>\n\t</message>\n\
+        \n\t<message name=\"deleteObjectCustomFieldResponse\">\n\t\t<part name=\"\
+        parameters\" element=\"tns:deleteObjectCustomFieldResponse\"/>\n\t</message>\n\
+        \n\t<message name=\"error\">\n\t\t<part name=\"details\" element=\"tns:ErrorDetails\"\
+        />\n\t</message>\n\n\t<portType name=\"FireFlowWebServicePortType\">\n\t\t\
+        <operation name=\"createTicket\">\n\t\t\t<input message=\"tns:createTicket\"\
+        />\n\t\t\t<output message=\"tns:createTicketResponse\"/>\n\t\t\t <fault message=\"\
+        tns:error\" name=\"FireFlowError\"/>\n\t\t</operation>\n\t\t<operation name=\"\
+        getTicket\">\n\t\t\t<input message=\"tns:getTicket\" />\n\t\t\t<output message=\"\
+        tns:getTicketResponse\" />\n\t\t\t <fault message=\"tns:error\" name=\"FireFlowError\"\
+        \ />\n\t\t</operation>\n\t\t<operation name=\"getFields\">\n\t\t\t<input message=\"\
+        tns:getFields\" />\n\t\t\t<output message=\"tns:getFieldsResponse\" />\n\t\
+        \t\t <fault message=\"tns:error\" name=\"FireFlowError\" />\n\t\t</operation>\n\
+        \t\t<operation name=\"getTemplateFields\">\n\t\t\t<input message=\"tns:getTemplateFields\"\
+        \ />\n\t\t\t<output message=\"tns:getTemplateFieldsResponse\" />\n\t\t\t <fault\
+        \ message=\"tns:error\" name=\"FireFlowError\" />\n\t\t</operation>\n\t\t\
+        <operation name=\"authenticate\">\n\t\t\t<input message=\"tns:authenticate\"\
+        \ />\n\t\t\t<output message=\"tns:authenticateResponse\" />\n\t\t</operation>\n\
+        \t\t<operation name=\"isSessionAlive\">\n\t\t\t<input message=\"tns:isSessionAlive\"\
+        \ />\n\t\t\t<output message=\"tns:isSessionAliveResponse\" />\n\t\t</operation>\n\
+        \t\t<operation name=\"updateObjectCustomField\">\n\t\t\t<input message=\"\
+        tns:updateObjectCustomField\" />\n\t\t\t<output message=\"tns:updateObjectCustomFieldResponse\"\
+        \ />\n\t\t\t<fault message=\"tns:error\" name=\"FireFlowError\" />\n\t\t</operation>\n\
+        \t\t<operation name=\"addObjectCustomField\">\n\t\t\t<input message=\"tns:addObjectCustomField\"\
+        \ />\n\t\t\t<output message=\"tns:addObjectCustomFieldResponse\" />\n\t\t\t\
+        <fault message=\"tns:error\" name=\"FireFlowError\" />\n\t\t</operation>\n\
+        \t\t<operation name=\"deleteObjectCustomField\">\n\t\t\t<input message=\"\
+        tns:deleteObjectCustomField\" />\n\t\t\t<output message=\"tns:deleteObjectCustomFieldResponse\"\
+        \ />\n\t\t\t<fault message=\"tns:error\" name=\"FireFlowError\" />\n\t\t</operation>\n\
+        \t</portType>\n\n\t<binding name=\"FireFlowWebServiceBinding\" type=\"tns:FireFlowWebServicePortType\"\
+        >\n\t\t<soap:binding transport=\"http://schemas.xmlsoap.org/soap/http\" style=\"\
+        document\"/>\n\t\t<operation name=\"createTicket\">\n\t\t\t<soap:operation\
+        \ soapAction=\"\"/>\n\t\t\t<input>\n\t\t\t\t<soap:body use=\"literal\"/>\n\
+        \t\t\t</input>\n\t\t\t<output>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\
+        \t</output>\n\t\t\t<fault name=\"FireFlowError\">\n\t\t\t <soap:fault name=\"\
+        FireFlowError\" use=\"literal\"/>\n\t\t\t</fault>\n\t\t</operation>\n\t\t\
+        <operation name=\"getTicket\">\n\t\t\t<soap:operation soapAction=\"\"/>\n\t\
+        \t\t<input>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</input>\n\t\t\t\
+        <output>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</output>\n\t\t\t<fault\
+        \ name=\"FireFlowError\">\n\t\t\t <soap:fault name=\"FireFlowError\" use=\"\
+        literal\"/>\n\t\t\t</fault>\n\t\t</operation>\n\t\t<operation name=\"getFields\"\
+        >\n\t\t\t<soap:operation soapAction=\"\"/>\n\t\t\t<input>\n\t\t\t\t<soap:body\
+        \ use=\"literal\"/>\n\t\t\t</input>\n\t\t\t<output>\n\t\t\t\t<soap:body use=\"\
+        literal\"/>\n\t\t\t</output>\n\t\t\t<fault name=\"FireFlowError\">\n\t\t\t\
+        \ <soap:fault name=\"FireFlowError\" use=\"literal\"/>\n\t\t\t</fault>\n\t\
+        \t</operation>\n\t\t<operation name=\"getTemplateFields\">\n\t\t\t<soap:operation\
+        \ soapAction=\"\"/>\n\t\t\t<input>\n\t\t\t\t<soap:body use=\"literal\"/>\n\
+        \t\t\t</input>\n\t\t\t<output>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\
+        \t</output>\n\t\t\t<fault name=\"FireFlowError\">\n\t\t\t <soap:fault name=\"\
+        FireFlowError\" use=\"literal\"/>\n\t\t\t</fault>\n\t\t</operation>\n\t\t\
+        <operation name=\"authenticate\">\n\t\t\t<soap:operation soapAction=\"\"/>\n\
+        \t\t\t<input>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</input>\n\t\t\t\
+        <output>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</output>\n\t\t</operation>\n\
+        \t\t<operation name=\"isSessionAlive\">\n\t\t\t<soap:operation soapAction=\"\
+        \"/>\n\t\t\t<input>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</input>\n\
+        \t\t\t<output>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</output>\n\t\t\
+        </operation>\n\t\t<operation name=\"updateObjectCustomField\">\n\t\t\t<soap:operation\
+        \ soapAction=\"\"/>\n\t\t\t<input>\n\t\t\t\t<soap:body use=\"literal\"/>\n\
+        \t\t\t</input>\n\t\t\t<output>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\
+        \t</output>\n\t\t\t<fault name=\"FireFlowError\">\n\t\t\t <soap:fault name=\"\
+        FireFlowError\" use=\"literal\"/>\n\t\t\t</fault>\n\t\t</operation>\n\t\t\
+        <operation name=\"addObjectCustomField\">\n\t\t\t<soap:operation soapAction=\"\
+        \"/>\n\t\t\t<input>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</input>\n\
+        \t\t\t<output>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</output>\n\t\t\
+        \t<fault name=\"FireFlowError\">\n\t\t\t <soap:fault name=\"FireFlowError\"\
+        \ use=\"literal\"/>\n\t\t\t</fault>\n\t\t</operation>\n\t\t<operation name=\"\
+        deleteObjectCustomField\">\n\t\t\t<soap:operation soapAction=\"\"/>\n\t\t\t\
+        <input>\n\t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</input>\n\t\t\t<output>\n\
+        \t\t\t\t<soap:body use=\"literal\"/>\n\t\t\t</output>\n\t\t\t<fault name=\"\
+        FireFlowError\">\n\t\t\t <soap:fault name=\"FireFlowError\" use=\"literal\"\
+        />\n\t\t\t</fault>\n\t\t</operation>\n\t</binding>\n\n\t<service name=\"FireFlowWebServiceService\"\
+        >\n\t\t<documentation>FireFlow Web Services</documentation>\n\t\t<port name=\"\
+        FireFlowWebServicePort\" binding=\"tns:FireFlowWebServiceBinding\">\n\t\t\t\
+        <soap:address location=\"https://192.168.58.129/WebServices/WSDispatcher.pl\"\
+        />\n\t\t</port>\n\t</service>\n\n</definitions>\n"}
+    headers:
+      Connection: [close]
+      Content-Encoding: [text/xml]
+      Content-Type: [text/xml]
+      Date: ['Fri, 25 Jan 2019 18:31:56 GMT']
+      Server: [Apache]
+      Transfer-Encoding: [chunked]
+      X-Frame-Options: [SAMEORIGIN]
+    status: {code: 200, message: OK}
+- request:
+    body: <?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/"
+      xmlns:ns1="https://www.algosec.com/WSHandler"><SOAP-ENV:Header/><ns0:Body><ns1:authenticate><FFWSHeader/><username>admin</username><password>algosec</password></ns1:authenticate></ns0:Body></SOAP-ENV:Envelope>
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['433']
+      Content-Type: [text/xml; charset=utf-8]
+      SOAPAction:
+      - !!binary |
+        IiI=
+      User-Agent: [python-requests/2.21.0]
+    method: POST
+    uri: https://testing.algosec.com/WebServices/WSDispatcher.pl
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA52TX2+bMBTFvwrivRhj/oUYKk3rlEqbVo1O3asx14EVbIadkHz7maR0aaUp094s
+        X//OPdfHpreHvnP2MOpWydzFnu86ILmqW7nN3e+Pn25S97agWrEhu5N76NQAjkWkzg66zd3GmCFD
+        aJombyKeGrco8H2Mfnz5XPIGenbTSm2Y5OC+ULOSbfBK6tMx7dnqXDpJzAu0uEALOekzpC0l2hFE
+        pyaPdVulgXtc9egJqhLGfctBo6dyw2TdwbjQkvWgh9D/ozF7foO/Rw66vj6g65zuZnFbmmMH/zHc
+        vPsv2DkB5L5E8kHVx4Ius2VsZxqQpuXMwDe7paSGgo6gd51xbF6ZOQ7WnR0sa6VxC0zRuWjlQM9P
+        4L5+d06b0fp0i4TVAU6rMI5rEotVGAaRgIhx5ocRiSJO0atCQQUrr8ixuq6Y4DgNU4yJECSuIp5A
+        GlRVggUWFF1oFHRohmuKD5uH8q4s7z/mO7KKWo3jUe+5aH793D+L7Ur3Q+evnYGZJkdrx4a+G2Ht
+        bOyNf5XdkaLLFvMEj+oZ5F96hRVJWIwJSQhOcRqIVRX5jHBBSI15mszuT3xB0ZVw0EWO6M03K34D
+        JOCw0pwDAAA=
+    headers:
+      Connection: [close]
+      Content-Encoding: [gzip]
+      Content-Length: ['464']
+      Content-Type: [text/xml; charset=utf-8]
+      Date: ['Fri, 25 Jan 2019 18:31:56 GMT']
+      SOAPServer: ['SOAP::Lite/Perl/0.712']
+      Server: [Apache]
+      Vary: [Accept-Encoding]
+      X-Frame-Options: [SAMEORIGIN]
+    status: {code: 200, message: OK}
+- request:
+    body: <?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/"
+      xmlns:ns1="https://www.algosec.com/WSHandler"><SOAP-ENV:Header/><ns0:Body><ns1:createTicket><FFWSHeader/><sessionId>7ad218b466d36f94425fe5aca045355c</sessionId><ticket><template/><description>Ticket
+      created by the AlgoSec Python SDK Unit testing module</description><requestor>Tester
+      First Name email@testing.com</requestor><subject>Some traffic change request
+      subject</subject><trafficLines><action>1</action><trafficDestination><address>192.168.1.3</address></trafficDestination><trafficDestination><address>192.168.1.4</address></trafficDestination><trafficService><service>tcp/80</service></trafficService><trafficService><service>tcp/443</service></trafficService><trafficSource><address>10.0.0.1</address></trafficSource><trafficSource><address>10.0.0.2</address></trafficSource></trafficLines><trafficLines><action>0</action><trafficDestination><address>10.0.0.3</address></trafficDestination><trafficDestination><address>10.0.0.4</address></trafficDestination><trafficService><service>tcp/23</service></trafficService><trafficService><service>tcp/50</service></trafficService><trafficSource><address>192.168.1.1</address></trafficSource><trafficSource><address>192.168.1.2</address></trafficSource></trafficLines></ticket></ns1:createTicket></ns0:Body></SOAP-ENV:Envelope>
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['1504']
+      Content-Type: [text/xml; charset=utf-8]
+      SOAPAction:
+      - !!binary |
+        IiI=
+      User-Agent: [python-requests/2.21.0]
+    method: POST
+    uri: https://testing.algosec.com/WebServices/WSDispatcher.pl
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA51TXW8iIRT9K4T3guOqsRPEZNOaNum+VJvuK2WuDlkGplx0Ov9+0XGqa9q02TcC
+        5+veE8T8rbJkBwGNdzOasQEl4LQvjNvM6NNqcTWlcynQqzq/dTuwvgaSKA5zpyrAejSa0TLGGnPO
+        m6Zhym48gmbaV/x5eadcYSFQchDohZextdDREgt1CZVCllT3KObDhu8PvIdzenTc336H1sV8pzV4
+        irg2AdbWX+SElyWEndGA55lPpinJf8R9Q/PO2q+m+XEADweDjP/+9bA8CF0Zh1E5DSdW8TWLHiv5
+        6YtWir6JXAdQEVZG/4H4mK68Q5AiAG5tJClOHts6LT5Z5MZFKjPBu0cpkgKqDVygMIY0EZWrEogu
+        lUuAAK9bwEgahQS3Ou0M11trW9KZF4IfpaSIhyA3Bmur2qfHh0/E+26y6yHLJlM2nrJseM0XqapF
+        qop38/CjDitjZeemmI1Hk4Hglx69633x0cDnnPtCCv7F6vjZlvk/n0D+BXBB3Jo6AwAA
+    headers:
+      Connection: [close]
+      Content-Encoding: [gzip]
+      Content-Length: ['393']
+      Content-Type: [text/xml; charset=utf-8]
+      Date: ['Fri, 25 Jan 2019 18:32:04 GMT']
+      SOAPServer: ['SOAP::Lite/Perl/0.712']
+      Server: [Apache]
+      Vary: [Accept-Encoding]
+      X-Frame-Options: [SAMEORIGIN]
+    status: {code: 200, message: OK}
+- request:
+    body: <?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns0="http://schemas.xmlsoap.org/soap/envelope/"
+      xmlns:ns1="https://www.algosec.com/WSHandler"><SOAP-ENV:Header/><ns0:Body><ns1:getTicket><FFWSHeader/><sessionId>7ad218b466d36f94425fe5aca045355c</sessionId><ticketId>5460</ticketId></ns1:getTicket></ns0:Body></SOAP-ENV:Envelope>
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['453']
+      Content-Type: [text/xml; charset=utf-8]
+      SOAPAction:
+      - !!binary |
+        IiI=
+      User-Agent: [python-requests/2.21.0]
+    method: POST
+    uri: https://testing.algosec.com/WebServices/WSDispatcher.pl
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA+VW2VLbMBT9FY3fsbJBaUYxDaUMHWDo1GToq5BvEhVZci2Z4L/v9RJHKVDSQp86
+        fpHucu52ZIkdPaSK3ENupdGToB/2AgJamETqxSSYXZ/uHQZHEbOGZ+NP+h6UyYCgi7bjBysnwdK5
+        bEzparUKV8PQ5As66PX69NvlRSyWkPI9qa3jWkDQelVIGKDztLWZDVFbqWqIakHXWdC158o2Tha9
+        5jKHuTKrkKuFsSBCYVJ6A7cx5PdSgKU38RnXiYI86LJNXs42IHWh69CxKxX8RaaVdBe3pp2dm+Yp
+        2Gz4blNmlehWhV1V7UiOTVJGbO04XoC7luIO3FfcG20hYjnYQjmCwxq7MsNqsBFjqV0Q9RltlBFz
+        tVPEhGhSmQQYgAqBksI6k55KUIn1dHdQRseFlRqsJR9ziQBcSVcyWmnYPVcFePaXkMgiZbSRV9Ae
+        7G+DTLVxS8jJmUwS0KS2eSbI1fmzARKwIpeZQ45v7JtOEZEDd5CQ25JgJDLFdscgyJfSLdE6Pjkn
+        My0dcWAdzpikJikUMOpBIn4BfuNwGzGz0ph3J9WAedeyiGW5NNizcqPtMboWViP7gUU443kjg6T6
+        0OZQUaGaXWuFVChuv4NwG/PYpEBczudzKYhYcr0A0tqT1pjRdoHTbwwvqml6ZXBRF4c0aVfIMy8G
+        q+gU7aG6XjCK2g7rpM6Ubzec8SRBxtmo/34Q9g8Ow344RPBWiDiPfP8Yb7QjXvuf8LBsI4mcyOgh
+        jmO972DitWAniNFouAuGKfItiK6iXlh9/SfKaXx2hhi8DDGzPlFZgduIazzL9arzmtW7djPNMoVn
+        /teBbKQNgi/ogKa+0CPfVS4XOCj1OfEP05MG23L7Eod7/4DDTXvfiMAN2NuwdzB8NXv3e68ib3cc
+        X8XfDuU/oTC+k1zhkTdTXOMYamnEpIe4PzrAAckaor25M56Dbi//Kjhe91qqSeDyonp6Pbr9Ca3Z
+        /vy7gXrvC7r1/It+Aqzmbxw0CgAA
+    headers:
+      Connection: [close]
+      Content-Encoding: [gzip]
+      Content-Length: ['762']
+      Content-Type: [text/xml; charset=utf-8]
+      Date: ['Fri, 25 Jan 2019 18:32:08 GMT']
+      SOAPServer: ['SOAP::Lite/Perl/0.712']
+      Server: [Apache]
+      Vary: [Accept-Encoding]
+      X-Frame-Options: [SAMEORIGIN]
+    status: {code: 200, message: OK}
+version: 1
