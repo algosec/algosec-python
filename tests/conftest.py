@@ -1,7 +1,9 @@
 import os
 
+import pytest
 import vcr
 
+from algosec.api_clients.fire_flow import FireFlowAPIClient
 
 ALGOSEC_VERIFY_SSL = False
 ALGOSEC_PASSWORD = 'algosec'
@@ -23,4 +25,15 @@ def cassette_filename_generator(test_function):  # type: (Callable) -> str
 
 my_vcr = vcr.VCR(
     cassette_library_dir=os.path.join(fixtures_dir, 'cassettes'),
+    func_path_generator=cassette_filename_generator,
 )
+
+
+@pytest.fixture()
+def fireflow_client():
+    return FireFlowAPIClient(
+        ALGOSEC_SERVER,
+        ALGOSEC_USERNAME,
+        ALGOSEC_PASSWORD,
+        verify_ssl=ALGOSEC_VERIFY_SSL,
+    )

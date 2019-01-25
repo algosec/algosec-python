@@ -144,8 +144,8 @@ class ChangeRequestAction(Enum):
         ALLOW: This enum will mark the change request to allow the requested traffic
         DROP: This enum will mark the change request to block the requested traffic
     """
-    ALLOW = ChangeRequestActionInfo("1", "allow")
-    DROP = ChangeRequestActionInfo("0", "drop")
+    ALLOW = ChangeRequestActionInfo(1, "allow")
+    DROP = ChangeRequestActionInfo(0, "drop")
 
 
 class NetworkObjectType(Enum):
