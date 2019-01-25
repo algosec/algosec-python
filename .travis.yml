@@ -12,12 +12,12 @@ matrix:
       dist: xenial
       sudo: true
 install:
-  - pip install tox-travis coveralls flake8
+  - pip install tox-travis codecov flake8
 script:
   - flake8
   - tox
 after_success:
-  - coveralls
+  - codecov
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
