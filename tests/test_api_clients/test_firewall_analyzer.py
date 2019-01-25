@@ -6,16 +6,17 @@ from suds import WebFault
 from algosec.api_clients.firewall_analyzer import FirewallAnalyzerAPIClient
 from algosec.errors import AlgoSecLoginError, UnrecognizedAllowanceState, AlgoSecAPIError
 from algosec.models import DeviceAllowanceState
+from tests.conftest import ALGOSEC_SERVER, ALGOSEC_USERNAME, ALGOSEC_PASSWORD, ALGOSEC_VERIFY_SSL
 
 
 class TestFirewallAnalyzerAPIClient(object):
     @pytest.fixture()
     def analyzer_client(self, request):
         return FirewallAnalyzerAPIClient(
-            'server-ip',
-            'username',
-            'password',
-            verify_ssl=True
+            ALGOSEC_SERVER,
+            ALGOSEC_USERNAME,
+            ALGOSEC_PASSWORD,
+            verify_ssl=ALGOSEC_VERIFY_SSL,
         )
 
     @pytest.mark.parametrize('host,expected', [

@@ -5,16 +5,17 @@ from suds import WebFault
 from algosec.api_clients.fire_flow import FireFlowAPIClient
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError
 from algosec.models import ChangeRequestTrafficLine, ChangeRequestAction
+from tests.conftest import ALGOSEC_SERVER, ALGOSEC_USERNAME, ALGOSEC_PASSWORD, ALGOSEC_VERIFY_SSL
 
 
 class TestFireFlowAPIClient(object):
     @pytest.fixture()
     def fireflow_client(self):
         return FireFlowAPIClient(
-            'server-ip',
-            'username',
-            'password',
-            verify_ssl=True
+            ALGOSEC_SERVER,
+            ALGOSEC_USERNAME,
+            ALGOSEC_PASSWORD,
+            verify_ssl=ALGOSEC_VERIFY_SSL,
         )
 
     @pytest.mark.parametrize('host,expected', [
@@ -32,8 +33,8 @@ class TestFireFlowAPIClient(object):
         # Assert that the soap client was created properly
         assert client == fireflow_client._get_soap_client.return_value
         fireflow_client._get_soap_client.assert_called_once_with(
-            'https://server-ip/WebServices/FireFlow.wsdl',
-            location='https://server-ip/WebServices/WSDispatcher.pl',
+            'https://testing.algosec.com/WebServices/FireFlow.wsdl',
+            location='https://testing.algosec.com/WebServices/WSDispatcher.pl',
         )
 
         # Assert that the soap client was logged in and the session id was saved

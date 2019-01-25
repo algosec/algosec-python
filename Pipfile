@@ -19,3 +19,4 @@ responses = "*"
 # Remove these two when all old tests have been migrated to pytest
 mock = "*"
 pyhamcrest = "*"
+vcrpy = "*"
