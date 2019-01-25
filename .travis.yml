@@ -5,7 +5,7 @@ python:
   - '3.5'
   - '3.6'
   - pypy
-  - pypy3.5
+#  - pypy3.5 Drop support for pypy3 until this PR of pipenv is on PyPi https://github.com/pypa/pipenv/pull/3322
 matrix:
   include:
     - python: 3.7
