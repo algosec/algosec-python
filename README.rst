@@ -23,8 +23,8 @@ AlgoSec Python SDK
    :target: http://algosec-python.readthedocs.io/en/latest/
    :alt: Documentation Status
 
-.. |coverage| image:: https://img.shields.io/codecov/c/github/algosec/algosec-python.svg
-    :target: https://codecov.io/gh/algosec/algosec-python
+.. |coverage| image:: https://codecov.io/gh/algosec/algosec-python/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/algosec/algosec-python
 
 .. |travis| image:: https://travis-ci.org/algosec/algosec-python.svg?branch=master
     :target: https://travis-ci.org/algosec/algosec-python

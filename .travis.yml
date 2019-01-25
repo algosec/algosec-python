@@ -5,7 +5,7 @@ python:
   - '3.5'
   - '3.6'
   - pypy
-  - pypy3.5
+#  - pypy3.5 # Seems to be not supported by Pipenv for now...support can be added again when it is fixed.
 matrix:
   include:
     - python: 3.7
