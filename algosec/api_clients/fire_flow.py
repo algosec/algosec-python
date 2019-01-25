@@ -13,11 +13,12 @@ Examples:
     Please see specific API Client documentations to find out how.
 """
 import logging
-from urllib.parse import urlsplit, urlunsplit
+
+import six.moves.urllib as urllib
 
 from algosec.api_clients.base import SoapAPIClient
-from algosec.helpers import report_soap_failure
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError
+from algosec.helpers import report_soap_failure
 
 logger = logging.getLogger(__name__)
 
@@ -143,9 +144,9 @@ class FireFlowAPIClient(SoapAPIClient):
         ticket_url = ticket_added.ticketDisplayURL
         # normalize ticket url hostname that is sometimes incorrect from the FireFlow server (which uses it's own
         # internal IP to build this url.
-        url = list(urlsplit(ticket_url))
+        url = list(urllib.parse.urlsplit(ticket_url))
         url[1] = self.server_ip
-        return urlunsplit(url)
+        return urllib.parse.urlunsplit(url)
 
     def get_change_request_by_id(self, change_request_id):
         """Get a change request by its ID.
