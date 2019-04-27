@@ -373,7 +373,7 @@ interactions:
       Content-Type:
       - text/xml
       Date:
-      - Thu, 25 Apr 2019 03:48:14 GMT
+      - Sat, 27 Apr 2019 01:15:59 GMT
       Keep-Alive:
       - timeout=15, max=100
       Server:
@@ -416,14 +416,14 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA52TW4+bMBCF/wrifTHYYC4xrFR1q6zUqquyVfvq2ENgS2yKnbD59zW5bNNV21R9
-        Q545Zz7PMez2edN7OxhNp1XpR0Hoe6CElp1al/7nx3c3mX9bMaP5UNypHfR6AM9JlCkU34AZotJv
-        rR1MgdA0TQHv19qACITeoC/1kivZw+ifFM+mO3afmicS6HGNcBhG6OuH97VoYcNvOmUsVwLOqnm2
-        Q3pRmkObCVx1Lh0s5g905kZn5WR+wjXdCE2vXxHCqoZx1wkwv6OV12l977Ca8+ja7nv4D9L59F9k
-        xwCQf0rkjZb7ip2CKPjWtqBsJ7iFT+5EKwMVG8Fse+u53Rd2Pzg4d6+iU9avIoaORecGZn4A9/JV
-        n7Gjw/SrUNAsDWUsBI5os+JU0BUkICPIEyJwztCLQ8UaXl+xa1YZwSFJKYkyIkiYCslJKhJwtjGh
-        nKELj4oN7XDN8WH5UN/V9f3bkjTj91y3MU4lb4jCHRUJf3qyBC+8gdu2RAvP5b8dYeEt3cI/qn7P
-        0OWI+QaP+huoP8yScZISTHOSSBpzLKjkGY9CyCnJMG7Smf6grxj6ezboIkX0yz9W/QAq7JMemQMA
+        H4sIAAAAAAAAA52TW2+cMBCF/wryezDG3NcQqWqqjdSqUUmVvhozLLRgI+xdsv++Zi/pNkq7Vd+Q
+        Z86Zz3MMu30eemcHk+6UzBFxPeSAFKru5CZHXx8/3CTotmBa8TG7kzvo1QiOlUidST6AHkmOWmNG
+        nWE8z7PL+43SIFyhBvxUrrmse5jQSfGsu2P3qXmmrpo22Pc8gr99+liKFgZ+00ltuBRwVi2zLdKL
+        Uh/atGurS+lgsXzgMzc+K2f9C67pJmh69YoQqhKmXSdAv0VbX6dFzmE159Gl2ffwH6TL6b/IjgFg
+        dErknar3BTsFkfGtaUGaTnADX+yJkhoKNoHe9saxu8/MfrRw9l5ZJw0qCMPHonUDvTyA+/pVnzaT
+        xURFGAU0TSPaxFSkPIm8gAs/qgJCoopDAgy/OBSs4eUVuzimYUOgITGhTQo1aUjCk4AmSZw2fpUw
+        fOFRsLEdrzk+rB/Ku7K8f59T5XXRoFXcm0ntgjhUUURHtf0erpyRmzbHK8fmv51g5aztwj/Lfs/w
+        5YjlBo/qB8g/zEpqy9mEIgZSeX5U+zT0ahJ7Ka9iUYXRQn/QFwz/PRt8kSL+7R8rfgK+lMnqmQMA
         AA==
     headers:
       Connection:
@@ -435,7 +435,7 @@ interactions:
       Content-Type:
       - text/xml; charset=utf-8
       Date:
-      - Thu, 25 Apr 2019 03:48:14 GMT
+      - Sat, 27 Apr 2019 01:15:59 GMT
       Keep-Alive:
       - timeout=15, max=99
       SOAPServer:
@@ -458,10 +458,10 @@ interactions:
 - request:
     body: <?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns0="https://www.algosec.com/WSHandler"
-      xmlns:ns1="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Header/><ns1:Body><ns0:createTicket><FFWSHeader/><sessionId>0c6870d4cc216fba6c6be5ed1e953c29</sessionId><ticket><template/><description>Ticket
+      xmlns:ns1="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Header/><ns1:Body><ns0:createTicket><FFWSHeader/><sessionId>56439963f73c9a8604ac26b4116bae8e</sessionId><ticket><template/><description>Ticket
       created by the AlgoSec Python SDK Unit testing module</description><requestor>Tester
       First Name email@testing.com</requestor><subject>Some traffic change request
-      subject</subject><trafficLines><action>1</action><trafficDestination><address>192.168.1.3</address></trafficDestination><trafficDestination><address>192.168.1.4</address></trafficDestination><trafficService><service>tcp/80</service></trafficService><trafficService><service>tcp/443</service></trafficService><trafficSource><address>10.0.0.1</address></trafficSource><trafficSource><address>10.0.0.2</address></trafficSource></trafficLines><trafficLines><action>0</action><trafficDestination><address>10.0.0.3</address></trafficDestination><trafficDestination><address>10.0.0.4</address></trafficDestination><trafficService><service>tcp/23</service></trafficService><trafficService><service>tcp/50</service></trafficService><trafficSource><address>192.168.1.1</address></trafficSource><trafficSource><address>192.168.1.2</address></trafficSource></trafficLines></ticket></ns0:createTicket></ns1:Body></SOAP-ENV:Envelope>
+      subject</subject><trafficLines><action>1</action><trafficDestination><address>192.168.1.3</address></trafficDestination><trafficDestination><address>192.168.1.4</address></trafficDestination><trafficService><service>tcp/80</service></trafficService><trafficService><service>tcp/443</service></trafficService><trafficSource><address>10.0.0.1</address></trafficSource><trafficSource><address>10.0.0.2</address></trafficSource><trafficApplication><application>ping</application></trafficApplication><trafficApplication><application>facebook-chat</application></trafficApplication></trafficLines></ticket></ns0:createTicket></ns1:Body></SOAP-ENV:Envelope>
     headers:
       Accept:
       - '*/*'
@@ -470,7 +470,7 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '1504'
+      - '1236'
       Content-Type:
       - text/xml; charset=utf-8
       SOAPAction:
@@ -483,13 +483,13 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA52TQU/jMBCF/4qVO54mCNSNXFdaLRVI7IUWwdU408Zax8563Ib8+3WbphTEitXe
-        Yvt9b+bNKGL+2li2w0DGu1mW80nG0GlfGbeZZY+rxcU0m0tBXrXljduh9S2yw2lULWNvcZbVMbYl
-        AOkaG0U8ue5V3IcN7D9glEPG0pujcn/7L9hQ84R1NECUqLUJuLa+48puPKHm2jfwhC9LDDujkeBp
-        eatcZTGcF02d/Ee7r2ROVNd1vLs8iIvJJIfnn/fLg9GFcRSV0/hGVV9To9ipBqnNJ28B98i7bKc8
-        x5V891UvxQiWOqCKuDL6F8aHdOUdoRQBaWsjSwnK2LdpV6mr0riYyVzA8ChFciC1wQ8qiiENIZOr
-        GpmulUuCgL+3SJF1ihhtdRozrbfW9mwoXgk4WkkRD438MNRa1T8+3P/FfEybfyt4fj3lV1OeXxaw
-        SNtdpO3CkAeOPryOjZ2banZVXBcCPtYYq95VnwU+Z+4qKeCL0cHZlOHdTyD/AByjrmc6AwAA
+        H4sIAAAAAAAAA52TQU/jMBCF/4qVO56mCFQi15UQWy0Se6FFcPU608Zax8563Ib8+3Wbpi2IFYhb
+        bL/vzbwZRcxea8u2GMh4N81yPsoYOu1L49bT7Gk5v5hkMynIq6b44bZofYNsfxpUi9hZnGZVjE0B
+        QLrCWhFPrjsV92ENuw8Y5JCx9Oao2N1+BetrHrGWeogStTIBV9a3XNm1J9Rc+xqe8fcCw9ZoJHhe
+        /FSutBjOi6ZOvtHuK5kj1bYtby/34vFolMPLr4fF3ujCOIrKaTxR5efUIHaqRmry0SngDnmT7Zjn
+        sJJbX3ZSDGChA6qIS6P/YHxMV94RShGQNjaylKCIXZN2lboqjIuZzAX0j1IkB1JrfKeiGNIQMrms
+        kOlKuSQI+HeDFFmriNFGpzHTamNtx/ripYCDlRRx38idocaq7unx4T/mQ9r8Zszz6wm/mvD8cgzz
+        tN152i70eeDgw6tY25kpp1fj6xsB72sMVe/LjwKfM/elFPDJ6OBsyvDmJ5D/ABMJEbQ6AwAA
     headers:
       Connection:
       - Keep-Alive
@@ -500,7 +500,7 @@ interactions:
       Content-Type:
       - text/xml; charset=utf-8
       Date:
-      - Thu, 25 Apr 2019 03:48:29 GMT
+      - Sat, 27 Apr 2019 01:16:09 GMT
       Keep-Alive:
       - timeout=15, max=98
       SOAPServer:
@@ -523,7 +523,7 @@ interactions:
 - request:
     body: <?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns0="https://www.algosec.com/WSHandler"
-      xmlns:ns1="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Header/><ns1:Body><ns0:getTicket><FFWSHeader/><sessionId>0c6870d4cc216fba6c6be5ed1e953c29</sessionId><ticketId>5262</ticketId></ns0:getTicket></ns1:Body></SOAP-ENV:Envelope>
+      xmlns:ns1="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Header/><ns1:Body><ns0:getTicket><FFWSHeader/><sessionId>56439963f73c9a8604ac26b4116bae8e</sessionId><ticketId>5269</ticketId></ns0:getTicket></ns1:Body></SOAP-ENV:Envelope>
     headers:
       Accept:
       - '*/*'
@@ -545,31 +545,31 @@ interactions:
   response:
     body:
       string: !!binary |
-        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
+        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
+        v1keSqsrCAAA
     headers:
       Connection:
       - Keep-Alive
       Content-Encoding:
       - gzip
       Content-Length:
-      - '771'
+      - '750'
       Content-Type:
       - text/xml; charset=utf-8
       Date:
-      - Thu, 25 Apr 2019 03:48:35 GMT
+      - Sat, 27 Apr 2019 01:16:14 GMT
       Keep-Alive:
       - timeout=15, max=97
       SOAPServer:
