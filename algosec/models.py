@@ -167,7 +167,7 @@ class NetworkObjectType(Enum):
 
 
 class ChangeRequestTrafficLine(object):
-    def __init__(self, action, sources, destinations, services):
+    def __init__(self, action, sources, destinations, services, applications=None):
         """
         Represent a traffic line while creating a change request by the api client.
 
@@ -178,8 +178,11 @@ class ChangeRequestTrafficLine(object):
             destinations (list[str]): List of IP address representing the destination of the traffic.
             services (list[str]): List of services which describe the type of traffic. Each service could be a service
                 name as defined on AlgoSec servers or just a proto/port pair. (e.g. ssh, http, tcp/50, udp/700)
+            applications (list[str]): List of application names describing the traffic. (e.g. ping, facebook, etc.)
+                Full list of supported applications can be found on the FireFlow UI.
         """
         self.action = action
         self.sources = sources
         self.destinations = destinations
         self.services = services
+        self.applications = applications

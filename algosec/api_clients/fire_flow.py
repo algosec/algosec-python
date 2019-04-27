@@ -96,6 +96,11 @@ class FireFlowAPIClient(SoapAPIClient):
             traffic_service = self.client.factory.create('trafficService')
             traffic_service.service = service
             soap_traffic_line.trafficService.append(traffic_service)
+        if traffic_line.applications:
+            for application_name in traffic_line.applications:
+                traffic_application = self.client.factory.create('trafficApplication')
+                traffic_application.application = application_name
+                soap_traffic_line.trafficApplication.append(traffic_application)
         return soap_traffic_line
 
     def create_change_request(
