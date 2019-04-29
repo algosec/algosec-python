@@ -151,8 +151,8 @@ class BusinessFlowAPIClient(RESTAPIClient):
         self._check_api_response(response)
         return response.json()
 
-    def get_application_revision_id_by_name(self, app_name):
-        """Return the latest revision id of an application by its name.
+    def get_application_by_name(self, app_name):
+        """Return the latest revision of an application by its name.
 
         Args:
             app_name (str): The application name to look for.
@@ -165,7 +165,21 @@ class BusinessFlowAPIClient(RESTAPIClient):
         """
         response = self.session.get("{}/name/{}".format(self.applications_base_url, app_name))
         self._check_api_response(response)
-        return response.json()['revisionID']
+        return response.json()
+
+    def get_application_revision_id_by_name(self, app_name):
+        """Return the latest revision id of an application by its name.
+
+        Args:
+            app_name (str): The application name to look for.
+
+        Raises:
+            :class:`~algosec.errors.AlgoSecAPIError`: If no application matching the given name was found.
+
+        Returns:
+            int: The latest application revision ID.
+        """
+        return self.get_application_by_name(app_name)['revisionID']
 
     def search_network_objects(self, ip_or_subnet, search_type):
         """Return network objects related to a given IP or subnet.

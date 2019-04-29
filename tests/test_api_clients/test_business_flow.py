@@ -82,6 +82,15 @@ class TestBusinessFlowAPIClient(object):
         mock_check_response.assert_called_once_with(response)
         assert result == response.json.return_value
 
+    def test_get_application_by_name(self, client, mock_session, mock_check_response):
+        response = mock_session.get.return_value
+        result = client.get_application_by_name('app-name')
+        mock_session.get.assert_called_once_with(
+            'https://testing.algosec.com/BusinessFlow/rest/v1/applications/name/app-name',
+        )
+        mock_check_response.assert_called_once_with(response)
+        assert result == response.json.return_value
+
     def test_get_application_revision_id_by_name(self, client, mock_session, mock_check_response):
         response = mock_session.get.return_value
         result = client.get_application_revision_id_by_name('app-name')
