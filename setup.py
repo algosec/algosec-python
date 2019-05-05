@@ -23,7 +23,7 @@ if sys.version_info < (3, 4):
 
 setup(
     name="algosec",
-    version="1.3.4",
+    version="1.3.5",
     packages=find_packages(exclude=["tests", "tests.*"]),
     url="https://github.com/algosec/algosec-python",
     license="MIT",
