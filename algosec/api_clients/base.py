@@ -14,7 +14,7 @@ from suds import client
 from suds.cache import NoCache
 
 from algosec.errors import AlgoSecAPIError
-from algosec.helpers import report_soap_failure, LogSOAPMessages
+from algosec.helpers import report_soap_failure, LogSOAPMessages, mount_adapter_on_session, AlgoSecServersHTTPAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +34,13 @@ class APIClient(object):
         This class is intended to be inherited. It should not be initiated or used directly in your code.
     """
 
-    def __init__(self, server_ip, user, password, verify_ssl=True):
+    def __init__(self, server_ip, user, password, verify_ssl=True, session_adapter=AlgoSecServersHTTPAdapter):
         super(APIClient, self).__init__()
         self.server_ip = server_ip
         self.user = user
         self.password = password
         self.verify_ssl = verify_ssl
+        self._session_adapter = session_adapter()
 
 
 class RESTAPIClient(APIClient):
@@ -56,8 +57,8 @@ class RESTAPIClient(APIClient):
     Note:
         This class should not be used directly but rather inherited to implement any new SOAP API clients.
     """
-    def __init__(self, server_ip, user, password, verify_ssl=True):
-        super(RESTAPIClient, self).__init__(server_ip, user, password, verify_ssl)
+    def __init__(self, server_ip, user, password, verify_ssl=True, session_adapter=AlgoSecServersHTTPAdapter):
+        super(RESTAPIClient, self).__init__(server_ip, user, password, verify_ssl, session_adapter)
         # Will be initialized once the session is used
         self._session = None
 
@@ -122,8 +123,8 @@ class SoapAPIClient(APIClient):
         This class should not be used directly but rather inherited to implement any new SOAP API clients.
     """
 
-    def __init__(self, server_ip, user, password, verify_ssl=True):
-        super(SoapAPIClient, self).__init__(server_ip, user, password, verify_ssl)
+    def __init__(self, server_ip, user, password, verify_ssl=True, session_adapter=AlgoSecServersHTTPAdapter):
+        super(SoapAPIClient, self).__init__(server_ip, user, password, verify_ssl, session_adapter)
         self._client = None
         # Used to persist the session id used for security reasons on reoccurring requests
         self._session_id = None
@@ -160,6 +161,7 @@ class SoapAPIClient(APIClient):
             suds.client.Client: A suds SOAP client.
         """
         session = requests.Session()
+        mount_adapter_on_session(session, self._session_adapter)
         session.verify = self.verify_ssl
         # use ``requests`` based suds implementation to handle AlgoSec's self-signed certificate properly.
         with report_soap_failure(AlgoSecAPIError):

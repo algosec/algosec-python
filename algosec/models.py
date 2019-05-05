@@ -147,6 +147,9 @@ class ChangeRequestAction(Enum):
     ALLOW = ChangeRequestActionInfo(1, "allow")
     DROP = ChangeRequestActionInfo(0, "drop")
 
+    def __repr__(self):
+        return "{}.{}".format(self.__class__.__name__, self._name_)
+
 
 class NetworkObjectType(Enum):
     """Enum representing a ``NetworkObject`` type as defined on the API Guide.
