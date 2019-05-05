@@ -9,7 +9,7 @@ from six.moves.urllib.parse import quote_plus
 
 from algosec.api_clients.base import RESTAPIClient
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, EmptyFlowSearch
-from algosec.helpers import mount_algosec_adapter_on_session, is_ip_or_subnet
+from algosec.helpers import mount_adapter_on_session, is_ip_or_subnet
 from algosec.models import NetworkObjectSearchTypes, NetworkObjectType
 
 logger = logging.getLogger(__name__)
@@ -61,16 +61,19 @@ class BusinessFlowAPIClient(RESTAPIClient):
             requests.session.Session: An authenticated session with the server.
         """
         session = requests.session()
-        mount_algosec_adapter_on_session(session)
+        mount_adapter_on_session(session, self._session_adapter)
         url = "{}/rest/v1/login".format(self.business_flow_base_url, self.server_ip)
         logger.debug("logging in to AlgoSec servers: {}".format(url))
         session.verify = self.verify_ssl
-        response = session.get(url, auth=(self.user, self.password))
+        try:
+            response = session.get(url, auth=(self.user, self.password))
+        except:
+            raise AlgoSecLoginError("Unable to login into AlgoSec server at {}.".format(url))
         if response.status_code == status_codes.codes.OK:
             return session
         else:
             raise AlgoSecLoginError(
-                "Unable to login into AlgoSec server at %s. HTTP Code: %s", url, response.status_code
+                "Unable to login into AlgoSec server at {}. HTTP Code: {}".format(url, response.status_code)
             )
 
     @property
@@ -161,7 +164,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             :class:`~algosec.errors.AlgoSecAPIError`: If no application matching the given name was found.
 
         Returns:
-            int: The latest application revision ID.
+            dict: Json of the latest application revision.
         """
         response = self.session.get("{}/name/{}".format(self.applications_base_url, app_name))
         self._check_api_response(response)

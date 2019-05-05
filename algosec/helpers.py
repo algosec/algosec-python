@@ -33,16 +33,17 @@ class AlgoSecServersHTTPAdapter(HTTPAdapter):
         return super(AlgoSecServersHTTPAdapter, self).send(*args, **kwargs)
 
 
-def mount_algosec_adapter_on_session(session):
+def mount_adapter_on_session(session, adapter):
     """Used to mount the ``AlgoSecServersHTTPAdapter`` on a ``requests`` session.
 
     The adapter is mounted for all HTTP/HTTPS calls.
 
     Args:
         session (requests.Session): The requests session to mount the AlgoSec adapter on.
+        adapter (HTTPAdapter): The adapter to mount on the session
     """
-    session.mount('https://', AlgoSecServersHTTPAdapter())
-    session.mount('http://', AlgoSecServersHTTPAdapter())
+    session.mount('https://', adapter)
+    session.mount('http://', adapter)
 
 
 def is_ip_or_subnet(string):
@@ -79,8 +80,11 @@ def report_soap_failure(exception_to_raise):
     reason = "SOAP API call failed."
     try:
         yield
-    except WebFault:
+    except WebFault as e:
         # Handle exceptions in SOAP logical level
+        all_args_are_strings = hasattr(e, 'args') and isinstance(e.args, tuple) and all(isinstance(i, str) for i in e.args)
+        if all_args_are_strings:
+            reason = ', '.join(e.args)
         raise exception_to_raise(reason)
     except TransportError as e:
         # Handle exceptions at the transport layer
