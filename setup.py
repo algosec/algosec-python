@@ -1,3 +1,4 @@
+import sys
 from codecs import open
 
 from setuptools import setup, find_packages
@@ -5,6 +6,20 @@ from setuptools import setup, find_packages
 # Get the long description from the README file
 with open('README.rst') as f:
     long_description = f.read()
+
+INSTALL_REQUIRES = [
+    'requests',
+    'suds-jurko>=0.6',
+    'suds_requests>=0.4.0',
+    'ipaddress',
+    'six',
+    'deprecated',
+]
+
+if sys.version_info < (3, 4):
+    # Backport of Python 3.4 enums to earlier versions
+    INSTALL_REQUIRES.append('enum34')
+
 
 setup(
     name='algosec',
@@ -33,14 +48,6 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    install_requires=[
-        'requests',
-        'enum34',
-        'suds-jurko>=0.6',
-        'suds_requests>=0.4.0',
-        'ipaddress',
-        'six',
-        'deprecated',
-    ],
+    install_requires=INSTALL_REQUIRES,
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
 )
