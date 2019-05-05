@@ -30,7 +30,11 @@ from deprecated import deprecated
 
 from algosec.api_clients.base import SoapAPIClient
 from algosec.helpers import report_soap_failure
-from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, UnrecognizedAllowanceState
+from algosec.errors import (
+    AlgoSecLoginError,
+    AlgoSecAPIError,
+    UnrecognizedAllowanceState,
+)
 from algosec.models import DeviceAllowanceState
 
 logger = logging.getLogger(__name__)
@@ -60,11 +64,11 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
 
     @property
     def _wsdl_url_path(self):
-        return 'https://{}/AFA/php/ws.php?wsdl'.format(self.server_ip)
+        return "https://{}/AFA/php/ws.php?wsdl".format(self.server_ip)
 
     @property
-    def _soap_service_location(self):   # pragma: no cover
-        return 'https://{}/AFA/php/ws.php'.format(self.server_ip)
+    def _soap_service_location(self):  # pragma: no cover
+        return "https://{}/AFA/php/ws.php".format(self.server_ip)
 
     def _initiate_client(self):
         """Return a connected suds client and save the new session id to ``self._session_id``
@@ -75,23 +79,25 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         Returns:
             suds.client.Client
         """
-        client = self._get_soap_client(self._wsdl_url_path, location=self._soap_service_location)
+        client = self._get_soap_client(
+            self._wsdl_url_path, location=self._soap_service_location
+        )
         with report_soap_failure(AlgoSecLoginError):
             self._session_id = client.service.connect(
-                UserName=self.user,
-                Password=self.password,
-                Domain=''
+                UserName=self.user, Password=self.password, Domain=""
             )
         return client
 
     @staticmethod
     def _prepare_simulation_query_results(devices):
         """Return traffic simulation query results aggregated by device allowance state"""
-        query_results = OrderedDict([
-            (DeviceAllowanceState.BLOCKED, []),
-            (DeviceAllowanceState.PARTIALLY_BLOCKED, []),
-            (DeviceAllowanceState.ALLOWED, [])
-        ])
+        query_results = OrderedDict(
+            [
+                (DeviceAllowanceState.BLOCKED, []),
+                (DeviceAllowanceState.PARTIALLY_BLOCKED, []),
+                (DeviceAllowanceState.ALLOWED, []),
+            ]
+        )
         # Group the devices by groups according to their device result
         for device in devices:
             try:
@@ -100,8 +106,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             except UnrecognizedAllowanceState:
                 logger.warning(
                     "Unknown device state found. Device: {}, state: {}".format(
-                        device,
-                        device.IsAllowed,
+                        device, device.IsAllowed
                     )
                 )
         return query_results
@@ -151,28 +156,37 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
 
         """
         if getattr(query_response, "QueryResult", None):
-            aggregated_result = DeviceAllowanceState.from_string(query_response.QueryResult)
+            aggregated_result = DeviceAllowanceState.from_string(
+                query_response.QueryResult
+            )
         else:
             aggregated_result = cls._calc_aggregated_query_result(query_results)
         return aggregated_result
 
-    def _execute_traffic_simulation_query(self, source, destination, service, target=None, application=None):
+    def _execute_traffic_simulation_query(
+        self, source, destination, service, target=None, application=None
+    ):
         with report_soap_failure(AlgoSecAPIError):
             params = dict(
                 QueryInput={
-                    'Source': source,
-                    'Destination': destination,
-                    'Service': service
+                    "Source": source,
+                    "Destination": destination,
+                    "Service": service,
                 }
             )
             if application:
-                params['QueryInput']['Application'] = application
+                params["QueryInput"]["Application"] = application
             if target is not None:
-                params['QueryTarget'] = target
+                params["QueryTarget"] = target
 
-            simulation_query_response = self.client.service.query(SessionID=self._session_id, **params).QueryResult
+            simulation_query_response = self.client.service.query(
+                SessionID=self._session_id, **params
+            ).QueryResult
         query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
-        if simulation_query_response is None or not simulation_query_response[0].QueryItem:
+        if (
+            simulation_query_response is None
+            or not simulation_query_response[0].QueryItem
+        ):
             devices = []
         else:
             devices = simulation_query_response[0].QueryItem.Device
@@ -184,8 +198,8 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         return query_results, query_url, simulation_query_response
 
     @deprecated(
-        version='1.2.0',
-        reason="This function will be removed soon. Please use `execute_traffic_simulation_query` instead."
+        version="1.2.0",
+        reason="This function will be removed soon. Please use `execute_traffic_simulation_query` instead.",
     )
     def run_traffic_simulation_query(self, source, destination, service):
         """
@@ -204,13 +218,15 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             algosec.models.DeviceAllowanceState: Traffic simulation query result.
         """
         query_results, query_url, simulation_query_response = self._execute_traffic_simulation_query(
-            source,
-            destination,
-            service
+            source, destination, service
         )
-        return self._get_summarized_query_result(simulation_query_response[0], query_results)
+        return self._get_summarized_query_result(
+            simulation_query_response[0], query_results
+        )
 
-    def execute_traffic_simulation_query(self, source, destination, service, target=None, application=None):
+    def execute_traffic_simulation_query(
+        self, source, destination, service, target=None, application=None
+    ):
         """
         Return results and browser URL for a traffic simulation query.
 
@@ -236,14 +252,12 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             }
         """
         query_results, query_url, simulation_query_response = self._execute_traffic_simulation_query(
-            source,
-            destination,
-            service,
-            target=target,
-            application=application,
+            source, destination, service, target=target, application=application
         )
         return {
-            'result': self._get_summarized_query_result(simulation_query_response[0], query_results),
-            'raw_response': simulation_query_response,
-            'query_url': query_url,
-            }
+            "result": self._get_summarized_query_result(
+                simulation_query_response[0], query_results
+            ),
+            "raw_response": simulation_query_response,
+            "query_url": query_url,
+        }

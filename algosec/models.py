@@ -31,16 +31,16 @@ class RequestedFlow(object):
     """
 
     def __init__(
-            self,
-            name,
-            sources,
-            destinations,
-            network_users,
-            network_applications,
-            network_services,
-            comment,
-            custom_fields=None,
-            type="APPLICATION",
+        self,
+        name,
+        sources,
+        destinations,
+        network_users,
+        network_applications,
+        network_services,
+        comment,
+        custom_fields=None,
+        type="APPLICATION",
     ):
         self.name = name
         self.sources = sources
@@ -87,6 +87,7 @@ AllowanceInfo = namedtuple("AllowanceInfo", ["text", "title"])
 
 class NetworkObjectSearchTypes(Enum):
     """Enum used for :py:meth:`~algosec.api_clients.business_flow.BusinessFlowAPIClient.search_network_objects`"""
+
     INTERSECT = "INTERSECT"
     CONTAINED = "CONTAINED"
     CONTAINING = "CONTAINING"
@@ -103,6 +104,7 @@ class DeviceAllowanceState(Enum):
         NOT_ROUTED:
 
     """
+
     PARTIALLY_BLOCKED = AllowanceInfo("Partially Blocked", "Partially blocking devices")
     BLOCKED = AllowanceInfo("Blocked", "Blocking devices")
     ALLOWED = AllowanceInfo("Allowed", "Allowed devices")
@@ -122,16 +124,20 @@ class DeviceAllowanceState(Enum):
         Returns:
             DeviceAllowanceState: The relevant enum matching the given string.
         """
-        if string.lower().startswith('partially'):
+        if string.lower().startswith("partially"):
             return cls.PARTIALLY_BLOCKED
-        elif string.lower().startswith('blocked'):
+        elif string.lower().startswith("blocked"):
             return cls.BLOCKED
-        elif string.lower().startswith('allowed'):
+        elif string.lower().startswith("allowed"):
             return cls.ALLOWED
-        elif string.lower().startswith('not routed'):
+        elif string.lower().startswith("not routed"):
             return cls.NOT_ROUTED
         else:
-            raise UnrecognizedAllowanceState("Unable to get DeviceAllowanceState from string state: {}".format(string))
+            raise UnrecognizedAllowanceState(
+                "Unable to get DeviceAllowanceState from string state: {}".format(
+                    string
+                )
+            )
 
 
 ChangeRequestActionInfo = namedtuple("ChangeRequestActionInfo", ["api_value", "text"])
@@ -144,6 +150,7 @@ class ChangeRequestAction(Enum):
         ALLOW: This enum will mark the change request to allow the requested traffic
         DROP: This enum will mark the change request to block the requested traffic
     """
+
     ALLOW = ChangeRequestActionInfo(1, "allow")
     DROP = ChangeRequestActionInfo(0, "drop")
 
@@ -162,6 +169,7 @@ class NetworkObjectType(Enum):
         GROUP: Denotes an object that is defined by a list of ExistingNetworkObject or NewNetworkObject objects.
         ABSTRACT: Denotes an object that is devoid of any particular definition. Defined with empty content.
     """
+
     HOST = "Host"
     RANGE = "Range"
     # Currently not supported by "create_network_object" on ABF client

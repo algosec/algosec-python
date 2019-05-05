@@ -14,7 +14,12 @@ from suds import client
 from suds.cache import NoCache
 
 from algosec.errors import AlgoSecAPIError
-from algosec.helpers import report_soap_failure, LogSOAPMessages, mount_adapter_on_session, AlgoSecServersHTTPAdapter
+from algosec.helpers import (
+    report_soap_failure,
+    LogSOAPMessages,
+    mount_adapter_on_session,
+    AlgoSecServersHTTPAdapter,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +39,14 @@ class APIClient(object):
         This class is intended to be inherited. It should not be initiated or used directly in your code.
     """
 
-    def __init__(self, server_ip, user, password, verify_ssl=True, session_adapter=AlgoSecServersHTTPAdapter):
+    def __init__(
+        self,
+        server_ip,
+        user,
+        password,
+        verify_ssl=True,
+        session_adapter=AlgoSecServersHTTPAdapter,
+    ):
         super(APIClient, self).__init__()
         self.server_ip = server_ip
         self.user = user
@@ -57,8 +69,18 @@ class RESTAPIClient(APIClient):
     Note:
         This class should not be used directly but rather inherited to implement any new SOAP API clients.
     """
-    def __init__(self, server_ip, user, password, verify_ssl=True, session_adapter=AlgoSecServersHTTPAdapter):
-        super(RESTAPIClient, self).__init__(server_ip, user, password, verify_ssl, session_adapter)
+
+    def __init__(
+        self,
+        server_ip,
+        user,
+        password,
+        verify_ssl=True,
+        session_adapter=AlgoSecServersHTTPAdapter,
+    ):
+        super(RESTAPIClient, self).__init__(
+            server_ip, user, password, verify_ssl, session_adapter
+        )
         # Will be initialized once the session is used
         self._session = None
 
@@ -99,9 +121,7 @@ class RESTAPIClient(APIClient):
                 content = response.content
             raise AlgoSecAPIError(
                 "response code: {}, content: {}, exception: {}".format(
-                    response.status_code,
-                    content,
-                    traceback.format_exc(),
+                    response.status_code, content, traceback.format_exc()
                 ),
                 response=response,
                 response_content=content,
@@ -123,8 +143,17 @@ class SoapAPIClient(APIClient):
         This class should not be used directly but rather inherited to implement any new SOAP API clients.
     """
 
-    def __init__(self, server_ip, user, password, verify_ssl=True, session_adapter=AlgoSecServersHTTPAdapter):
-        super(SoapAPIClient, self).__init__(server_ip, user, password, verify_ssl, session_adapter)
+    def __init__(
+        self,
+        server_ip,
+        user,
+        password,
+        verify_ssl=True,
+        session_adapter=AlgoSecServersHTTPAdapter,
+    ):
+        super(SoapAPIClient, self).__init__(
+            server_ip, user, password, verify_ssl, session_adapter
+        )
         self._client = None
         # Used to persist the session id used for security reasons on reoccurring requests
         self._session_id = None
@@ -133,11 +162,11 @@ class SoapAPIClient(APIClient):
         raise NotImplementedError()
 
     @property
-    def _wsdl_url_path(self):   # pragma: no cover
+    def _wsdl_url_path(self):  # pragma: no cover
         raise NotImplementedError()
 
     @property
-    def _soap_service_location(self):   # pragma: no cover
+    def _soap_service_location(self):  # pragma: no cover
         raise NotImplementedError()
 
     @property

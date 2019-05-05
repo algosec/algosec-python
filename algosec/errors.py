@@ -22,16 +22,18 @@ class AlgoSecAPIError(Exception):
         response_content (dict): The content of the response of the failed API call. (Optional)
         status_code (int): The status code of the response of the failed API call. (Optional)
     """
+
     def __init__(self, *args, **kwargs):
         """Initialize RequestException with `request` and `response` objects."""
-        self.response = kwargs.pop('response', None)
-        self.status_code = kwargs.pop('status_code', None)
-        self.response_content = kwargs.pop('response_content', None)
+        self.response = kwargs.pop("response", None)
+        self.status_code = kwargs.pop("status_code", None)
+        self.response_content = kwargs.pop("response_content", None)
         super(AlgoSecAPIError, self).__init__(*args, **kwargs)
 
 
 class AlgoSecLoginError(AlgoSecAPIError):
     """Raised when login to AlgoSec API fails"""
+
     pass
 
 
@@ -40,14 +42,17 @@ class AlgoSecBusinessFlowAPIError(AlgoSecAPIError):
 
     This error is also subclassed by other more specific BusinessFlow related errors.
     """
+
     pass
 
 
 class EmptyFlowSearch(AlgoSecBusinessFlowAPIError):
     """Raised when flow search by exact name fails."""
+
     pass
 
 
 class UnrecognizedAllowanceState(AlgoSecAPIError):
     """Raised when parsing unknown device allowance state strings."""
+
     pass
