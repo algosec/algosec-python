@@ -47,9 +47,11 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
     """
 
-    ABF_APPLICATION_DASHBOARD_URL = '/#application/{}/dashboard'
-    ASSOCIATED_APPLICATIONS_UI_QUERY = '/#applications/query?q=%7B%22addresses%22%3A%5B%7B%22' \
-                                       'address%22%3A%22{}%22%7D%5D%2C%22devices%22%3A%5B%5D%7D'
+    ABF_APPLICATION_DASHBOARD_URL = "/#application/{}/dashboard"
+    ASSOCIATED_APPLICATIONS_UI_QUERY = (
+        "/#applications/query?q=%7B%22addresses%22%3A%5B%7B%22"
+        "address%22%3A%22{}%22%7D%5D%2C%22devices%22%3A%5B%5D%7D"
+    )
 
     def _initiate_session(self):
         """Return an authenticated session to the AlgoSec server.
@@ -67,19 +69,23 @@ class BusinessFlowAPIClient(RESTAPIClient):
         session.verify = self.verify_ssl
         try:
             response = session.get(url, auth=(self.user, self.password))
-        except:
-            raise AlgoSecLoginError("Unable to login into AlgoSec server at {}.".format(url))
+        except Exception:
+            raise AlgoSecLoginError(
+                "Unable to login into AlgoSec server at {}.".format(url)
+            )
         if response.status_code == status_codes.codes.OK:
             return session
         else:
             raise AlgoSecLoginError(
-                "Unable to login into AlgoSec server at {}. HTTP Code: {}".format(url, response.status_code)
+                "Unable to login into AlgoSec server at {}. HTTP Code: {}".format(
+                    url, response.status_code
+                )
             )
 
     @property
     def business_flow_base_url(self):
         """str: Return the base url for BusinessFlow."""
-        return 'https://{}/BusinessFlow'.format(self.server_ip)
+        return "https://{}/BusinessFlow".format(self.server_ip)
 
     @property
     def api_base_url(self):
@@ -138,18 +144,11 @@ class BusinessFlowAPIClient(RESTAPIClient):
         """
         custom_fields = [] if custom_fields is None else custom_fields
 
-        content = [
-            {"protocol": service[0], "port": service[1]}
-            for service in content
-        ]
+        content = [{"protocol": service[0], "port": service[1]} for service in content]
 
         response = self.session.post(
             "{}/new".format(self.network_services_base_url),
-            json=dict(
-                name=service_name,
-                content=content,
-                custom_fields=custom_fields,
-            )
+            json=dict(name=service_name, content=content, custom_fields=custom_fields),
         )
         self._check_api_response(response)
         return response.json()
@@ -166,7 +165,9 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             dict: Json of the latest application revision.
         """
-        response = self.session.get("{}/name/{}".format(self.applications_base_url, app_name))
+        response = self.session.get(
+            "{}/name/{}".format(self.applications_base_url, app_name)
+        )
         self._check_api_response(response)
         return response.json()
 
@@ -182,7 +183,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             int: The latest application revision ID.
         """
-        return self.get_application_by_name(app_name)['revisionID']
+        return self.get_application_by_name(app_name)["revisionID"]
 
     def search_network_objects(self, ip_or_subnet, search_type):
         """Return network objects related to a given IP or subnet.
@@ -234,7 +235,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
             dict: The NetworkObject object matching the name lookup.
         """
         response = self.session.get(
-            "{}/name/{}".format(self.network_objects_base_url, object_name),
+            "{}/name/{}".format(self.network_objects_base_url, object_name)
         )
         self._check_api_response(response)
         result = response.json()
@@ -244,7 +245,11 @@ class BusinessFlowAPIClient(RESTAPIClient):
             # TODO: Currently there is a bug in the API that returns a list of one object instead of the object itself
             return result[0]
         else:
-            raise AlgoSecAPIError("Unable to get one network object by name. Server response was: {}".format(result))
+            raise AlgoSecAPIError(
+                "Unable to get one network object by name. Server response was: {}".format(
+                    result
+                )
+            )
 
     def create_network_object(self, type, content, name):
         """Create a new network object.
@@ -294,13 +299,17 @@ class BusinessFlowAPIClient(RESTAPIClient):
         for obj in all_network_objects:
             if not is_ip_or_subnet(obj):
                 continue
-            search_objects = self.search_network_objects(obj, NetworkObjectSearchTypes.EXACT)
+            search_objects = self.search_network_objects(
+                obj, NetworkObjectSearchTypes.EXACT
+            )
             if search_objects:
                 # EXACT object search is by content, not by name.
                 # Therefore, we make check if the exact object name was found
                 # Even if the object exists under a different name, we want to make sure it is
                 # marked for re-creation here.
-                object_names = [search_object.get('name') for search_object in search_objects]
+                object_names = [
+                    search_object.get("name") for search_object in search_objects
+                ]
                 if obj not in object_names:
                     objects_missing_from_algosec.append(obj)
             else:
@@ -345,7 +354,11 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             None
         """
-        response = self.session.delete("{}/{}/flows/{}".format(self.applications_base_url, app_revision_id, flow_id))
+        response = self.session.delete(
+            "{}/{}/flows/{}".format(
+                self.applications_base_url, app_revision_id, flow_id
+            )
+        )
         self._check_api_response(response)
 
     def delete_flow_by_name(self, app_revision_id, flow_name):
@@ -362,7 +375,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             None
         """
-        flow_id = self.get_flow_by_name(app_revision_id, flow_name)['flowID']
+        flow_id = self.get_flow_by_name(app_revision_id, flow_name)["flowID"]
         self.delete_flow_by_id(app_revision_id, flow_id)
 
     def get_application_flows(self, app_revision_id):
@@ -381,9 +394,13 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             list[dict]: List of Flow objects as defined in the API Guide.
         """
-        response = self.session.get("{}/{}/flows".format(self.applications_base_url, app_revision_id))
+        response = self.session.get(
+            "{}/{}/flows".format(self.applications_base_url, app_revision_id)
+        )
         self._check_api_response(response)
-        return [flow for flow in response.json() if flow["flowType"] == "APPLICATION_FLOW"]
+        return [
+            flow for flow in response.json() if flow["flowType"] == "APPLICATION_FLOW"
+        ]
 
     def get_flow_connectivity(self, app_revision_id, flow_id):
         """Return a flow connectivity object for a flow given its ID.
@@ -398,19 +415,15 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             dict: FlowConnectivity object as defined in the API Guide.
         """
-        response = self.session.post("{}/{}/flows/{}/check_connectivity".format(
-            self.applications_base_url,
-            app_revision_id,
-            flow_id
-        ))
+        response = self.session.post(
+            "{}/{}/flows/{}/check_connectivity".format(
+                self.applications_base_url, app_revision_id, flow_id
+            )
+        )
         self._check_api_response(response)
         return response.json()
 
-    def create_application_flow(
-            self,
-            app_revision_id,
-            requested_flow,
-    ):
+    def create_application_flow(self, app_revision_id, requested_flow):
         """Create an application flow.
 
         Creates network services that were defined in the flow but
@@ -449,7 +462,9 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             requests.models.Response: The API call response.
         """
-        response = self.session.post("{}/{}/apply".format(self.applications_base_url, app_revision_id))
+        response = self.session.post(
+            "{}/{}/apply".format(self.applications_base_url, app_revision_id)
+        )
         self._check_api_response(response)
 
     def get_abf_application_dashboard_url(self, application_revision_id):
@@ -465,7 +480,9 @@ class BusinessFlowAPIClient(RESTAPIClient):
             str: URL for the application dashboard on the AlgoSec BusinessFlow. An Example would look like that:
             https://10.0.0.12/BusinessFlow/#application/293/dashboard
         """
-        return self.business_flow_base_url + self.ABF_APPLICATION_DASHBOARD_URL.format(application_revision_id)
+        return self.business_flow_base_url + self.ABF_APPLICATION_DASHBOARD_URL.format(
+            application_revision_id
+        )
 
     def get_associated_applications_ui_query(self, queried_ip_address):
         """
@@ -477,7 +494,10 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             str: URL for ssociated applications query that can be viewed in the browser.
         """
-        return self.business_flow_base_url + self.ASSOCIATED_APPLICATIONS_UI_QUERY.format(queried_ip_address)
+        return (
+            self.business_flow_base_url
+            + self.ASSOCIATED_APPLICATIONS_UI_QUERY.format(queried_ip_address)
+        )
 
     @staticmethod
     def is_application_critical(application_json):
@@ -490,7 +510,9 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             bool: True if the application is marked as a critical application
         """
-        return any(label['name'] == 'Critical' for label in application_json.get('labels', []))
+        return any(
+            label["name"] == "Critical" for label in application_json.get("labels", [])
+        )
 
     def get_associated_applications(self, ip_address):
         """
@@ -507,7 +529,9 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
         """
         response = self.session.get(
-            "{}/find/applications?address={}".format(self.network_objects_base_url, ip_address),
+            "{}/find/applications?address={}".format(
+                self.network_objects_base_url, ip_address
+            )
         )
         self._check_api_response(response)
         return response.json()
