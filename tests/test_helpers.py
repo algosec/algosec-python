@@ -6,7 +6,7 @@ import requests
 from suds.plugin import MessageContext
 
 from algosec.helpers import (
-    mount_algosec_adapter_on_session,
+    mount_adapter_on_session,
     AlgoSecServersHTTPAdapter,
     is_ip_or_subnet,
     LogSOAPMessages,
@@ -31,14 +31,15 @@ def test_mount_algosec_adapter_on_session(mocker):
     mocker.spy(session, 'mount')
     mocker.patch.object(AlgoSecServersHTTPAdapter, '__init__', lambda x: None)
 
-    mount_algosec_adapter_on_session(session)
+    adapter = AlgoSecServersHTTPAdapter()
+    mount_adapter_on_session(session, adapter)
 
     # This whole nasty loop is just to verify that it was called with proper args
     # I didn't find an elegant way to assert that the function is called twice with
     # an *Instance* of AlgoSecServersHTTPAdapter.
     for i, protocol in enumerate(['https', 'http']):
         assert session.mount.call_args_list[i][0][0] == '{}://'.format(protocol)
-        assert isinstance(session.mount.call_args_list[i][0][1], AlgoSecServersHTTPAdapter)
+        assert session.mount.call_args_list[i][0][1] == adapter
 
 
 @pytest.mark.parametrize("string,expected", [

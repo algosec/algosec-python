@@ -1,3 +1,4 @@
+import mock
 import pytest
 import requests
 import responses
@@ -105,7 +106,8 @@ class TestSoapAPIClient(object):
             soap_client.client
             soap_client._initiate_client.assert_called_once_with()
 
-    def test_get_soap_client(self, soap_client, mocker):
+    @mock.patch('algosec.api_clients.base.mount_adapter_on_session')
+    def test_get_soap_client(self, mock_session_adapter, soap_client, mocker):
         with mocker.patch.object(client, 'Client'):
             with mocker.patch.object(requests, 'Session'):
                 wsdl_path = 'http://some-wsdl-path'
@@ -117,6 +119,7 @@ class TestSoapAPIClient(object):
                     wsdl_path,
                     transport=suds_requests.RequestsTransport(session)
                 )
+                mock_session_adapter.assert_called_once_with(session, soap_client._session_adapter)
 
 
 class TestReportSoapFailure(object):

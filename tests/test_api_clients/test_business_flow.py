@@ -31,7 +31,7 @@ class TestBusinessFlowAPIClient(object):
             yield mock_check_response
 
     @mock.patch('requests.session')
-    @mock.patch('algosec.api_clients.business_flow.mount_algosec_adapter_on_session')
+    @mock.patch('algosec.api_clients.business_flow.mount_adapter_on_session')
     def test_initiate_session(self, mock_session_adapter, mock_requests_session, client):
         # Mock successful login
         login_response = mock_requests_session.return_value.get.return_value
@@ -48,7 +48,7 @@ class TestBusinessFlowAPIClient(object):
                 ALGOSEC_PASSWORD,
             )
         )
-        mock_session_adapter.assert_called_once_with(new_session)
+        mock_session_adapter.assert_called_once_with(new_session, client._session_adapter)
 
     @mock.patch('requests.session')
     def test_initiate_session__login_failed(self, mock_requests_session, client):
@@ -78,6 +78,15 @@ class TestBusinessFlowAPIClient(object):
                 'content': [{'protocol': 'tcp', 'port': 50}],
                 'custom_fields': []
             }
+        )
+        mock_check_response.assert_called_once_with(response)
+        assert result == response.json.return_value
+
+    def test_get_application_by_name(self, client, mock_session, mock_check_response):
+        response = mock_session.get.return_value
+        result = client.get_application_by_name('app-name')
+        mock_session.get.assert_called_once_with(
+            'https://testing.algosec.com/BusinessFlow/rest/v1/applications/name/app-name',
         )
         mock_check_response.assert_called_once_with(response)
         assert result == response.json.return_value

@@ -156,7 +156,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             aggregated_result = cls._calc_aggregated_query_result(query_results)
         return aggregated_result
 
-    def _execute_traffic_simulation_query(self, source, destination, service, target=None):
+    def _execute_traffic_simulation_query(self, source, destination, service, target=None, application=None):
         with report_soap_failure(AlgoSecAPIError):
             params = dict(
                 QueryInput={
@@ -165,6 +165,8 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
                     'Service': service
                 }
             )
+            if application:
+                params['QueryInput']['Application'] = application
             if target is not None:
                 params['QueryTarget'] = target
 
@@ -208,7 +210,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
         )
         return self._get_summarized_query_result(simulation_query_response[0], query_results)
 
-    def execute_traffic_simulation_query(self, source, destination, service, target=None):
+    def execute_traffic_simulation_query(self, source, destination, service, target=None, application=None):
         """
         Return results and browser URL for a traffic simulation query.
 
@@ -219,6 +221,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             target (str): Name of a device or a group the query should run on.
                 With the default None value, the query will run on the entire network
                 and all permitted devices for the user.
+            application (str): Name of the network application to include in the query.
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If any error occurred while executing the traffic
@@ -237,8 +240,10 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             destination,
             service,
             target=target,
+            application=application,
         )
         return {
             'result': self._get_summarized_query_result(simulation_query_response[0], query_results),
+            'raw_response': simulation_query_response,
             'query_url': query_url,
             }

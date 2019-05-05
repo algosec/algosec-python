@@ -22,6 +22,7 @@ class AlgoSecServersHTTPAdapter(HTTPAdapter):
     * Setting the default connect and read timeout.
         This connect timeout prevent the connections from hanging when the server is unreachable.
     """
+
     ALGOSEC_SERVER_CONNECT_TIMEOUT = 15
     ALGOSEC_SERVER_READ_TIMEOUT = None
 
@@ -29,20 +30,24 @@ class AlgoSecServersHTTPAdapter(HTTPAdapter):
         super(AlgoSecServersHTTPAdapter, self).__init__(*args, **kwargs)
 
     def send(self, *args, **kwargs):
-        kwargs['timeout'] = (self.ALGOSEC_SERVER_CONNECT_TIMEOUT, self.ALGOSEC_SERVER_READ_TIMEOUT)
+        kwargs["timeout"] = (
+            self.ALGOSEC_SERVER_CONNECT_TIMEOUT,
+            self.ALGOSEC_SERVER_READ_TIMEOUT,
+        )
         return super(AlgoSecServersHTTPAdapter, self).send(*args, **kwargs)
 
 
-def mount_algosec_adapter_on_session(session):
+def mount_adapter_on_session(session, adapter):
     """Used to mount the ``AlgoSecServersHTTPAdapter`` on a ``requests`` session.
 
     The adapter is mounted for all HTTP/HTTPS calls.
 
     Args:
         session (requests.Session): The requests session to mount the AlgoSec adapter on.
+        adapter (HTTPAdapter): The adapter to mount on the session
     """
-    session.mount('https://', AlgoSecServersHTTPAdapter())
-    session.mount('http://', AlgoSecServersHTTPAdapter())
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
 
 
 def is_ip_or_subnet(string):
@@ -79,8 +84,15 @@ def report_soap_failure(exception_to_raise):
     reason = "SOAP API call failed."
     try:
         yield
-    except WebFault:
+    except WebFault as e:
         # Handle exceptions in SOAP logical level
+        all_args_are_strings = (
+            hasattr(e, "args")
+            and isinstance(e.args, tuple)
+            and all(isinstance(i, str) for i in e.args)
+        )
+        if all_args_are_strings:
+            reason = ", ".join(e.args)
         raise exception_to_raise(reason)
     except TransportError as e:
         # Handle exceptions at the transport layer
@@ -88,17 +100,18 @@ def report_soap_failure(exception_to_raise):
         # This code assumes that the transport error is raised by the suds_requests package.
         status_code = e.httpcode
         response_content = e.fp.read()
-        reason += ' status_code: {}, response_content: {}'.format(status_code, response_content)
+        reason += " status_code: {}, response_content: {}".format(
+            status_code, response_content
+        )
         raise exception_to_raise(
-            reason,
-            status_code=status_code,
-            response_content=response_content,
+            reason, status_code=status_code, response_content=response_content
         )
 
 
 # LogSOAPMessages inherit from `object` as the `MessagePlugin` is not defined as new-style class object
 class LogSOAPMessages(MessagePlugin, object):
     """Used to send soap log messages into the builtin logging module"""
+
     LOG_LEVEL = logging.DEBUG
 
     def __init__(self):
@@ -106,7 +119,11 @@ class LogSOAPMessages(MessagePlugin, object):
         super(LogSOAPMessages, self).__init__()
 
     def sending(self, context):
-        self.log.log(self.LOG_LEVEL, "Sending SOAP message: {}".format(str(context.envelope)))
+        self.log.log(
+            self.LOG_LEVEL, "Sending SOAP message: {}".format(str(context.envelope))
+        )
 
     def received(self, context):
-        self.log.log(self.LOG_LEVEL, "Received SOAP message: {}".format(str(context.reply)))
+        self.log.log(
+            self.LOG_LEVEL, "Received SOAP message: {}".format(str(context.reply))
+        )

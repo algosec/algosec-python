@@ -51,8 +51,3 @@ class EmptyFlowSearch(AlgoSecBusinessFlowAPIError):
 class UnrecognizedAllowanceState(AlgoSecAPIError):
     """Raised when parsing unknown device allowance state strings."""
     pass
-
-
-class UnrecognizedServiceString(Exception):
-    """Raised when parsing invalid network service definition strings"""
-    pass
