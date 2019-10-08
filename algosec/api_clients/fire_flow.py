@@ -111,6 +111,7 @@ class FireFlowAPIClient(SoapAPIClient):
             traffic_lines,
             description="",
             template=None,
+            customFields=[]
     ):
         """Create a new change request.
 
@@ -123,6 +124,19 @@ class FireFlowAPIClient(SoapAPIClient):
             description (str): description for the ticket, will be shown on FireFlow.
             template (str): When different than None, this template will be passed on to FireFlow to be used
                 as the template for the new change requets.
+            customFields(list): List of <customField>. That is User-defined fields under the category 'additional'.
+                A <customField> is a KeyValuePair element that will be set in the template.
+            example :
+                customFields = [
+                        {
+                            "key"    : "cf1",
+                            "values" : ["cf1 value1", "cf1 value2"]
+                        },
+                        {
+                            "key"    : "cf2",
+                            "values" : ["cf2 value1", "cf2 value2"]
+                        }
+                ]
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If change request creation failed.
@@ -136,6 +150,7 @@ class FireFlowAPIClient(SoapAPIClient):
         ticket.description = description
         ticket.requestor = '{} {}'.format(requestor_name, email)
         ticket.subject = subject
+        ticket.customFields = customFields
         if template is not None:
             ticket.template = template
 
