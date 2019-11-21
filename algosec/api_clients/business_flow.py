@@ -436,6 +436,23 @@ class BusinessFlowAPIClient(RESTAPIClient):
             flow for flow in response.json() if flow["flowType"] == "APPLICATION_FLOW"
         ]
 
+    def get_application_all_flows(self, app_revision_id, flow_types):
+        """Return all flows of the application revision without filter.
+
+        Args:
+            app_revision_id (str|int): The ID of the application revision to fetch the flows for
+            flow_types (list[(str)]): Filter the kind of flows returned.
+
+        Raises:
+            :class:`~algosec.errors.AlgoSecAPIError`: If application flows list could not be fetched.
+
+        Returns:
+            list[dict]: List of Flow objects as defined in the API Guide.
+        """
+        response = self.session.get("{}/{}/flows".format(self.applications_base_url, app_revision_id))
+        self._check_api_response(response)
+        return [flow for flow in response.json() if flow["flowType"] in flow_types]
+
     def get_flow_connectivity(self, app_revision_id, flow_id):
         """Return a flow connectivity object for a flow given its ID.
 
