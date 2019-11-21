@@ -121,7 +121,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
         """
         response = self.session.get(
-            "{}/service_name/{}".format(
+            "{}/name/{}".format(
                 self.network_services_base_url, quote_plus(service_name)
             )
         )
