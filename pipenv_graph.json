@@ -1,0 +1,1280 @@
+[
+    {
+        "package": {
+            "key": "zipp",
+            "package_name": "zipp",
+            "installed_version": "3.4.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "zeep",
+            "package_name": "zeep",
+            "installed_version": "4.0.0"
+        },
+        "dependencies": [
+            {
+                "key": "attrs",
+                "package_name": "attrs",
+                "installed_version": "20.3.0",
+                "required_version": ">=17.2.0"
+            },
+            {
+                "key": "requests-toolbelt",
+                "package_name": "requests-toolbelt",
+                "installed_version": "0.9.1",
+                "required_version": ">=0.7.1"
+            },
+            {
+                "key": "lxml",
+                "package_name": "lxml",
+                "installed_version": "4.6.2",
+                "required_version": ">=3.1.0"
+            },
+            {
+                "key": "requests",
+                "package_name": "requests",
+                "installed_version": "2.25.1",
+                "required_version": ">=2.7.0"
+            },
+            {
+                "key": "cached-property",
+                "package_name": "cached-property",
+                "installed_version": "1.5.2",
+                "required_version": ">=1.3.0"
+            },
+            {
+                "key": "isodate",
+                "package_name": "isodate",
+                "installed_version": "0.6.0",
+                "required_version": ">=0.5.4"
+            },
+            {
+                "key": "requests-file",
+                "package_name": "requests-file",
+                "installed_version": "1.5.1",
+                "required_version": ">=1.5.1"
+            },
+            {
+                "key": "pytz",
+                "package_name": "pytz",
+                "installed_version": "2020.5",
+                "required_version": null
+            },
+            {
+                "key": "defusedxml",
+                "package_name": "defusedxml",
+                "installed_version": "0.6.0",
+                "required_version": ">=0.4.1"
+            },
+            {
+                "key": "appdirs",
+                "package_name": "appdirs",
+                "installed_version": "1.4.4",
+                "required_version": ">=1.4.0"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "yarl",
+            "package_name": "yarl",
+            "installed_version": "1.6.3"
+        },
+        "dependencies": [
+            {
+                "key": "multidict",
+                "package_name": "multidict",
+                "installed_version": "5.1.0",
+                "required_version": ">=4.0"
+            },
+            {
+                "key": "typing-extensions",
+                "package_name": "typing-extensions",
+                "installed_version": "3.7.4.3",
+                "required_version": ">=3.7.4"
+            },
+            {
+                "key": "idna",
+                "package_name": "idna",
+                "installed_version": "2.10",
+                "required_version": ">=2.0"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "wrapt",
+            "package_name": "wrapt",
+            "installed_version": "1.12.1"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "webencodings",
+            "package_name": "webencodings",
+            "installed_version": "0.5.1"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "virtualenv",
+            "package_name": "virtualenv",
+            "installed_version": "20.4.0"
+        },
+        "dependencies": [
+            {
+                "key": "importlib-metadata",
+                "package_name": "importlib-metadata",
+                "installed_version": "3.4.0",
+                "required_version": ">=0.12"
+            },
+            {
+                "key": "distlib",
+                "package_name": "distlib",
+                "installed_version": "0.3.1",
+                "required_version": ">=0.3.1,<1"
+            },
+            {
+                "key": "appdirs",
+                "package_name": "appdirs",
+                "installed_version": "1.4.4",
+                "required_version": ">=1.4.3,<2"
+            },
+            {
+                "key": "filelock",
+                "package_name": "filelock",
+                "installed_version": "3.0.12",
+                "required_version": ">=3.0.0,<4"
+            },
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": ">=1.9.0,<2"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "vcrpy",
+            "package_name": "vcrpy",
+            "installed_version": "4.1.1"
+        },
+        "dependencies": [
+            {
+                "key": "yarl",
+                "package_name": "yarl",
+                "installed_version": "1.6.3",
+                "required_version": null
+            },
+            {
+                "key": "wrapt",
+                "package_name": "wrapt",
+                "installed_version": "1.12.1",
+                "required_version": null
+            },
+            {
+                "key": "pyyaml",
+                "package_name": "PyYAML",
+                "installed_version": "5.4.1",
+                "required_version": null
+            },
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": ">=1.5"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "urllib3",
+            "package_name": "urllib3",
+            "installed_version": "1.26.2"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "typing-extensions",
+            "package_name": "typing-extensions",
+            "installed_version": "3.7.4.3"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "twine",
+            "package_name": "twine",
+            "installed_version": "3.3.0"
+        },
+        "dependencies": [
+            {
+                "key": "readme-renderer",
+                "package_name": "readme-renderer",
+                "installed_version": "28.0",
+                "required_version": ">=21.0"
+            },
+            {
+                "key": "requests",
+                "package_name": "requests",
+                "installed_version": "2.25.1",
+                "required_version": ">=2.20"
+            },
+            {
+                "key": "requests-toolbelt",
+                "package_name": "requests-toolbelt",
+                "installed_version": "0.9.1",
+                "required_version": ">=0.8.0,!=0.9.0"
+            },
+            {
+                "key": "colorama",
+                "package_name": "colorama",
+                "installed_version": "0.4.4",
+                "required_version": ">=0.4.3"
+            },
+            {
+                "key": "keyring",
+                "package_name": "keyring",
+                "installed_version": "21.8.0",
+                "required_version": ">=15.1"
+            },
+            {
+                "key": "setuptools",
+                "package_name": "setuptools",
+                "installed_version": "51.0.0",
+                "required_version": ">=0.7.0"
+            },
+            {
+                "key": "rfc3986",
+                "package_name": "rfc3986",
+                "installed_version": "1.4.0",
+                "required_version": ">=1.4.0"
+            },
+            {
+                "key": "importlib-metadata",
+                "package_name": "importlib-metadata",
+                "installed_version": "3.4.0",
+                "required_version": null
+            },
+            {
+                "key": "tqdm",
+                "package_name": "tqdm",
+                "installed_version": "4.56.0",
+                "required_version": ">=4.14"
+            },
+            {
+                "key": "pkginfo",
+                "package_name": "pkginfo",
+                "installed_version": "1.7.0",
+                "required_version": ">=1.4.2"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "tqdm",
+            "package_name": "tqdm",
+            "installed_version": "4.56.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "tox",
+            "package_name": "tox",
+            "installed_version": "3.21.2"
+        },
+        "dependencies": [
+            {
+                "key": "toml",
+                "package_name": "toml",
+                "installed_version": "0.10.2",
+                "required_version": ">=0.9.4"
+            },
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": ">=1.14.0"
+            },
+            {
+                "key": "py",
+                "package_name": "py",
+                "installed_version": "1.10.0",
+                "required_version": ">=1.4.17"
+            },
+            {
+                "key": "packaging",
+                "package_name": "packaging",
+                "installed_version": "20.8",
+                "required_version": ">=14"
+            },
+            {
+                "key": "importlib-metadata",
+                "package_name": "importlib-metadata",
+                "installed_version": "3.4.0",
+                "required_version": ">=0.12"
+            },
+            {
+                "key": "virtualenv",
+                "package_name": "virtualenv",
+                "installed_version": "20.4.0",
+                "required_version": ">=16.0.0,!=20.0.7,!=20.0.6,!=20.0.5,!=20.0.4,!=20.0.3,!=20.0.2,!=20.0.1,!=20.0.0"
+            },
+            {
+                "key": "pluggy",
+                "package_name": "pluggy",
+                "installed_version": "0.13.1",
+                "required_version": ">=0.12.0"
+            },
+            {
+                "key": "filelock",
+                "package_name": "filelock",
+                "installed_version": "3.0.12",
+                "required_version": ">=3.0.0"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "toml",
+            "package_name": "toml",
+            "installed_version": "0.10.2"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "sphinxcontrib-serializinghtml",
+            "package_name": "sphinxcontrib-serializinghtml",
+            "installed_version": "1.1.4"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "sphinxcontrib-qthelp",
+            "package_name": "sphinxcontrib-qthelp",
+            "installed_version": "1.0.3"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "sphinxcontrib-jsmath",
+            "package_name": "sphinxcontrib-jsmath",
+            "installed_version": "1.0.1"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "sphinxcontrib-htmlhelp",
+            "package_name": "sphinxcontrib-htmlhelp",
+            "installed_version": "1.0.3"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "sphinxcontrib-devhelp",
+            "package_name": "sphinxcontrib-devhelp",
+            "installed_version": "1.0.2"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "sphinxcontrib-applehelp",
+            "package_name": "sphinxcontrib-applehelp",
+            "installed_version": "1.0.2"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "sphinx",
+            "package_name": "Sphinx",
+            "installed_version": "3.4.3"
+        },
+        "dependencies": [
+            {
+                "key": "docutils",
+                "package_name": "docutils",
+                "installed_version": "0.16",
+                "required_version": ">=0.12"
+            },
+            {
+                "key": "requests",
+                "package_name": "requests",
+                "installed_version": "2.25.1",
+                "required_version": ">=2.5.0"
+            },
+            {
+                "key": "setuptools",
+                "package_name": "setuptools",
+                "installed_version": "51.0.0",
+                "required_version": null
+            },
+            {
+                "key": "sphinxcontrib-qthelp",
+                "package_name": "sphinxcontrib-qthelp",
+                "installed_version": "1.0.3",
+                "required_version": null
+            },
+            {
+                "key": "packaging",
+                "package_name": "packaging",
+                "installed_version": "20.8",
+                "required_version": null
+            },
+            {
+                "key": "pygments",
+                "package_name": "Pygments",
+                "installed_version": "2.7.4",
+                "required_version": ">=2.0"
+            },
+            {
+                "key": "sphinxcontrib-htmlhelp",
+                "package_name": "sphinxcontrib-htmlhelp",
+                "installed_version": "1.0.3",
+                "required_version": null
+            },
+            {
+                "key": "sphinxcontrib-applehelp",
+                "package_name": "sphinxcontrib-applehelp",
+                "installed_version": "1.0.2",
+                "required_version": null
+            },
+            {
+                "key": "sphinxcontrib-serializinghtml",
+                "package_name": "sphinxcontrib-serializinghtml",
+                "installed_version": "1.1.4",
+                "required_version": null
+            },
+            {
+                "key": "snowballstemmer",
+                "package_name": "snowballstemmer",
+                "installed_version": "2.1.0",
+                "required_version": ">=1.1"
+            },
+            {
+                "key": "alabaster",
+                "package_name": "alabaster",
+                "installed_version": "0.7.12",
+                "required_version": ">=0.7,<0.8"
+            },
+            {
+                "key": "sphinxcontrib-devhelp",
+                "package_name": "sphinxcontrib-devhelp",
+                "installed_version": "1.0.2",
+                "required_version": null
+            },
+            {
+                "key": "imagesize",
+                "package_name": "imagesize",
+                "installed_version": "1.2.0",
+                "required_version": null
+            },
+            {
+                "key": "sphinxcontrib-jsmath",
+                "package_name": "sphinxcontrib-jsmath",
+                "installed_version": "1.0.1",
+                "required_version": null
+            },
+            {
+                "key": "jinja2",
+                "package_name": "Jinja2",
+                "installed_version": "2.11.2",
+                "required_version": ">=2.3"
+            },
+            {
+                "key": "babel",
+                "package_name": "babel",
+                "installed_version": "2.9.0",
+                "required_version": ">=1.3"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "snowballstemmer",
+            "package_name": "snowballstemmer",
+            "installed_version": "2.1.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "six",
+            "package_name": "six",
+            "installed_version": "1.15.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "secretstorage",
+            "package_name": "SecretStorage",
+            "installed_version": "3.3.0"
+        },
+        "dependencies": [
+            {
+                "key": "jeepney",
+                "package_name": "jeepney",
+                "installed_version": "0.6.0",
+                "required_version": ">=0.6"
+            },
+            {
+                "key": "cryptography",
+                "package_name": "cryptography",
+                "installed_version": "3.3.1",
+                "required_version": ">=2.0"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "rfc3986",
+            "package_name": "rfc3986",
+            "installed_version": "1.4.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "responses",
+            "package_name": "responses",
+            "installed_version": "0.12.1"
+        },
+        "dependencies": [
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": null
+            },
+            {
+                "key": "requests",
+                "package_name": "requests",
+                "installed_version": "2.25.1",
+                "required_version": ">=2.0"
+            },
+            {
+                "key": "urllib3",
+                "package_name": "urllib3",
+                "installed_version": "1.26.2",
+                "required_version": ">=1.25.10"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "requests",
+            "package_name": "requests",
+            "installed_version": "2.25.1"
+        },
+        "dependencies": [
+            {
+                "key": "certifi",
+                "package_name": "certifi",
+                "installed_version": "2020.12.5",
+                "required_version": ">=2017.4.17"
+            },
+            {
+                "key": "idna",
+                "package_name": "idna",
+                "installed_version": "2.10",
+                "required_version": ">=2.5,<3"
+            },
+            {
+                "key": "chardet",
+                "package_name": "chardet",
+                "installed_version": "4.0.0",
+                "required_version": ">=3.0.2,<5"
+            },
+            {
+                "key": "urllib3",
+                "package_name": "urllib3",
+                "installed_version": "1.26.2",
+                "required_version": ">=1.21.1,<1.27"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "requests-toolbelt",
+            "package_name": "requests-toolbelt",
+            "installed_version": "0.9.1"
+        },
+        "dependencies": [
+            {
+                "key": "requests",
+                "package_name": "requests",
+                "installed_version": "2.25.1",
+                "required_version": ">=2.0.1,<3.0.0"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "requests-file",
+            "package_name": "requests-file",
+            "installed_version": "1.5.1"
+        },
+        "dependencies": [
+            {
+                "key": "requests",
+                "package_name": "requests",
+                "installed_version": "2.25.1",
+                "required_version": ">=1.0.0"
+            },
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": null
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "readme-renderer",
+            "package_name": "readme-renderer",
+            "installed_version": "28.0"
+        },
+        "dependencies": [
+            {
+                "key": "bleach",
+                "package_name": "bleach",
+                "installed_version": "3.2.2",
+                "required_version": ">=2.1.0"
+            },
+            {
+                "key": "pygments",
+                "package_name": "Pygments",
+                "installed_version": "2.7.4",
+                "required_version": ">=2.5.1"
+            },
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": null
+            },
+            {
+                "key": "docutils",
+                "package_name": "docutils",
+                "installed_version": "0.16",
+                "required_version": ">=0.13.1"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "pyyaml",
+            "package_name": "PyYAML",
+            "installed_version": "5.4.1"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "pytz",
+            "package_name": "pytz",
+            "installed_version": "2020.5"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "pytest",
+            "package_name": "pytest",
+            "installed_version": "6.2.1"
+        },
+        "dependencies": [
+            {
+                "key": "toml",
+                "package_name": "toml",
+                "installed_version": "0.10.2",
+                "required_version": null
+            },
+            {
+                "key": "packaging",
+                "package_name": "packaging",
+                "installed_version": "20.8",
+                "required_version": null
+            },
+            {
+                "key": "importlib-metadata",
+                "package_name": "importlib-metadata",
+                "installed_version": "3.4.0",
+                "required_version": ">=0.12"
+            },
+            {
+                "key": "attrs",
+                "package_name": "attrs",
+                "installed_version": "20.3.0",
+                "required_version": ">=19.2.0"
+            },
+            {
+                "key": "pluggy",
+                "package_name": "pluggy",
+                "installed_version": "0.13.1",
+                "required_version": ">=0.12,<1.0.0a1"
+            },
+            {
+                "key": "iniconfig",
+                "package_name": "iniconfig",
+                "installed_version": "1.1.1",
+                "required_version": null
+            },
+            {
+                "key": "py",
+                "package_name": "py",
+                "installed_version": "1.10.0",
+                "required_version": ">=1.8.2"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "pytest-mock",
+            "package_name": "pytest-mock",
+            "installed_version": "3.5.1"
+        },
+        "dependencies": [
+            {
+                "key": "pytest",
+                "package_name": "pytest",
+                "installed_version": "6.2.1",
+                "required_version": ">=5.0"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "pytest-cov",
+            "package_name": "pytest-cov",
+            "installed_version": "2.11.1"
+        },
+        "dependencies": [
+            {
+                "key": "pytest",
+                "package_name": "pytest",
+                "installed_version": "6.2.1",
+                "required_version": ">=4.6"
+            },
+            {
+                "key": "coverage",
+                "package_name": "coverage",
+                "installed_version": "5.3.1",
+                "required_version": ">=5.2.1"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "pyparsing",
+            "package_name": "pyparsing",
+            "installed_version": "2.4.7"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "pyhamcrest",
+            "package_name": "PyHamcrest",
+            "installed_version": "2.0.2"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "pygments",
+            "package_name": "Pygments",
+            "installed_version": "2.7.4"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "pyflakes",
+            "package_name": "pyflakes",
+            "installed_version": "2.2.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "pycparser",
+            "package_name": "pycparser",
+            "installed_version": "2.20"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "pycodestyle",
+            "package_name": "pycodestyle",
+            "installed_version": "2.6.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "py",
+            "package_name": "py",
+            "installed_version": "1.10.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "pluggy",
+            "package_name": "pluggy",
+            "installed_version": "0.13.1"
+        },
+        "dependencies": [
+            {
+                "key": "importlib-metadata",
+                "package_name": "importlib-metadata",
+                "installed_version": "3.4.0",
+                "required_version": ">=0.12"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "pkginfo",
+            "package_name": "pkginfo",
+            "installed_version": "1.7.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "multidict",
+            "package_name": "multidict",
+            "installed_version": "5.1.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "mock",
+            "package_name": "mock",
+            "installed_version": "4.0.3"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "mccabe",
+            "package_name": "mccabe",
+            "installed_version": "0.6.1"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "markupsafe",
+            "package_name": "MarkupSafe",
+            "installed_version": "1.1.1"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "lxml",
+            "package_name": "lxml",
+            "installed_version": "4.6.2"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "keyring",
+            "package_name": "keyring",
+            "installed_version": "21.8.0"
+        },
+        "dependencies": [
+            {
+                "key": "secretstorage",
+                "package_name": "SecretStorage",
+                "installed_version": "3.3.0",
+                "required_version": ">=3.2"
+            },
+            {
+                "key": "jeepney",
+                "package_name": "jeepney",
+                "installed_version": "0.6.0",
+                "required_version": ">=0.4.2"
+            },
+            {
+                "key": "importlib-metadata",
+                "package_name": "importlib-metadata",
+                "installed_version": "3.4.0",
+                "required_version": ">=1"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "jinja2",
+            "package_name": "Jinja2",
+            "installed_version": "2.11.2"
+        },
+        "dependencies": [
+            {
+                "key": "markupsafe",
+                "package_name": "MarkupSafe",
+                "installed_version": "1.1.1",
+                "required_version": ">=0.23"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "jeepney",
+            "package_name": "jeepney",
+            "installed_version": "0.6.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "isodate",
+            "package_name": "isodate",
+            "installed_version": "0.6.0"
+        },
+        "dependencies": [
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": null
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "ipaddress",
+            "package_name": "ipaddress",
+            "installed_version": "1.0.23"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "iniconfig",
+            "package_name": "iniconfig",
+            "installed_version": "1.1.1"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "importlib-metadata",
+            "package_name": "importlib-metadata",
+            "installed_version": "3.4.0"
+        },
+        "dependencies": [
+            {
+                "key": "zipp",
+                "package_name": "zipp",
+                "installed_version": "3.4.0",
+                "required_version": ">=0.5"
+            },
+            {
+                "key": "typing-extensions",
+                "package_name": "typing-extensions",
+                "installed_version": "3.7.4.3",
+                "required_version": ">=3.6.4"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "imagesize",
+            "package_name": "imagesize",
+            "installed_version": "1.2.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "idna",
+            "package_name": "idna",
+            "installed_version": "2.10"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "flake8",
+            "package_name": "flake8",
+            "installed_version": "3.8.4"
+        },
+        "dependencies": [
+            {
+                "key": "pycodestyle",
+                "package_name": "pycodestyle",
+                "installed_version": "2.6.0",
+                "required_version": ">=2.6.0a1,<2.7.0"
+            },
+            {
+                "key": "importlib-metadata",
+                "package_name": "importlib-metadata",
+                "installed_version": "3.4.0",
+                "required_version": null
+            },
+            {
+                "key": "pyflakes",
+                "package_name": "pyflakes",
+                "installed_version": "2.2.0",
+                "required_version": ">=2.2.0,<2.3.0"
+            },
+            {
+                "key": "mccabe",
+                "package_name": "mccabe",
+                "installed_version": "0.6.1",
+                "required_version": ">=0.6.0,<0.7.0"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "filelock",
+            "package_name": "filelock",
+            "installed_version": "3.0.12"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "docutils",
+            "package_name": "docutils",
+            "installed_version": "0.16"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "distlib",
+            "package_name": "distlib",
+            "installed_version": "0.3.1"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "deprecated",
+            "package_name": "Deprecated",
+            "installed_version": "1.2.11"
+        },
+        "dependencies": [
+            {
+                "key": "wrapt",
+                "package_name": "wrapt",
+                "installed_version": "1.12.1",
+                "required_version": ">=1.10,<2"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "defusedxml",
+            "package_name": "defusedxml",
+            "installed_version": "0.6.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "cryptography",
+            "package_name": "cryptography",
+            "installed_version": "3.3.1"
+        },
+        "dependencies": [
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": ">=1.4.1"
+            },
+            {
+                "key": "cffi",
+                "package_name": "cffi",
+                "installed_version": "1.14.4",
+                "required_version": ">=1.12"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "coverage",
+            "package_name": "coverage",
+            "installed_version": "5.3.1"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "colorama",
+            "package_name": "colorama",
+            "installed_version": "0.4.4"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "chardet",
+            "package_name": "chardet",
+            "installed_version": "4.0.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "cffi",
+            "package_name": "cffi",
+            "installed_version": "1.14.4"
+        },
+        "dependencies": [
+            {
+                "key": "pycparser",
+                "package_name": "pycparser",
+                "installed_version": "2.20",
+                "required_version": null
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "certifi",
+            "package_name": "certifi",
+            "installed_version": "2020.12.5"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "cached-property",
+            "package_name": "cached-property",
+            "installed_version": "1.5.2"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "bleach",
+            "package_name": "bleach",
+            "installed_version": "3.2.2"
+        },
+        "dependencies": [
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": ">=1.9.0"
+            },
+            {
+                "key": "webencodings",
+                "package_name": "webencodings",
+                "installed_version": "0.5.1",
+                "required_version": null
+            },
+            {
+                "key": "packaging",
+                "package_name": "packaging",
+                "installed_version": "20.8",
+                "required_version": null
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "babel",
+            "package_name": "Babel",
+            "installed_version": "2.9.0"
+        },
+        "dependencies": [
+            {
+                "key": "pytz",
+                "package_name": "pytz",
+                "installed_version": "2020.5",
+                "required_version": ">=2015.7"
+            }
+        ]
+    },
+    {
+        "package": {
+            "key": "attrs",
+            "package_name": "attrs",
+            "installed_version": "20.3.0"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "appdirs",
+            "package_name": "appdirs",
+            "installed_version": "1.4.4"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "alabaster",
+            "package_name": "alabaster",
+            "installed_version": "0.7.12"
+        },
+        "dependencies": []
+    },
+    {
+        "package": {
+            "key": "algosec",
+            "package_name": "algosec",
+            "installed_version": "1.3.4"
+        },
+        "dependencies": [
+            {
+                "key": "requests",
+                "package_name": "requests",
+                "installed_version": "2.25.1",
+                "required_version": null
+            },
+            {
+                "key": "zeep",
+                "package_name": "zeep",
+                "installed_version": "4.0.0",
+                "required_version": null
+            },
+            {
+                "key": "ipaddress",
+                "package_name": "ipaddress",
+                "installed_version": "1.0.23",
+                "required_version": null
+            },
+            {
+                "key": "six",
+                "package_name": "six",
+                "installed_version": "1.15.0",
+                "required_version": null
+            },
+            {
+                "key": "deprecated",
+                "package_name": "deprecated",
+                "installed_version": "1.2.11",
+                "required_version": null
+            }
+        ]
+    }
+]

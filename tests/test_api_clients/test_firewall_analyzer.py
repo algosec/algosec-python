@@ -1,19 +1,22 @@
 import mock
 import pytest
+from algosec.constants import LOGIN_FAILED_IMPERSONATION_REASON, LOGIN_FAILED_IMPERSONATION_MSG, PERMISSION_ERROR_MSG
 from mock import MagicMock
-from suds import WebFault
+from zeep.exceptions import Fault
 
 from algosec.api_clients.firewall_analyzer import FirewallAnalyzerAPIClient
 from algosec.errors import (
     AlgoSecLoginError,
     UnrecognizedAllowanceState,
     AlgoSecAPIError,
-)
+    UnauthorizedUserException)
 from algosec.models import DeviceAllowanceState
 from tests.conftest import (
     ALGOSEC_SERVER,
-    ALGOSEC_USERNAME,
-    ALGOSEC_PASSWORD,
+    ALGOSEC_LOGIN_USERNAME,
+    ALGOSEC_LOGIN_PASSWORD,
+    ALGOBOT_LOGIN_USER,
+    ALGOBOT_LOGIN_PASSWORD,
     ALGOSEC_VERIFY_SSL,
 )
 
@@ -23,8 +26,10 @@ class TestFirewallAnalyzerAPIClient(object):
     def analyzer_client(self, request):
         return FirewallAnalyzerAPIClient(
             ALGOSEC_SERVER,
-            ALGOSEC_USERNAME,
-            ALGOSEC_PASSWORD,
+            ALGOSEC_LOGIN_USERNAME,
+            ALGOSEC_LOGIN_PASSWORD,
+            ALGOBOT_LOGIN_USER,
+            ALGOBOT_LOGIN_PASSWORD,
             verify_ssl=ALGOSEC_VERIFY_SSL,
         )
 
@@ -40,34 +45,38 @@ class TestFirewallAnalyzerAPIClient(object):
         assert analyzer_client._wsdl_url_path == expected
 
     def test_initiate_client(self, mocker, analyzer_client):
-        with mocker.patch.object(analyzer_client, "_get_soap_client"):
-            client = analyzer_client._initiate_client()
+        mocker.patch.object(analyzer_client, "_get_soap_client")
+        client = analyzer_client._initiate_client()
 
-            # Assert that the soap client was created properly
-            assert client == analyzer_client._get_soap_client.return_value
-            analyzer_client._get_soap_client.assert_called_once_with(
-                "https://{}/AFA/php/ws.php?wsdl".format(analyzer_client.server_ip),
-                location="https://{}/AFA/php/ws.php".format(analyzer_client.server_ip),
-            )
+        # Assert that the soap client was created properly
+        assert client == analyzer_client._get_soap_client.return_value
+        analyzer_client._get_soap_client.assert_called_once_with(
+            "https://{}/AFA/php/ws.php?wsdl".format(analyzer_client.server_ip),
+            location="https://{}/AFA/php/ws.php".format(analyzer_client.server_ip),
+        )
 
-            # Assert that the soap client was logged in and the session id was saved
-            assert analyzer_client._session_id == client.service.connect.return_value
-            assert client.service.connect.call_args == mocker.call(
-                Domain="",
-                Password=analyzer_client.password,
-                UserName=analyzer_client.user,
-            )
+        # Assert that the soap client was logged in and the session id was saved
+        assert analyzer_client._session_id == analyzer_client._service.connect.return_value
+        assert analyzer_client._service.connect.call_args == mocker.call(
+            Domain="",
+            ImpersonateUser='created_by_algobot@algosec.com',
+            Password=analyzer_client.password,
+            UserName=analyzer_client.user,
+        )
 
     def test_initiate_client_login_error(self, mocker, analyzer_client):
-        mock_get_soap_client = MagicMock()
-        mock_get_soap_client.return_value.service.connect.side_effect = WebFault(
-            "Login Error", document={}
+
+        mock_soap_service = MagicMock(name="soap_service")
+        mock_soap_service.return_value.connect.side_effect = Fault(
+            "Login Error"
         )
-        with mocker.patch.object(
-            analyzer_client, "_get_soap_client", mock_get_soap_client
-        ):
-            with pytest.raises(AlgoSecLoginError):
-                analyzer_client._initiate_client()
+
+        mocker.patch.object(analyzer_client, "_soap_service", mock_soap_service)
+        mocker.patch.object(
+            analyzer_client, "_get_soap_client", MagicMock(name="soap_client")
+        )
+        with pytest.raises(AlgoSecLoginError):
+            analyzer_client._initiate_client()
 
     def test_calc_aggregated_query_result(self):
         assert (
@@ -149,18 +158,18 @@ class TestFirewallAnalyzerAPIClient(object):
             }[device]
 
         # Mock the from_string method return values per device
-        with mocker.patch.object(
+        mocker.patch.object(
             DeviceAllowanceState,
             "from_string",
             side_effect=mock_device_to_allowance_state,
-        ):
-            query_results = FirewallAnalyzerAPIClient._prepare_simulation_query_results(
-                [device_1, device_2, device_3]
-            )
+        )
+        query_results = FirewallAnalyzerAPIClient._prepare_simulation_query_results(
+            [device_1, device_2, device_3]
+        )
 
-            assert query_results[DeviceAllowanceState.PARTIALLY_BLOCKED] == [device_1]
-            assert query_results[DeviceAllowanceState.BLOCKED] == [device_2]
-            assert query_results[DeviceAllowanceState.ALLOWED] == [device_3]
+        assert query_results[DeviceAllowanceState.PARTIALLY_BLOCKED] == [device_1]
+        assert query_results[DeviceAllowanceState.BLOCKED] == [device_2]
+        assert query_results[DeviceAllowanceState.ALLOWED] == [device_3]
 
     def test_prepare_simulation_query_results__ordered_result_keys(self):
         """Assert that the result keys are sorted for later preview requirements"""
@@ -177,12 +186,12 @@ class TestFirewallAnalyzerAPIClient(object):
     ):
         """Make sure that a warning is logged when the allowance state is unrecognized"""
         device_1 = MagicMock()
-        with mocker.patch.object(
+        mocker.patch.object(
             DeviceAllowanceState, "from_string", side_effect=UnrecognizedAllowanceState
-        ):
-            assert mock_module_logger.warning.call_count == 0
-            FirewallAnalyzerAPIClient._prepare_simulation_query_results([device_1])
-            assert mock_module_logger.warning.call_count == 1
+        )
+        assert mock_module_logger.warning.call_count == 0
+        FirewallAnalyzerAPIClient._prepare_simulation_query_results([device_1])
+        assert mock_module_logger.warning.call_count == 1
 
     def test_get_summarized_query_result__api_result_missing(
         self, analyzer_client, mocker
@@ -190,12 +199,12 @@ class TestFirewallAnalyzerAPIClient(object):
         # Mock missing attribute "QueryResult" from the query response
         query_response = MagicMock(spec=[])
         query_results = MagicMock()
-        with mocker.patch.object(
+        mocker.patch.object(
             FirewallAnalyzerAPIClient, "_calc_aggregated_query_result"
-        ):
-            aggregated_result = analyzer_client._get_summarized_query_result(
-                query_response, query_results
-            )
+        )
+        aggregated_result = analyzer_client._get_summarized_query_result(
+            query_response, query_results
+        )
 
         analyzer_client._calc_aggregated_query_result.assert_called_once_with(
             query_results
@@ -225,7 +234,7 @@ class TestFirewallAnalyzerAPIClient(object):
     @mock.patch(
         "algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._get_summarized_query_result"
     )
-    def test_run_traffic_simulation_query(
+    def test_execute_traffic_simulation_query(
         self, mock_get_summarized_query, mock_prepare_results, mocker, analyzer_client
     ):
         # Mock the client and it's response content
@@ -242,25 +251,25 @@ class TestFirewallAnalyzerAPIClient(object):
         source = MagicMock()
         dest = MagicMock()
         service = MagicMock()
-        with mocker.patch.object(analyzer_client, "_client", mock_soap_client):
-            simulation_result = analyzer_client.run_traffic_simulation_query(
-                source, dest, service
-            )
+        mocker.patch.object(analyzer_client, "_client", mock_soap_client)
+        simulation_result = analyzer_client.execute_traffic_simulation_query(
+            source, dest, service
+        )
 
-            # assert return value
-            assert simulation_result == mock_get_summarized_query.return_value
+        # assert return value
+        assert simulation_result == mock_get_summarized_query.return_value
 
-            # assert internal simulation query call
-            mock_soap_client.service.query.assert_called_once_with(
-                SessionID=analyzer_client._session_id,
-                QueryInput={"Source": source, "Destination": dest, "Service": service},
-            )
+        # assert internal simulation query call
+        mock_soap_client.service.query.assert_called_once_with(
+            SessionID=analyzer_client._session_id,
+            QueryInput={"Source": source, "Destination": dest, "Service": service},
+        )
 
-            # assert internal helper calls
-            mock_prepare_results.assert_called_once_with(query_response_devices)
-            mock_get_summarized_query.assert_called_once_with(
-                simulation_query_response[0], mock_prepare_results.return_value
-            )
+        # assert internal helper calls
+        mock_prepare_results.assert_called_once_with(query_response_devices)
+        mock_get_summarized_query.assert_called_once_with(
+            simulation_query_response[0], mock_prepare_results.return_value
+        )
 
     @mock.patch(
         "algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._prepare_simulation_query_results"
@@ -268,7 +277,7 @@ class TestFirewallAnalyzerAPIClient(object):
     @mock.patch(
         "algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._get_summarized_query_result"
     )
-    def test_run_traffic_simulation_query__one_device_in_result(
+    def test_execute_traffic_simulation_query__one_device_in_result(
         self, mock_get_summarized_query, mock_prepare_results, mocker, analyzer_client
     ):
         """Make sure that one device in the query is interpreted as a list"""
@@ -276,18 +285,19 @@ class TestFirewallAnalyzerAPIClient(object):
         query_response_devices = MagicMock()
         simulation_query_response = MagicMock()
         simulation_query_response[0].QueryItem.Device = query_response_devices
-        mock_soap_client = MagicMock()
-        mock_soap_client.service.query.return_value.QueryResult = (
+        mock_soap_service = MagicMock()
+        mock_soap_service.query.return_value.QueryResult = (
             simulation_query_response
         )
 
-        with mocker.patch.object(analyzer_client, "_client", mock_soap_client):
-            analyzer_client.run_traffic_simulation_query(
-                MagicMock(), MagicMock(), MagicMock()
-            )
+        mocker.patch.object(analyzer_client, "_service", mock_soap_service)
+        mocker.patch.object(analyzer_client, "_client", MagicMock())
+        analyzer_client.execute_traffic_simulation_query(
+            MagicMock(), MagicMock(), MagicMock()
+        )
 
-            # assert that the single device was converted to list
-            mock_prepare_results.assert_called_once_with([query_response_devices])
+        # assert that the single device was converted to list
+        mock_prepare_results.assert_called_once_with([query_response_devices])
 
     @mock.patch(
         "algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._prepare_simulation_query_results"
@@ -295,37 +305,41 @@ class TestFirewallAnalyzerAPIClient(object):
     @mock.patch(
         "algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._get_summarized_query_result"
     )
-    def test_run_traffic_simulation_query__empty_query_result(
+    def test_execute_traffic_simulation_query__empty_query_result(
         self, mock_get_summarized_query, mock_prepare_results, mocker, analyzer_client
     ):
         """Make sure that function can handle no devices in result"""
         # Mock the client and it's response content
         simulation_query_response = MagicMock()
         simulation_query_response[0].QueryItem = None
-        mock_soap_client = MagicMock()
-        mock_soap_client.service.query.return_value.QueryResult = (
+        mock_soap_service = MagicMock()
+        mock_soap_service.query.return_value.QueryResult = (
             simulation_query_response
         )
 
-        with mocker.patch.object(analyzer_client, "_client", mock_soap_client):
-            analyzer_client.run_traffic_simulation_query(
-                MagicMock(), MagicMock(), MagicMock()
-            )
-
-            # assert that the device list was assumed to be empty
-            mock_prepare_results.assert_called_once_with([])
-
-    def test_run_traffic_simulation_query__faulty_query(self, mocker, analyzer_client):
-        mock_soap_client = MagicMock()
-        mock_soap_client.service.query.side_effect = WebFault(
-            "Query Error", document={}
+        mocker.patch.object(analyzer_client, "_service", mock_soap_service)
+        mocker.patch.object(analyzer_client, "_client", MagicMock())
+        analyzer_client.execute_traffic_simulation_query(
+            MagicMock(), MagicMock(), MagicMock()
         )
 
-        with mocker.patch.object(analyzer_client, "_client", mock_soap_client):
-            with pytest.raises(AlgoSecAPIError):
-                analyzer_client.run_traffic_simulation_query(
-                    MagicMock(), MagicMock(), MagicMock()
-                )
+        # assert that the device list was assumed to be empty
+        mock_prepare_results.assert_called_once_with([])
+
+    def test_execute_traffic_simulation_query__faulty_query(self, mocker, analyzer_client):
+        mock_soap_service = MagicMock()
+        mock_soap_service.return_value.query.side_effect = Fault(
+            "Query Error"
+        )
+
+        mocker.patch.object(analyzer_client, "_soap_service", mock_soap_service)
+        mocker.patch.object(
+            analyzer_client, "_get_soap_client", MagicMock()
+        )
+        with pytest.raises(AlgoSecAPIError):
+            analyzer_client.execute_traffic_simulation_query(
+                MagicMock(), MagicMock(), MagicMock()
+            )
 
     @mock.patch(
         "algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._prepare_simulation_query_results"
@@ -342,9 +356,13 @@ class TestFirewallAnalyzerAPIClient(object):
         simulation_query_response = MagicMock()
         simulation_query_response[0].QueryItem.Device = query_response_devices
         simulation_query_response[0].QueryHTMLPath = query_response_url
-        mock_soap_client = MagicMock()
-        mock_soap_client.service.query.return_value.QueryResult = (
+        mock_soap_service = MagicMock()
+        mock_soap_service.return_value.query.return_value.QueryResult = (
             simulation_query_response
+        )
+        mocker.patch.object(analyzer_client, "_soap_service", mock_soap_service)
+        mocker.patch.object(
+            analyzer_client, "_client", MagicMock()
         )
         analyzer_client._session_id = MagicMock()
 
@@ -352,29 +370,28 @@ class TestFirewallAnalyzerAPIClient(object):
         source = MagicMock()
         dest = MagicMock()
         service = MagicMock()
-        with mocker.patch.object(analyzer_client, "_client", mock_soap_client):
-            simulation_result = analyzer_client.execute_traffic_simulation_query(
-                source, dest, service
-            )
+        simulation_result = analyzer_client.execute_traffic_simulation_query(
+            source, dest, service
+        )
 
-            # assert return value
-            assert simulation_result == {
-                "result": mock_get_summarized_query.return_value,
-                "query_url": query_response_url,
-                "raw_response": simulation_query_response,
-            }
+        # assert return value
+        assert simulation_result == {
+            "result": mock_get_summarized_query.return_value,
+            "query_url": query_response_url,
+            "raw_response": simulation_query_response,
+        }
 
-            # assert internal simulation query call
-            mock_soap_client.service.query.assert_called_once_with(
-                SessionID=analyzer_client._session_id,
-                QueryInput={"Source": source, "Destination": dest, "Service": service},
-            )
+        # assert internal simulation query call
+        mock_soap_service.return_value.query.assert_called_once_with(
+            SessionID=analyzer_client._session_id,
+            QueryInput={"Source": source, "Destination": dest, "Service": service},
+        )
 
-            # assert internal helper calls
-            mock_prepare_results.assert_called_once_with(query_response_devices)
-            mock_get_summarized_query.assert_called_once_with(
-                simulation_query_response[0], mock_prepare_results.return_value
-            )
+        # assert internal helper calls
+        mock_prepare_results.assert_called_once_with(query_response_devices)
+        mock_get_summarized_query.assert_called_once_with(
+            simulation_query_response[0], mock_prepare_results.return_value
+        )
 
     @mock.patch(
         "algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._prepare_simulation_query_results"
@@ -391,9 +408,13 @@ class TestFirewallAnalyzerAPIClient(object):
         simulation_query_response = MagicMock()
         simulation_query_response[0].QueryItem.Device = query_response_devices
         simulation_query_response[0].QueryHTMLPath = query_response_url
-        mock_soap_client = MagicMock()
-        mock_soap_client.service.query.return_value.QueryResult = (
+        mock_soap_service = MagicMock()
+        mock_soap_service.return_value.query.return_value.QueryResult = (
             simulation_query_response
+        )
+        mocker.patch.object(analyzer_client, "_soap_service", mock_soap_service)
+        mocker.patch.object(
+            analyzer_client, "_client", MagicMock()
         )
         analyzer_client._session_id = MagicMock()
 
@@ -401,31 +422,30 @@ class TestFirewallAnalyzerAPIClient(object):
         source = MagicMock()
         dest = MagicMock()
         service = MagicMock()
-        with mocker.patch.object(analyzer_client, "_client", mock_soap_client):
-            target_firewall = "someFirewallDevice"
-            simulation_result = analyzer_client.execute_traffic_simulation_query(
-                source, dest, service, target=target_firewall
-            )
+        target_firewall = "someFirewallDevice"
+        simulation_result = analyzer_client.execute_traffic_simulation_query(
+            source, dest, service, target=target_firewall
+        )
 
-            # assert return value
-            assert simulation_result == {
-                "result": mock_get_summarized_query.return_value,
-                "query_url": query_response_url,
-                "raw_response": simulation_query_response,
-            }
+        # assert return value
+        assert simulation_result == {
+            "result": mock_get_summarized_query.return_value,
+            "query_url": query_response_url,
+            "raw_response": simulation_query_response,
+        }
 
-            # assert internal simulation query call
-            mock_soap_client.service.query.assert_called_once_with(
-                SessionID=analyzer_client._session_id,
-                QueryInput={"Source": source, "Destination": dest, "Service": service},
-                QueryTarget=target_firewall,
-            )
+        # assert internal simulation query call
+        mock_soap_service.return_value.query.assert_called_once_with(
+            SessionID=analyzer_client._session_id,
+            QueryInput={"Source": source, "Destination": dest, "Service": service},
+            QueryTarget=target_firewall,
+        )
 
-            # assert internal helper calls
-            mock_prepare_results.assert_called_once_with(query_response_devices)
-            mock_get_summarized_query.assert_called_once_with(
-                simulation_query_response[0], mock_prepare_results.return_value
-            )
+        # assert internal helper calls
+        mock_prepare_results.assert_called_once_with(query_response_devices)
+        mock_get_summarized_query.assert_called_once_with(
+            simulation_query_response[0], mock_prepare_results.return_value
+        )
 
     @mock.patch(
         "algosec.api_clients.firewall_analyzer.FirewallAnalyzerAPIClient._prepare_simulation_query_results"
@@ -442,9 +462,13 @@ class TestFirewallAnalyzerAPIClient(object):
         simulation_query_response = MagicMock()
         simulation_query_response[0].QueryItem.Device = query_response_devices
         simulation_query_response[0].QueryHTMLPath = query_response_url
-        mock_soap_client = MagicMock()
-        mock_soap_client.service.query.return_value.QueryResult = (
+        mock_soap_service = MagicMock()
+        mock_soap_service.return_value.query.return_value.QueryResult = (
             simulation_query_response
+        )
+        mocker.patch.object(analyzer_client, "_soap_service", mock_soap_service)
+        mocker.patch.object(
+            analyzer_client, "_client", MagicMock()
         )
         analyzer_client._session_id = MagicMock()
 
@@ -452,32 +476,129 @@ class TestFirewallAnalyzerAPIClient(object):
         source = MagicMock()
         dest = MagicMock()
         service = MagicMock()
-        with mocker.patch.object(analyzer_client, "_client", mock_soap_client):
-            network_application = "ping"
-            simulation_result = analyzer_client.execute_traffic_simulation_query(
-                source, dest, service, application=network_application
-            )
+        network_application = "ping"
+        simulation_result = analyzer_client.execute_traffic_simulation_query(
+            source, dest, service, application=network_application
+        )
 
-            # assert return value
-            assert simulation_result == {
-                "result": mock_get_summarized_query.return_value,
-                "query_url": query_response_url,
-                "raw_response": simulation_query_response,
-            }
+        # assert return value
+        assert simulation_result == {
+            "result": mock_get_summarized_query.return_value,
+            "query_url": query_response_url,
+            "raw_response": simulation_query_response,
+        }
 
-            # assert internal simulation query call
-            mock_soap_client.service.query.assert_called_once_with(
-                SessionID=analyzer_client._session_id,
-                QueryInput={
-                    "Source": source,
-                    "Destination": dest,
-                    "Service": service,
-                    "Application": network_application,
-                },
-            )
+        # assert internal simulation query call
+        mock_soap_service.return_value.query.assert_called_once_with(
+            SessionID=analyzer_client._session_id,
+            QueryInput={
+                "Source": source,
+                "Destination": dest,
+                "Service": service,
+                "Application": network_application,
+            },
+        )
 
-            # assert internal helper calls
-            mock_prepare_results.assert_called_once_with(query_response_devices)
-            mock_get_summarized_query.assert_called_once_with(
-                simulation_query_response[0], mock_prepare_results.return_value
-            )
+        # assert internal helper calls
+        mock_prepare_results.assert_called_once_with(query_response_devices)
+        mock_get_summarized_query.assert_called_once_with(
+            simulation_query_response[0], mock_prepare_results.return_value
+        )
+
+    def test_initiate_client_login_impersonation_succeeded(self, mocker, analyzer_client):
+        mocker.patch.object(
+            analyzer_client, "_get_soap_client", MagicMock(name="soap_client")
+        )
+        analyzer_client._initiate_client()
+        assert analyzer_client._service.connect.call_args_list[0] == mocker.call(
+            Domain="",
+            ImpersonateUser='created_by_algobot@algosec.com',
+            Password=analyzer_client.password,
+            UserName=analyzer_client.user,
+        )
+        assert len(analyzer_client._service.connect.call_args_list) == 1
+
+    def test_initiate_client_login_impersonation_default_algobot_user(self, mocker, analyzer_client):
+        mock_soap_service = MagicMock(name="soap_service")
+        mock_soap_service.return_value.connect.side_effect = [Fault(
+            LOGIN_FAILED_IMPERSONATION_REASON
+        ), mock.DEFAULT]
+
+        mocker.patch.object(analyzer_client, "_soap_service", mock_soap_service)
+        mocker.patch.object(
+            analyzer_client, "_get_soap_client", MagicMock(name="soap_client")
+        )
+        analyzer_client._initiate_client()
+        assert mock_soap_service.return_value.connect.call_args_list[0] == mocker.call(
+            Domain="",
+            ImpersonateUser='created_by_algobot@algosec.com',
+            Password=analyzer_client.password,
+            UserName=analyzer_client.user,
+        )
+        assert mock_soap_service.return_value.connect.call_args_list[1] == mocker.call(
+            Domain="",
+            Password=analyzer_client.algobot_login_password,
+            UserName=analyzer_client.algobot_login_user,
+        )
+        # Assert that the soap client was logged in and the session id was saved
+        assert analyzer_client._session_id == mock_soap_service.return_value.connect.return_value
+
+    def test_initiate_client_login_impersonation_failed(self, mocker, analyzer_client):
+
+        mock_soap_service = MagicMock(name="soap_service")
+        mock_soap_service.return_value.connect.side_effect = \
+            [
+                Fault(LOGIN_FAILED_IMPERSONATION_REASON),
+                Fault(LOGIN_FAILED_IMPERSONATION_REASON),
+                Fault(LOGIN_FAILED_IMPERSONATION_REASON),
+                mock.DEFAULT
+            ]
+
+        mocker.patch.object(analyzer_client, "_soap_service", mock_soap_service)
+        mocker.patch.object(
+            analyzer_client, "_get_soap_client", MagicMock(name="soap_client")
+        )
+        with pytest.raises(UnauthorizedUserException, match=r".*{}.*".format(LOGIN_FAILED_IMPERSONATION_MSG)):
+            analyzer_client._initiate_client()
+        with pytest.raises(UnauthorizedUserException, match=r".*{}.*".format(LOGIN_FAILED_IMPERSONATION_MSG)):
+            analyzer_client.algobot_login_user = None
+            analyzer_client._initiate_client()
+
+    def test_afa_session_id_getter_impersonation_failed(self,mocker,analyzer_client):
+        mock_soap_service = MagicMock(name="soap_service")
+        mock_soap_service.return_value.connect.side_effect = Fault(
+            LOGIN_FAILED_IMPERSONATION_REASON
+        )
+
+        mocker.patch.object(analyzer_client, "_soap_service", mock_soap_service)
+        mocker.patch.object(
+            analyzer_client, "_get_soap_client", MagicMock(name="soap_client")
+        )
+        assert analyzer_client.afa_session_id_getter is None
+
+    def test_afa_session_id_getter_impersonation_succeeded(self,mocker,analyzer_client):
+        mocker.patch.object(
+            analyzer_client, "_get_soap_client", MagicMock(name="soap_client")
+        )
+        analyzer_client._initiate_client()
+        assert analyzer_client.afa_session_id_getter == analyzer_client._session_id
+
+    def test_traffic_simulation_query_no_permission(self,mocker,analyzer_client):
+        mock_soap_service = MagicMock(name="soap_service")
+        mock_soap_service.return_value.query.side_effect = Fault(
+            "[505] impersonation error."
+        )
+
+        mocker.patch.object(analyzer_client, "_soap_service", mock_soap_service)
+        mocker.patch.object(
+            analyzer_client, "_get_soap_client", MagicMock(name="soap_client")
+        )
+
+        analyzer_client._session_id = MagicMock()
+
+        # mock the simulation input
+        source = MagicMock()
+        dest = MagicMock()
+        service = MagicMock()
+        with pytest.raises(UnauthorizedUserException, match=r".*{}.*".format(PERMISSION_ERROR_MSG)):
+            analyzer_client._execute_traffic_simulation_query(source, dest, service)

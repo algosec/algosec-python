@@ -9,10 +9,11 @@ from contextlib import contextmanager
 import six
 from ipaddress import IPv4Network, AddressValueError, NetmaskValueError
 from requests.adapters import HTTPAdapter
-from suds import WebFault
-from suds.plugin import MessagePlugin
-from suds.transport import TransportError
+from zeep.exceptions import TransportError, Fault
 
+from algosec.errors import UnauthorizedUserException
+
+logger = logging.getLogger(__name__)
 
 class AlgoSecServersHTTPAdapter(HTTPAdapter):
     """HTTP adapter to customize ``requests`` sessions with AlgoSec's servers.
@@ -84,7 +85,12 @@ def report_soap_failure(exception_to_raise):
     reason = "SOAP API call failed."
     try:
         yield
-    except WebFault as e:
+    # unauthorized user exception, re-raised to handler to inform user that he has no permissions for this action.
+    except UnauthorizedUserException as e:
+        logger.debug(e.extra_details)
+        raise
+
+    except Fault as e:
         # Handle exceptions in SOAP logical level
         all_args_are_strings = (
             hasattr(e, "args")
@@ -97,9 +103,9 @@ def report_soap_failure(exception_to_raise):
     except TransportError as e:
         # Handle exceptions at the transport layer
         # For example, when getting status code 500 from the server upon mere HTTP request
-        # This code assumes that the transport error is raised by the suds_requests package.
-        status_code = e.httpcode
-        response_content = e.fp.read()
+        # This code assumes that the transport error is raised by the zeep package.
+        status_code = e.status_code
+        response_content = e.content
         reason += " status_code: {}, response_content: {}".format(
             status_code, response_content
         )
@@ -107,9 +113,9 @@ def report_soap_failure(exception_to_raise):
             reason, status_code=status_code, response_content=response_content
         )
 
+#TODO: check if LogSOAPMessages is necessary or it may be removed.
 
-# LogSOAPMessages inherit from `object` as the `MessagePlugin` is not defined as new-style class object
-class LogSOAPMessages(MessagePlugin, object):
+class LogSOAPMessages(object):
     """Used to send soap log messages into the builtin logging module"""
 
     LOG_LEVEL = logging.DEBUG

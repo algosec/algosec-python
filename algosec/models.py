@@ -148,11 +148,11 @@ class ChangeRequestAction(Enum):
 
     Attributes:
         ALLOW: This enum will mark the change request to allow the requested traffic
-        DROP: This enum will mark the change request to block the requested traffic
+        BLOCK: This enum will mark the change request to block the requested traffic
     """
 
     ALLOW = ChangeRequestActionInfo(1, "allow")
-    DROP = ChangeRequestActionInfo(0, "drop")
+    BLOCK = ChangeRequestActionInfo(0, "block")
 
     def __repr__(self):
         return "{}.{}".format(self.__class__.__name__, self._name_)
@@ -184,7 +184,7 @@ class ChangeRequestTrafficLine(object):
 
         Args:
             action (algosec.models.ChangeRequestAction): action requested by this traffic line
-                to allow or drop traffic.
+                to allow or block traffic.
             sources (list[str]): List of IP address representing the source of the traffic.
             destinations (list[str]): List of IP address representing the destination of the traffic.
             services (list[str]): List of services which describe the type of traffic. Each service could be a service

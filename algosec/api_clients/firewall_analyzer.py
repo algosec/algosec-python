@@ -1,11 +1,12 @@
 """SOAP API client AlgoSec **FirewallAnalyzer**.
 
 
-Clients require three arguments to be initiated (and total of four):
+Clients require four arguments to be initiated (and total of five):
 
 * AlgoSec server IP
 * username
 * password
+* email
 * *verify_ssl* (optional)
 
 Examples:
@@ -28,14 +29,21 @@ from collections import OrderedDict
 
 from deprecated import deprecated
 
-from algosec.api_clients.base import SoapAPIClient
+from algosec.constants import API_CALL_FAILED_RESPONSE, PERMISSION_ERROR_MSG, TSQ_NO_PERMISSION, \
+    LOGIN_FAILED_IMPERSONATION_REASON, LOGIN_FAILED_IMPERSONATION_DETAILS, LOGIN_FAILED_IMPERSONATION_MSG
+from algosec.api_clients.base import SoapAPIClient, APIClient
 from algosec.helpers import report_soap_failure
 from algosec.errors import (
     AlgoSecLoginError,
     AlgoSecAPIError,
     UnrecognizedAllowanceState,
+    UnauthorizedUserException,
 )
 from algosec.models import DeviceAllowanceState
+
+from zeep.exceptions import Fault
+
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -70,22 +78,90 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
     def _soap_service_location(self):  # pragma: no cover
         return "https://{}/AFA/php/ws.php".format(self.server_ip)
 
+    @property
+    def afa_session_id_getter(self):
+        """
+        Getter to afa session id. Initiates Client if necessary.
+        In case Client Initiation fails for some reason, afa session id might be none.
+        :return: afa session id.
+        """
+        # if client isn't initiated, property calls _initiate_client method.
+        try:
+            if self.client is None:
+                # shouldn't reach here.
+                logger.warning("Client is not initiated, afa session id might have None Value.")
+        except UnauthorizedUserException as e:
+            logger.exception("Login failed since user doesn't exist, afa session id have None Value.")
+            return None
+        return self._session_id
+
+    def _soap_service(self, client):
+        """
+        Initialize service with correct location if necessary and return it.
+
+        Args:
+            client: initialized zeep client.
+
+        Returns:
+            a zeep ProxyService object.
+        """
+        if self._service is None:
+            binding = "{}".format(client.service._binding.name.text)
+            self._service = client.create_service(binding, self._soap_service_location)
+        return self._service
+
     def _initiate_client(self):
-        """Return a connected suds client and save the new session id to ``self._session_id``
+        """Return a connected zeep client and save the new session id to ``self._session_id``
 
         Raises:
             AlgoSecLoginError: If login using the username/password failed.
 
         Returns:
-            suds.client.Client
+            zeep.Client
         """
+
+
         client = self._get_soap_client(
             self._wsdl_url_path, location=self._soap_service_location
         )
         with report_soap_failure(AlgoSecLoginError):
-            self._session_id = client.service.connect(
-                UserName=self.user, Password=self.password, Domain=""
-            )
+            try:
+                self._session_id = self._soap_service(client).connect(
+                    UserName=self.user, Password=self.password, Domain="",
+                    ImpersonateUser=self.user_email
+                )
+                APIClient._impersonation_success = True
+                logger.debug("Impersonation succeeded for user-email: {}".format(self.user_email))
+            except Fault as e:
+                if e.message is not None and LOGIN_FAILED_IMPERSONATION_REASON in e.message:
+                    if self.algobot_login_user is not None and self.algobot_login_password is not None:
+                        logger.debug("Impersonation failed, trying to connect to AlgoBot Login User.")
+                        try:
+                            self._session_id = self._soap_service(client).connect(
+                                UserName=self.algobot_login_user, Password=self.algobot_login_password, Domain=""
+                            )
+                            logger.debug("Login succeeded for Algobot's default user.")
+                        except Fault as e:
+                            # impersonation failed and AlgoBot login user isn't defined in Algosec Servers.
+                            if e.message is not None and LOGIN_FAILED_IMPERSONATION_REASON in e.message:
+                                logger.debug("Impersonation failed, {} in Algosec Servers."
+                                             .format(LOGIN_FAILED_IMPERSONATION_DETAILS.format(self.user_email)))
+                                raise UnauthorizedUserException(LOGIN_FAILED_IMPERSONATION_MSG,
+                                                                "{} in Algosec Servers."
+                                                                .format(LOGIN_FAILED_IMPERSONATION_DETAILS
+                                                                        .format(self.user_email)))
+                            raise e
+                    else:
+                        # impersonation failed and AlgoBot login user isn't defined in configuration file.
+                        logger.debug("Impersonation failed, {} in AlgoBot configuration file."
+                                     .format(LOGIN_FAILED_IMPERSONATION_DETAILS.format(self.user_email)))
+                        raise UnauthorizedUserException(LOGIN_FAILED_IMPERSONATION_MSG,
+                                                        "{} in AlgoBot configuration file."
+                                                        .format(LOGIN_FAILED_IMPERSONATION_DETAILS
+                                                                .format(self.user_email)))
+                else:
+                    raise e
+
         return client
 
     @staticmethod
@@ -179,13 +255,32 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
             if target is not None:
                 params["QueryTarget"] = target
 
-            simulation_query_response = self.client.service.query(
-                SessionID=self._session_id, **params
-            ).QueryResult
+            logger.debug(self._api_info_string.format(
+                "Traffic Simulation Query",
+                self._wsdl_url_path + " op_name: query",
+                params
+            ))
+            try:
+                simulation_query_response = self._soap_service(self.client).query(
+                    SessionID=self._session_id, **params
+                ).QueryResult
+            except Fault as err:
+                err_code = ''
+                err_code_match = re.search('\d+', err.args[0])
+                if err_code_match:
+                    err_code = err_code_match.group(0)
+                # if there are no permissions (505), raise a new type of exception - UnauthorizedUserException.
+                if err_code == '505':
+                    raise UnauthorizedUserException(PERMISSION_ERROR_MSG, TSQ_NO_PERMISSION.format(
+                        PERMISSION_ERROR_MSG, self.user_email, err_code
+                    ))
+                raise
+
+        logger.debug("response: {}".format(simulation_query_response or API_CALL_FAILED_RESPONSE))
         query_url = getattr(simulation_query_response[0], "QueryHTMLPath", None)
         if (
-            simulation_query_response is None
-            or not simulation_query_response[0].QueryItem
+                simulation_query_response is None
+                or not simulation_query_response[0].QueryItem
         ):
             devices = []
         else:

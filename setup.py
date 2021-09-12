@@ -9,8 +9,7 @@ with open("README.rst") as f:
 
 INSTALL_REQUIRES = [
     "requests",
-    "suds-jurko>=0.6",
-    "suds_requests>=0.4.0",
+    "zeep",
     "ipaddress",
     "six",
     "deprecated",
@@ -25,7 +24,6 @@ setup(
     name="algosec",
     version="1.3.4",
     packages=find_packages(exclude=["tests", "tests.*"]),
-    url="https://github.com/algosec/algosec-python",
     license="MIT",
     author="Almog Cohen",
     author_email="support@algosec.com",
