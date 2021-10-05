@@ -2,25 +2,25 @@ import mock
 import pytest
 import requests
 import responses
-import suds_requests
+from zeep.transports import Transport
 from mock import create_autospec, MagicMock
 from requests import Response, HTTPError
-from suds import client, WebFault
+from zeep import Client
+from zeep.exceptions import Fault, TransportError
 
 from algosec.api_clients.base import APIClient, RESTAPIClient, SoapAPIClient
 from algosec.helpers import report_soap_failure
 from algosec.errors import AlgoSecAPIError
 
-
 class TestAPIClient(object):
     def test_init(self):
-        APIClient("server-ip", "username", "password", verify_ssl=True)
+        APIClient("server-ip", "username", "password", "algobot_login_user", "algobot_login_password", verify_ssl=True)
 
 
 class TestRESTAPIClient(object):
     @pytest.fixture()
     def rest_client(self, request):
-        return RESTAPIClient("server-ip", "username", "password", verify_ssl=True)
+        return RESTAPIClient("server-ip", "username", "password", "algobot_login_user", "algobot_login_password", verify_ssl=True)
 
     @pytest.fixture()
     def mock_response(self, request):
@@ -33,15 +33,15 @@ class TestRESTAPIClient(object):
         assert rest_client._session is None
 
     def test_session_auto_populate(self, mocker, rest_client):
-        with mocker.patch.object(RESTAPIClient, "_initiate_session"):
-            assert rest_client.session == rest_client._initiate_session.return_value
+        mocker.patch.object(RESTAPIClient, "_initiate_session")
+        assert rest_client.session == rest_client._initiate_session.return_value
 
     def test_session_initiate_only_once(self, mocker, rest_client):
-        with mocker.patch.object(RESTAPIClient, "_initiate_session"):
-            # Inititate rest_client session creation twice
-            rest_client.session
-            rest_client.session
-            rest_client._initiate_session.assert_called_once_with()
+        mocker.patch.object(RESTAPIClient, "_initiate_session")
+        # Inititate rest_client session creation twice
+        rest_client.session
+        rest_client.session
+        rest_client._initiate_session.assert_called_once_with()
 
     def test_check_api_response(self, rest_client, mock_response):
         assert rest_client._check_api_response(mock_response) == mock_response
@@ -76,51 +76,51 @@ class TestRESTAPIClient(object):
 class TestSoapAPIClient(object):
     @pytest.fixture()
     def soap_client(self, request):
-        return SoapAPIClient("server-ip", "username", "password", verify_ssl=True)
+        return SoapAPIClient("server-ip", "username", "password", "algobot_login_user", "algobot_login_password", verify_ssl=True)
 
     def test_init(self, soap_client):
         assert soap_client._client is None
         assert soap_client._session_id is None
 
     def test_client_auto_populate(self, mocker, soap_client):
-        with mocker.patch.object(SoapAPIClient, "_initiate_client"):
-            assert soap_client.client == soap_client._initiate_client.return_value
+        mocker.patch.object(SoapAPIClient, "_initiate_client")
+        assert soap_client.client == soap_client._initiate_client.return_value
 
     def test_client_initiate_only_once(self, mocker, soap_client):
-        with mocker.patch.object(SoapAPIClient, "_initiate_client"):
-            # Inititate soap_client client creation twice
-            soap_client.client
-            soap_client.client
-            soap_client._initiate_client.assert_called_once_with()
+        mocker.patch.object(SoapAPIClient, "_initiate_client")
+        # Inititate soap_client client creation twice
+        soap_client.client
+        soap_client.client
+        soap_client._initiate_client.assert_called_once_with()
 
     @mock.patch("algosec.api_clients.base.mount_adapter_on_session")
-    def test_get_soap_client(self, mock_session_adapter, soap_client, mocker):
-        with mocker.patch.object(client, "Client"):
-            with mocker.patch.object(requests, "Session"):
-                wsdl_path = "http://some-wsdl-path"
-                new_client = soap_client._get_soap_client(wsdl_path)
-                session = requests.Session()
-                assert session.verify == soap_client.verify_ssl
-                assert new_client == client.Client.return_value
-                assert client.Client.called_once_with(
-                    wsdl_path, transport=suds_requests.RequestsTransport(session)
-                )
-                mock_session_adapter.assert_called_once_with(
-                    session, soap_client._session_adapter
-                )
+    @mock.patch('algosec.api_clients.base.Client', name='zeep')
+    def test_get_soap_client(self, Client, mock_session_adapter, soap_client, mocker):
+        mocker.patch.object(requests, "Session")
+        wsdl_path = "http://some-wsdl-path"
+        new_client = soap_client._get_soap_client(wsdl_path)
+        session = requests.Session()
+        assert session.verify == soap_client.verify_ssl
+        assert new_client == Client.return_value
+        assert Client.called_once_with(
+            wsdl_path, transport=Transport(session=session)
+        )
+        mock_session_adapter.assert_called_once_with(
+            session, soap_client._session_adapter
+        )
 
 
 class TestReportSoapFailure(object):
-    @responses.activate
-    def test_report_soap_failure__detailed_transport_error(self):
+    @mock.patch('algosec.api_clients.base.Client', name='zeep')
+    def test_report_soap_failure__detailed_transport_error(self,Client):
         wsdl_path = "http://some-wsdl-path"
         api_error = "some error description"
-        responses.add(responses.GET, wsdl_path, json={"error": api_error}, status=500)
+        Client.side_effect = TransportError(status_code=500, content=api_error)
 
         with pytest.raises(AlgoSecAPIError) as e:
             with report_soap_failure(AlgoSecAPIError):
                 # Force an api soap call, that is destined to fail
-                client.Client(wsdl_path, transport=suds_requests.RequestsTransport())
+                Client(wsdl_path, transport=Transport())
 
         assert "status_code: 500" in str(e)
         assert api_error in str(e)
@@ -129,7 +129,7 @@ class TestReportSoapFailure(object):
         """See that webfault is translated into AlgoSecAPIError"""
         with pytest.raises(AlgoSecAPIError):
             with report_soap_failure(AlgoSecAPIError):
-                raise WebFault("Some Error", document={})
+                raise Fault("Some Error")
 
     def test_report_soap_failure__no_failure(self):
         # See that no exception is raised

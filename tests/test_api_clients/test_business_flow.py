@@ -1,27 +1,36 @@
 import pytest
-from mock import mock, MagicMock, call
-from requests import status_codes
+from algosec.api_clients.base import APIClient
+from algosec.constants import LOGIN_FAILED_IMPERSONATION_MSG, PERMISSION_ERROR_MSG
+from mock import mock, PropertyMock, MagicMock, call
+from requests import status_codes, HTTPError
 
 from algosec.api_clients.business_flow import BusinessFlowAPIClient
-from algosec.errors import AlgoSecLoginError, EmptyFlowSearch, AlgoSecAPIError
+from algosec.errors import AlgoSecLoginError, EmptyFlowSearch, AlgoSecAPIError, UnauthorizedUserException
 from algosec.models import NetworkObjectType, NetworkObjectSearchTypes, RequestedFlow
 from tests.conftest import (
     ALGOSEC_SERVER,
-    ALGOSEC_USERNAME,
-    ALGOSEC_PASSWORD,
+    ALGOSEC_LOGIN_USERNAME,
+    ALGOSEC_LOGIN_PASSWORD,
+    ALGOBOT_LOGIN_USER,
+    ALGOBOT_LOGIN_PASSWORD,
     ALGOSEC_VERIFY_SSL,
 )
+from zeep.exceptions import Fault
 
 
 class TestBusinessFlowAPIClient(object):
     @pytest.fixture()
     def client(self, request):
-        return BusinessFlowAPIClient(
+        abf_client= BusinessFlowAPIClient(
             ALGOSEC_SERVER,
-            ALGOSEC_USERNAME,
-            ALGOSEC_PASSWORD,
+            ALGOSEC_LOGIN_USERNAME,
+            ALGOSEC_LOGIN_PASSWORD,
+            ALGOBOT_LOGIN_USER,
+            ALGOBOT_LOGIN_PASSWORD,
             verify_ssl=ALGOSEC_VERIFY_SSL,
         )
+        abf_client.afa_sess_id = PropertyMock(return_value='1234')
+        return abf_client
 
     @pytest.fixture()
     def mock_session(self, request):
@@ -39,9 +48,10 @@ class TestBusinessFlowAPIClient(object):
 
     @mock.patch("requests.session")
     @mock.patch("algosec.api_clients.business_flow.mount_adapter_on_session")
-    def test_initiate_session(
+    def test_initiate_session_using_default_algobot_user_details(
         self, mock_session_adapter, mock_requests_session, client
     ):
+        APIClient._impersonation_success = False
         # Mock successful login
         login_response = mock_requests_session.return_value.get.return_value
         login_response.status_code = status_codes.codes.OK
@@ -52,7 +62,7 @@ class TestBusinessFlowAPIClient(object):
         assert new_session.verify == client.verify_ssl
         new_session.get.assert_called_once_with(
             "https://testing.algosec.com/BusinessFlow/rest/v1/login",
-            auth=(ALGOSEC_USERNAME, ALGOSEC_PASSWORD),
+            auth=(ALGOBOT_LOGIN_USER, ALGOBOT_LOGIN_PASSWORD),
         )
         mock_session_adapter.assert_called_once_with(
             new_session, client._session_adapter
@@ -60,7 +70,7 @@ class TestBusinessFlowAPIClient(object):
 
     @mock.patch("requests.session")
     def test_initiate_session__login_failed(self, mock_requests_session, client):
-        # Mock successful login
+        # Mock unsuccessful login
         login_response = mock_requests_session.return_value.get.return_value
         login_response.status_code = "ANYTHING_BUT_OK"
 
@@ -424,3 +434,80 @@ class TestBusinessFlowAPIClient(object):
     )
     def test_is_application_critical(self, client, app_json, expected_result):
         assert client.is_application_critical(app_json) == expected_result
+
+    def test_initiate_session__none_afa_sess_id(self, client):
+
+        client.afa_sess_id = None
+        with pytest.raises(UnauthorizedUserException, match=r".*{}.*".format(LOGIN_FAILED_IMPERSONATION_MSG)):
+            client._initiate_session()
+
+    @mock.patch("requests.session")
+    @mock.patch("algosec.api_clients.business_flow.mount_adapter_on_session")
+    def test_initiate_session_impersonation_succeeded(self, mock_session_adapter, mock_requests_session, client):
+        APIClient._impersonation_success = True
+        # Mock successful login
+        username_resp = mock_requests_session.return_value.get.return_value.json.return_value.get.return_value
+        login_response = mock_requests_session.return_value.post.return_value
+        login_response.status_code = status_codes.codes.OK
+
+        new_session = client._initiate_session()
+
+        assert new_session == mock_requests_session.return_value
+        assert new_session.verify == client.verify_ssl
+        new_session.post.assert_called_once_with(
+            "https://testing.algosec.com/BusinessFlow/rest/v1/login",
+            params={"afaSessionID": client.afa_sess_id, "afaSessionToken": client.afa_sess_id,
+                              "afaSessionPHP": client.afa_sess_id, "username": username_resp},
+        )
+        mock_session_adapter.assert_called_once_with(
+            new_session, client._session_adapter
+        )
+
+        @mock.patch("requests.session")
+        @mock.patch("algosec.api_clients.business_flow.mount_adapter_on_session")
+        def test_initiate_session_impersonation_succeeded(self, mock_session_adapter, mock_requests_session, client):
+            APIClient._impersonation_success = True
+            # Mock successful login
+            username_resp = mock_requests_session.return_value.get.return_value.json.return_value.get.return_value
+            login_response = mock_requests_session.return_value.post.return_value
+            login_response.status_code = status_codes.codes.OK
+
+            new_session = client._initiate_session()
+
+            assert new_session == mock_requests_session.return_value
+            assert new_session.verify == client.verify_ssl
+            new_session.post.assert_called_once_with(
+                "https://testing.algosec.com/BusinessFlow/rest/v1/login",
+                params={"afaSessionID": client.afa_sess_id, "afaSessionToken": client.afa_sess_id,
+                        "afaSessionPHP": client.afa_sess_id, "username": username_resp},
+            )
+            mock_session_adapter.assert_called_once_with(
+                new_session, client._session_adapter
+            )
+
+    @mock.patch("algosec.api_clients.business_flow.BusinessFlowAPIClient._initiate_session")
+    def test_get_application_by_name_permission_error(
+        self, mock_abf_session, client
+    ):
+        UNAUTHORIZED_STATUS = 401
+        APIClient._impersonation_success = False
+
+        err = MagicMock()
+        err.status_code = UNAUTHORIZED_STATUS
+        err.raise_for_status.side_effect = HTTPError
+        client._initiate_session.return_value.get.return_value = err
+
+        with pytest.raises(UnauthorizedUserException, match=r".*{}.*".format(PERMISSION_ERROR_MSG)):
+            client.get_application_by_name("app-name")
+
+    def test_get_application_by_name_impersonation_login_failue(self, client):
+
+        client.afa_sess_id = None
+        with pytest.raises(UnauthorizedUserException, match=r".*{}.*".format(LOGIN_FAILED_IMPERSONATION_MSG)):
+            client.get_application_by_name("app-name")
+
+    def test_associated_applications_impersonation_login_failue(self, client):
+
+        client.afa_sess_id = None
+        with pytest.raises(UnauthorizedUserException, match=r".*{}.*".format(LOGIN_FAILED_IMPERSONATION_MSG)):
+            client.get_application_by_name("app-name")

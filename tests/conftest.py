@@ -7,9 +7,10 @@ import vcr
 from algosec.api_clients.fire_flow import FireFlowAPIClient
 
 ALGOSEC_VERIFY_SSL = False
-ALGOSEC_PASSWORD = 'algosec'
-ALGOSEC_USERNAME = 'admin'
+ALGOSEC_LOGIN_PASSWORD = 'algosec'
+ALGOSEC_LOGIN_USERNAME = 'admin'
 ALGOSEC_SERVER = 'testing.algosec.com'
+ALGOBOT_LOGIN_USER, ALGOBOT_LOGIN_PASSWORD = "algobot", "algosec"
 
 
 tests_dir = os.path.dirname(os.path.realpath(__file__))
@@ -34,7 +35,9 @@ my_vcr = vcr.VCR(
 def fireflow_client():
     return FireFlowAPIClient(
         ALGOSEC_SERVER,
-        ALGOSEC_USERNAME,
-        ALGOSEC_PASSWORD,
+        ALGOSEC_LOGIN_USERNAME,
+        ALGOSEC_LOGIN_PASSWORD,
+        ALGOBOT_LOGIN_USER,
+        ALGOBOT_LOGIN_PASSWORD,
         verify_ssl=ALGOSEC_VERIFY_SSL,
     )

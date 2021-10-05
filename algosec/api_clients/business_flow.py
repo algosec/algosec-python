@@ -1,16 +1,17 @@
 """REST API client for AlgoSec **BusinessFlow**."""
 
-
 import logging
 
 import requests
 from requests import status_codes
 from six.moves.urllib.parse import quote_plus
 
-from algosec.api_clients.base import RESTAPIClient
-from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, EmptyFlowSearch
+from algosec.api_clients.base import RESTAPIClient, APIClient
+from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, EmptyFlowSearch, UnauthorizedUserException
 from algosec.helpers import mount_adapter_on_session, is_ip_or_subnet
 from algosec.models import NetworkObjectSearchTypes, NetworkObjectType
+from algosec.constants import API_CALL_FAILED_RESPONSE, APP_UNAUTHORIZED, PERMISSION_ERROR_MSG, \
+    LOGIN_FAILED_IMPERSONATION_MSG, LOGIN_FAILED_IMPERSONATION_DETAILS
 
 logger = logging.getLogger(__name__)
 
@@ -62,16 +63,36 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             requests.session.Session: An authenticated session with the server.
         """
+        # if afa_sess_id is None, raise UnauthorizedUserException.
+        if self.afa_sess_id is None:
+            raise UnauthorizedUserException(LOGIN_FAILED_IMPERSONATION_MSG,
+                                            LOGIN_FAILED_IMPERSONATION_DETAILS.format(self.user_email))
         session = requests.session()
         mount_adapter_on_session(session, self._session_adapter)
         url = "{}/rest/v1/login".format(self.business_flow_base_url, self.server_ip)
+        get_user_name_url = "https://{}/afa/api/v1/session/{}"
         logger.debug("logging in to AlgoSec servers: {}".format(url))
         session.verify = self.verify_ssl
+        # initiate PHPSESSID in cookies
+        cookies = {"PHPSESSID": self.afa_sess_id}
+        user_name = ''
         try:
-            response = session.get(url, auth=(self.user, self.password))
+            # if impersonation succeeded try logging as the impersonated user.
+            if APIClient._impersonation_success:
+                user_name_response = session.get(get_user_name_url.format(self.server_ip, self.afa_sess_id),
+                                                 cookies=cookies)
+                user_name = user_name_response.json().get("user")
+                login_data = {"afaSessionID": self.afa_sess_id, "afaSessionToken": self.afa_sess_id,
+                              "afaSessionPHP": self.afa_sess_id, "username": user_name}
+                response = session.post(url, params=login_data)
+            # impersonation failed but afa_session isn't none so log in as AlgoBot Login User.
+            elif self.algobot_login_user is not None and self.algobot_login_password is not None:
+                response = session.get(url, auth=(self.algobot_login_user, self.algobot_login_password))
+
         except Exception:
             raise AlgoSecLoginError(
-                "Unable to login into AlgoSec server at {}.".format(url)
+                "Unable to login into AlgoSec server at {} with session id {} and username {}."
+                .format(url, self.afa_sess_id, user_name)
             )
         if response.status_code == status_codes.codes.OK:
             return session
@@ -165,10 +186,23 @@ class BusinessFlowAPIClient(RESTAPIClient):
         Returns:
             dict: Json of the latest application revision.
         """
+        app_by_name_url = "{}/name/{}".format(self.applications_base_url, app_name)
+        logger.debug(self._api_info_string.format(
+            "Application Name",
+            app_by_name_url,
+            app_name,
+        ))
         response = self.session.get(
-            "{}/name/{}".format(self.applications_base_url, app_name)
+            app_by_name_url
         )
-        self._check_api_response(response)
+        logger.debug("{}:\n{}".format(response, response.json()) or API_CALL_FAILED_RESPONSE)
+        try:
+            self._check_api_response(response)
+        except AlgoSecAPIError as e:
+            if response.status_code == 401:
+                raise UnauthorizedUserException(PERMISSION_ERROR_MSG, APP_UNAUTHORIZED.format(
+                    PERMISSION_ERROR_MSG, self.user_email, response.status_code))
+            raise e
         return response.json()
 
     def get_application_revision_id_by_name(self, app_name):
@@ -528,10 +562,17 @@ class BusinessFlowAPIClient(RESTAPIClient):
             list: List of dictionaries each representing an associated application.
 
         """
-        response = self.session.get(
-            "{}/find/applications?address={}".format(
+        app_status_url = "{}/find/applications?address={}".format(
                 self.network_objects_base_url, ip_address
-            )
         )
+        logger.debug(self._api_info_string.format(
+            "Associated Applications",
+            app_status_url,
+            ip_address,
+        ))
+        response = self.session.get(
+            app_status_url
+        )
+        logger.debug("{}:\n{}".format(response, response.json()) or API_CALL_FAILED_RESPONSE)
         self._check_api_response(response)
         return response.json()

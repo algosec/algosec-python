@@ -19,3 +19,7 @@ mock = "*"
 vcrpy = "*"
 # Remove these two when all old tests have been migrated to pytest
 pyhamcrest = "*"
+
+[scripts]
+# run all tests in tests/ folder. might be extended to integration tests as well.
+run-tests = "sh /home/algobot/run-tests.sh"

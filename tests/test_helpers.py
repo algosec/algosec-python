@@ -3,7 +3,6 @@ import logging
 import mock
 import pytest
 import requests
-from suds.plugin import MessageContext
 
 from algosec.helpers import (
     mount_adapter_on_session,
@@ -11,7 +10,6 @@ from algosec.helpers import (
     is_ip_or_subnet,
     LogSOAPMessages,
 )
-
 
 @mock.patch("six.moves.builtins.super")
 def test_algosec_servers_http_adapter(mock_super, mocker):
@@ -57,6 +55,17 @@ def test_mount_algosec_adapter_on_session(mocker):
 def test_is_ip_or_subnet(string, expected):
     assert is_ip_or_subnet(string) == expected
 
+#TODO: check if LogSOAPMessages is necessary or it may be removed.
+
+# context for sending SOAP envelope, just an empty class that represents the context.
+class MessageContext(object):
+    """
+    The context for sending the SOAP envelope.
+    @ivar envelope: The SOAP envelope to be sent.
+    @ivar reply: The reply.
+    """
+    pass
+
 
 class TestLogSOAPMessages(object):
     @classmethod
@@ -71,7 +80,6 @@ class TestLogSOAPMessages(object):
     def test_sending(self, caplog, message):
         context = MessageContext()
         context.envelope = message
-
         logging_plugin = LogSOAPMessages()
         logging_plugin.sending(context)
 

@@ -8,11 +8,12 @@ import logging
 import traceback
 
 import requests
-import suds_requests
 from requests import HTTPError
-from suds import client
-from suds.cache import NoCache
+from zeep import Client
+from zeep.transports import Transport
+from zeep.settings import Settings
 
+from algosec.constants import PLACEHOLDER_EMAIL
 from algosec.errors import AlgoSecAPIError
 from algosec.helpers import (
     report_soap_failure,
@@ -38,12 +39,17 @@ class APIClient(object):
     Note:
         This class is intended to be inherited. It should not be initiated or used directly in your code.
     """
+    _impersonation_success = False
 
     def __init__(
         self,
         server_ip,
         user,
         password,
+        algobot_login_user,
+        algobot_login_password,
+        user_email=PLACEHOLDER_EMAIL,
+        afa_sess_id=None,
         verify_ssl=True,
         session_adapter=AlgoSecServersHTTPAdapter,
     ):
@@ -51,8 +57,13 @@ class APIClient(object):
         self.server_ip = server_ip
         self.user = user
         self.password = password
+        self.algobot_login_user = algobot_login_user
+        self.algobot_login_password = algobot_login_password
+        self.user_email = user_email
+        self.afa_sess_id = afa_sess_id
         self.verify_ssl = verify_ssl
         self._session_adapter = session_adapter()
+        self._api_info_string = "API: {}\nurl: {}\nrequest: {}\n"
 
 
 class RESTAPIClient(APIClient):
@@ -75,11 +86,15 @@ class RESTAPIClient(APIClient):
         server_ip,
         user,
         password,
+        algobot_login_user,
+        algobot_login_password,
+        user_email=PLACEHOLDER_EMAIL,
+        afa_sess_id=None,
         verify_ssl=True,
         session_adapter=AlgoSecServersHTTPAdapter,
     ):
         super(RESTAPIClient, self).__init__(
-            server_ip, user, password, verify_ssl, session_adapter
+            server_ip, user, password, algobot_login_user, algobot_login_password, user_email, afa_sess_id, verify_ssl, session_adapter
         )
         # Will be initialized once the session is used
         self._session = None
@@ -148,15 +163,20 @@ class SoapAPIClient(APIClient):
         server_ip,
         user,
         password,
+        algobot_login_user,
+        algobot_login_password,
+        user_email=PLACEHOLDER_EMAIL,
+        afa_sess_id=None,
         verify_ssl=True,
         session_adapter=AlgoSecServersHTTPAdapter,
     ):
         super(SoapAPIClient, self).__init__(
-            server_ip, user, password, verify_ssl, session_adapter
+            server_ip, user, password, algobot_login_user, algobot_login_password, user_email, afa_sess_id, verify_ssl, session_adapter
         )
         self._client = None
         # Used to persist the session id used for security reasons on reoccurring requests
         self._session_id = None
+        self._service = None
 
     def _initiate_client(self):  # pragma: no cover
         raise NotImplementedError()
@@ -171,7 +191,7 @@ class SoapAPIClient(APIClient):
 
     @property
     def client(self):
-        """Return a suds SOAP client and make sure ``self._session_id`` is populated
+        """Return a zeep SOAP client and make sure ``self._session_id`` is populated
 
         The same session is returned on subsequent calls.
         """
@@ -184,20 +204,18 @@ class SoapAPIClient(APIClient):
 
         Args:
             wsdl_path (str): The url for the wsdl to connect to.
-            **kwargs: Keyword-arguments that are forwarded to the suds client constructor.
+            **kwargs: Keyword-arguments that are forwarded to the zeep client constructor.
 
         Returns:
-            suds.client.Client: A suds SOAP client.
+            zeep.Client: A zeep SOAP client.
         """
         session = requests.Session()
         mount_adapter_on_session(session, self._session_adapter)
         session.verify = self.verify_ssl
-        # use ``requests`` based suds implementation to handle AlgoSec's self-signed certificate properly.
+
         with report_soap_failure(AlgoSecAPIError):
-            return client.Client(
+            return Client(
                 wsdl_path,
-                transport=suds_requests.RequestsTransport(session),
-                plugins=[LogSOAPMessages()],
-                cache=NoCache(),
-                **kwargs
+                transport=Transport(session=session),
+                settings=Settings(strict=False, xsd_ignore_sequence_order=True)
             )
