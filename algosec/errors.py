@@ -56,3 +56,13 @@ class UnrecognizedAllowanceState(AlgoSecAPIError):
     """Raised when parsing unknown device allowance state strings."""
 
     pass
+
+class UnauthorizedUserException(Exception):
+    """a class to differ an exception caused by permissions issue"""
+    def __init__(self, message="", extra_details=""):
+        super(Exception, self).__init__(message)
+        self.message = message
+        self.extra_details = extra_details
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__, self.message)

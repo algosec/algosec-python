@@ -1,4 +1,4 @@
-from algosec.errors import AlgoSecAPIError
+from algosec.errors import AlgoSecAPIError, UnauthorizedUserException
 
 
 class TestAlgoSecAPIError(object):
@@ -20,3 +20,16 @@ class TestAlgoSecAPIError(object):
         assert error.status_code is None
         assert error.response_content is None
         assert error.response is None
+
+class TestUnauthorizedUserException(object):
+    def test_with_msg_and_details(self):
+        msg, details = "random msg", "extra details"
+        error = UnauthorizedUserException(msg,details)
+        assert error.message == msg
+        assert error.extra_details == details
+
+
+    def test_without_msg_and_details(self):
+        error = UnauthorizedUserException()
+        assert error.message == ""
+        assert error.extra_details == ""

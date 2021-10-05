@@ -23,18 +23,18 @@ class TestRequestedFlow(object):
             comment='comment',
             type='type',
         )
-        with mocker.patch.object(flow, '_api_named_object'):
-            assert flow.get_json_flow_definition() == dict(
-                type=flow.type,
-                name=flow.name,
-                sources=flow._api_named_object(flow.sources),
-                destinations=flow._api_named_object(flow.destinations),
-                users=flow.network_users,
-                network_applications=flow._api_named_object(flow.network_applications),
-                services=flow._api_named_object(flow.network_services),
-                comment=flow.comment,
-                custom_fields=flow.custom_fields,
-            )
+        mocker.patch.object(flow, '_api_named_object')
+        assert flow.get_json_flow_definition() == dict(
+            type=flow.type,
+            name=flow.name,
+            sources=flow._api_named_object(flow.sources),
+            destinations=flow._api_named_object(flow.destinations),
+            users=flow.network_users,
+            network_applications=flow._api_named_object(flow.network_applications),
+            services=flow._api_named_object(flow.network_services),
+            comment=flow.comment,
+            custom_fields=flow.custom_fields,
+        )
 
 
 class TestDeviceAllowanceState(object):
