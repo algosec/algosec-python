@@ -142,7 +142,7 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
         """
         response = self.session.get(
-            "{}/service_name/{}".format(
+            "{}/name/{}".format(
                 self.network_services_base_url, quote_plus(service_name)
             )
         )
@@ -218,6 +218,40 @@ class BusinessFlowAPIClient(RESTAPIClient):
             int: The latest application revision ID.
         """
         return self.get_application_by_name(app_name)["revisionID"]
+
+    def create_network_application(self, app_name, contacts=None, custom_fields=None, labels=None, flows=None):
+        """Create an application.
+
+        Args:
+            app_name (str): The service object's service_name.
+            contact (list[(str)]): List contacts to attach to the application.
+            custom_fields(list[dict{"name": (str), "value": (str)}]): The custom fields to include for the object.
+            labels (list[(str)]): The label to include for the object.
+            flows (list[(flow)]): The application flows to add to the application.
+
+        Raises:
+            :class:`~algosec.errors.AlgoSecAPIError`: If network application creation failed.
+
+        Returns:
+            dict: The created NetworkService object as defined in the API Guide.
+        """
+        contacts = [] if contacts is None else contacts
+        custom_fields = [] if custom_fields is None else custom_fields
+        labels = [] if labels is None else labels
+        flows = [] if flows is None else flows
+
+        response = self.session.post(
+            "{}/new".format(self.applications_base_url),
+            json=dict(
+                name=app_name,
+                contacts=contacts,
+                custom_fields=custom_fields,
+                labels=labels,
+                flows=flows,
+            )
+        )
+        self._check_api_response(response)
+        return response.json()
 
     def search_network_objects(self, ip_or_subnet, search_type):
         """Return network objects related to a given IP or subnet.
@@ -435,6 +469,23 @@ class BusinessFlowAPIClient(RESTAPIClient):
         return [
             flow for flow in response.json() if flow["flowType"] == "APPLICATION_FLOW"
         ]
+
+    def get_application_all_flows(self, app_revision_id, flow_types):
+        """Return all flows of the application revision without filter.
+
+        Args:
+            app_revision_id (str|int): The ID of the application revision to fetch the flows for
+            flow_types (list[(str)]): Filter the kind of flows returned.
+
+        Raises:
+            :class:`~algosec.errors.AlgoSecAPIError`: If application flows list could not be fetched.
+
+        Returns:
+            list[dict]: List of Flow objects as defined in the API Guide.
+        """
+        response = self.session.get("{}/{}/flows".format(self.applications_base_url, app_revision_id))
+        self._check_api_response(response)
+        return [flow for flow in response.json() if flow["flowType"] in flow_types]
 
     def get_flow_connectivity(self, app_revision_id, flow_id):
         """Return a flow connectivity object for a flow given its ID.
