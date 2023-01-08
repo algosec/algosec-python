@@ -266,7 +266,7 @@ class FirewallAnalyzerAPIClient(SoapAPIClient):
                 ).QueryResult
             except Fault as err:
                 err_code = ''
-                err_code_match = re.search('\d+', err.args[0])
+                err_code_match = re.search('\\d+', err.args[0])
                 if err_code_match:
                     err_code = err_code_match.group(0)
                 # if there are no permissions (505), raise a new type of exception - UnauthorizedUserException.

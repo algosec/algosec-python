@@ -400,10 +400,10 @@ class TestBusinessFlowAPIClient(object):
         self, client, mock_session, mock_check_response
     ):
         response = mock_session.get.return_value
-        result = client.get_associated_applications("app-revision-id")
+        result = client.get_associated_applications("1.2.3.4")
         mock_session.get.assert_called_once_with(
             "https://testing.algosec.com/BusinessFlow/rest/v1/network_objects/find/"
-            "applications?address=app-revision-id"
+            "applications?address=1.2.3.4"
         )
         mock_check_response.assert_called_once_with(response)
 

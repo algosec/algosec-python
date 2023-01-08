@@ -7,6 +7,7 @@ import logging
 from contextlib import contextmanager
 
 import six
+import re
 from ipaddress import IPv4Network, AddressValueError, NetmaskValueError
 from requests.adapters import HTTPAdapter
 from zeep.exceptions import TransportError, Fault
@@ -133,3 +134,74 @@ class LogSOAPMessages(object):
         self.log.log(
             self.LOG_LEVEL, "Received SOAP message: {}".format(str(context.reply))
         )
+
+
+class IPHelper(object):
+    """
+        A class for testing if strings are certain types of IP addresses,
+        and handling IPs in algosec python package.
+    """
+
+
+    IP_PATTERN = (
+        '([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])' +
+        '\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])'
+    )
+
+    SINGLE_IP_PATTERN = '^{}$'.format(IP_PATTERN)
+
+    IP_RANGE_PATTERN = '^({0})-({0})$'.format(IP_PATTERN)
+
+    CIDR_PATTERN = '^{}/([12][0-9]|[3][0-2]|[1-9])$'.format(IP_PATTERN)
+
+    @staticmethod
+    def is_single_ip(address):
+        """
+
+        Args:
+            address (str): A string to test if it's an address.
+
+        Returns:
+            bool: True if the given argument is a single ip address.
+        """
+        # 'not not' is a shorthand for using the boolean trait of a python object.
+        return not not re.match(IPHelper.SINGLE_IP_PATTERN, address)
+
+    @staticmethod
+    def is_ip_range(ip_range):
+        """
+
+        Args:
+            ip_range (str): A string to test if it's an ip_range
+
+        Returns:
+            bool: True if the given argument is an ip range
+        """
+        # 'not not' is a shorthand for using the boolean trait of a python object.
+        return not not re.match(IPHelper.IP_RANGE_PATTERN, ip_range)
+
+    @staticmethod
+    def is_cidr(cidr):
+        """
+
+        Args:
+            cidr (str): A string to test if it's a cidr.
+
+        Returns:
+            bool: True if the given argument is a cidr.
+        """
+        # 'not not' is a shorthand for using the boolean trait of a python object.
+        return not not re.match(IPHelper.CIDR_PATTERN, cidr)
+
+    @staticmethod
+    def is_network_address(network_object):
+        """
+
+        Args:
+            network_object (str): A string to test if it's a network object.
+
+        Returns:
+            bool: True if the given argument is a network object.
+        """
+        return (IPHelper.is_single_ip(network_object) or IPHelper.is_ip_range(network_object)
+                or IPHelper.is_cidr(network_object))

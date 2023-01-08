@@ -9,10 +9,9 @@ with open("README.rst") as f:
 
 INSTALL_REQUIRES = [
     "requests",
-    "zeep",
+    "zeep==4.0.0",
+    "deprecated==1.2.10",
     "ipaddress",
-    "six",
-    "deprecated",
 ]
 
 if sys.version_info < (3, 4):
