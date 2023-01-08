@@ -8,7 +8,7 @@ from six.moves.urllib.parse import quote_plus
 
 from algosec.api_clients.base import RESTAPIClient, APIClient
 from algosec.errors import AlgoSecLoginError, AlgoSecAPIError, EmptyFlowSearch, UnauthorizedUserException
-from algosec.helpers import mount_adapter_on_session, is_ip_or_subnet
+from algosec.helpers import mount_adapter_on_session, is_ip_or_subnet, IPHelper
 from algosec.models import NetworkObjectSearchTypes, NetworkObjectType
 from algosec.constants import API_CALL_FAILED_RESPONSE, APP_UNAUTHORIZED, PERMISSION_ERROR_MSG, \
     LOGIN_FAILED_IMPERSONATION_MSG, LOGIN_FAILED_IMPERSONATION_DETAILS
@@ -548,12 +548,12 @@ class BusinessFlowAPIClient(RESTAPIClient):
             label["name"] == "Critical" for label in application_json.get("labels", [])
         )
 
-    def get_associated_applications(self, ip_address):
+    def get_associated_applications(self, network_item):
         """
         Return all applications containing network objects related to IP addresses.
 
         Args:
-            ip_address (str): The IP address to search associated applications for
+            network_item (str): The network address or network object to search associated applications for
 
         Raises:
             :class:`~algosec.errors.AlgoSecAPIError`: If error occurred while trying to fetch associated applications.
@@ -563,16 +563,43 @@ class BusinessFlowAPIClient(RESTAPIClient):
 
         """
         app_status_url = "{}/find/applications?address={}".format(
-                self.network_objects_base_url, ip_address
+                self.network_objects_base_url, network_item
         )
-        logger.debug(self._api_info_string.format(
-            "Associated Applications",
-            app_status_url,
-            ip_address,
-        ))
-        response = self.session.get(
-            app_status_url
-        )
-        logger.debug("{}:\n{}".format(response, response.json()) or API_CALL_FAILED_RESPONSE)
+
+        if IPHelper.is_network_address(network_item):
+
+            logger.debug(self._api_info_string.format(
+                "Associated Applications",
+                app_status_url,
+                network_item
+            ))
+            response = self.session.get(
+                app_status_url
+            )
+            logger.debug("{}:\n{}".format(response,
+                                          response.json()) or API_CALL_FAILED_RESPONSE)
+        else:
+            network_object_by_name_url = "{}/name/{}".format(
+                self.network_objects_base_url, network_item
+            )
+            logger.debug(self._api_info_string.format(
+                "Associated Applications",
+                network_object_by_name_url,
+                network_item
+            ))
+            network_object_by_name_response = self.session.get(network_object_by_name_url)
+            logger.debug("{}:\n{}".format(network_object_by_name_response, network_object_by_name_response.json()) or API_CALL_FAILED_RESPONSE)
+            self._check_api_response(network_object_by_name_response)
+
+            nw_id = network_object_by_name_response.json()[0]['revisionID']
+            applications_by_id = "{}/{}/applications".format(self.network_objects_base_url, nw_id)
+            logger.debug(self._api_info_string.format(
+                "Associated Applications",
+                app_status_url,
+                nw_id
+            ))
+            response = self.session.get(applications_by_id)
+            logger.debug("{}:\n{}".format(response, response.json()) or API_CALL_FAILED_RESPONSE)
+
         self._check_api_response(response)
         return response.json()
